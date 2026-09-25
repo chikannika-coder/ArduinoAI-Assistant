@@ -1,0 +1,13 @@
+# ห้ามขึ้น GitHub: มี API Key ของครู
+config.json
+
+# ไฟล์ที่ Python สร้างเอง
+__pycache__/
+*.pyc
+
+# โค้ดที่นักเรียนเก็บไว้ในเครื่อง
+my_code/
+
+# ไฟล์ระบบ
+.DS_Store
+Thumbs.db

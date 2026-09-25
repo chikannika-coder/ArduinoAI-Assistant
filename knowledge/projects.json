@@ -1,0 +1,493 @@
+[
+ {
+  "id": "blink",
+  "emoji": "✨",
+  "name_th": "ไฟกระพริบ",
+  "desc_th": "โปรเจกต์แรกของทุกคน",
+  "level": "ง่าย",
+  "category": "พื้นฐาน",
+  "command": "ให้ LED กระพริบทุก 1 วินาที",
+  "components": [
+   "led"
+  ],
+  "inspired_by": ""
+ },
+ {
+  "id": "doorbell",
+  "emoji": "🔔",
+  "name_th": "ออดไฟฟ้า",
+  "desc_th": "กดปุ่มแล้วมีเสียง",
+  "level": "ง่าย",
+  "category": "พื้นฐาน",
+  "command": "ถ้ากดปุ่มให้ Buzzer ดัง",
+  "components": [
+   "button",
+   "buzzer"
+  ],
+  "inspired_by": ""
+ },
+ {
+  "id": "touch_lamp",
+  "emoji": "👆",
+  "name_th": "โคมไฟแตะเปิด",
+  "desc_th": "แตะสายไฟแล้วไฟติด ไม่ต้องมีปุ่ม",
+  "level": "ง่าย",
+  "category": "พื้นฐาน",
+  "command": "ถ้าแตะขาสัมผัส touch ให้ LED ติด",
+  "components": [
+   "touch",
+   "led"
+  ],
+  "inspired_by": "Contactless IOT Doorbell"
+ },
+ {
+  "id": "dimmer",
+  "emoji": "🎛️",
+  "name_th": "ปุ่มหมุนสั่งงาน",
+  "desc_th": "หมุนเกินครึ่งแล้วไฟติด",
+  "level": "ง่าย",
+  "category": "พื้นฐาน",
+  "command": "ถ้าหมุนโพเทนชิโอมากกว่า 50 ให้ LED ติด",
+  "components": [
+   "potentiometer",
+   "led"
+  ],
+  "inspired_by": ""
+ },
+ {
+  "id": "night_light",
+  "emoji": "💡",
+  "name_th": "ไฟเปิดเองตอนมืด",
+  "desc_th": "มืดแล้วไฟติดเอง",
+  "level": "ง่าย",
+  "category": "แสง",
+  "command": "ถ้าแสง LDR น้อยกว่า 30 ให้ LED ติด",
+  "components": [
+   "ldr",
+   "led"
+  ],
+  "inspired_by": "Automated Night Lighting System"
+ },
+ {
+  "id": "street_light",
+  "emoji": "🌃",
+  "name_th": "ไฟถนนอัจฉริยะ",
+  "desc_th": "มืดแล้วเปิดไฟดวงใหญ่ผ่านรีเลย์",
+  "level": "กลาง",
+  "category": "แสง",
+  "command": "ถ้าแสง LDR น้อยกว่า 25 ให้รีเลย์เปิดไฟ",
+  "components": [
+   "ldr",
+   "relay"
+  ],
+  "inspired_by": "Auto Light Intensity Controller By External Light Sensing"
+ },
+ {
+  "id": "visitor_light",
+  "emoji": "🚶",
+  "name_th": "ไฟเปิดเมื่อมีคนผ่าน",
+  "desc_th": "ทางเดินสว่างเฉพาะตอนมีคน",
+  "level": "ง่าย",
+  "category": "ตรวจจับคน",
+  "command": "ถ้ามีคนเคลื่อนไหว PIR ให้ LED ติด",
+  "components": [
+   "pir",
+   "led"
+  ],
+  "inspired_by": "Visitor Sensor Light"
+ },
+ {
+  "id": "alarm",
+  "emoji": "🚨",
+  "name_th": "สัญญาณกันขโมย",
+  "desc_th": "มีคนเดินผ่านแล้วเตือน",
+  "level": "ง่าย",
+  "category": "ความปลอดภัย",
+  "command": "ถ้ามีคนเคลื่อนไหว PIR ให้ Buzzer ดัง และ LED ติด",
+  "components": [
+   "pir",
+   "buzzer",
+   "led"
+  ],
+  "inspired_by": "Zigbee based Wireless Home Security System"
+ },
+ {
+  "id": "auto_door",
+  "emoji": "🚪",
+  "name_th": "ประตูเปิดอัตโนมัติ",
+  "desc_th": "คนเดินเข้ามาแล้วประตูเปิด",
+  "level": "กลาง",
+  "category": "ตรวจจับคน",
+  "command": "ถ้ามีคนเคลื่อนไหว PIR ให้ Servo หมุน 90 องศา",
+  "components": [
+   "pir",
+   "servo"
+  ],
+  "inspired_by": "Motion Based Automatic Door Opener"
+ },
+ {
+  "id": "parking",
+  "emoji": "🚗",
+  "name_th": "เซนเซอร์ถอยรถ",
+  "desc_th": "ของใกล้แล้วมีเสียงเตือน",
+  "level": "ง่าย",
+  "category": "ระยะทาง",
+  "command": "อ่านระยะทางด้วยอัลตราโซนิก ถ้าใกล้กว่า 20 ซม. ให้ Buzzer ดัง",
+  "components": [
+   "hc_sr04",
+   "buzzer"
+  ],
+  "inspired_by": "Advanced Automatic Self-Car Parking"
+ },
+ {
+  "id": "blind_stick",
+  "emoji": "🦯",
+  "name_th": "ไม้เท้าช่วยคนตาบอด",
+  "desc_th": "สิ่งกีดขวางใกล้แล้วมีเสียงเตือน",
+  "level": "กลาง",
+  "category": "ระยะทาง",
+  "command": "อ่านระยะทางด้วยอัลตราโซนิก ถ้าใกล้กว่า 50 ซม. ให้ Buzzer ดัง",
+  "components": [
+   "hc_sr04",
+   "buzzer"
+  ],
+  "inspired_by": "Ultrasonic Blind Walking Stick"
+ },
+ {
+  "id": "smart_bin",
+  "emoji": "🗑️",
+  "name_th": "ถังขยะเปิดฝาเอง",
+  "desc_th": "ยื่นมือใกล้แล้วฝาเปิด",
+  "level": "กลาง",
+  "category": "ระยะทาง",
+  "command": "อ่านระยะทางด้วยอัลตราโซนิก ถ้าใกล้กว่า 15 ซม. ให้ Servo หมุน 90 องศา",
+  "components": [
+   "hc_sr04",
+   "servo"
+  ],
+  "inspired_by": "Smart Dustbin With IOT Notifications"
+ },
+ {
+  "id": "sanitizer",
+  "emoji": "🧴",
+  "name_th": "เครื่องจ่ายเจลอัตโนมัติ",
+  "desc_th": "ยื่นมือแล้วปั๊มทำงานผ่านรีเลย์",
+  "level": "กลาง",
+  "category": "ระยะทาง",
+  "command": "อ่านระยะทางด้วยอัลตราโซนิก ถ้าใกล้กว่า 8 ซม. ให้รีเลย์เปิดปั๊มน้ำ",
+  "components": [
+   "hc_sr04",
+   "relay"
+  ],
+  "inspired_by": "Dual Mount Auto Sanitizer Dispenser"
+ },
+ {
+  "id": "tank_level",
+  "emoji": "🛢️",
+  "name_th": "วัดระดับน้ำในถังแบบไม่สัมผัส",
+  "desc_th": "วัดระยะจากฝาถังถึงผิวน้ำ แสดงบนจอ",
+  "level": "กลาง",
+  "category": "น้ำ",
+  "command": "อ่านระยะทางด้วยอัลตราโซนิก แล้วแสดงบนจอ OLED",
+  "components": [
+   "hc_sr04",
+   "oled"
+  ],
+  "inspired_by": "Liquid Level Controller System Without Contact"
+ },
+ {
+  "id": "flood",
+  "emoji": "🌊",
+  "name_th": "เตือนน้ำท่วม",
+  "desc_th": "น้ำสูงแล้วมีเสียงเตือน",
+  "level": "ง่าย",
+  "category": "น้ำ",
+  "command": "ถ้าระดับน้ำมากกว่า 60 ให้ Buzzer ดัง",
+  "components": [
+   "water_level",
+   "buzzer"
+  ],
+  "inspired_by": "IOT Early Flood Detection & Avoidance"
+ },
+ {
+  "id": "pump_switch",
+  "emoji": "🚰",
+  "name_th": "เติมน้ำอัตโนมัติ",
+  "desc_th": "น้ำน้อยแล้วเปิดปั๊ม",
+  "level": "กลาง",
+  "category": "น้ำ",
+  "command": "ถ้าระดับน้ำน้อยกว่า 30 ให้รีเลย์เปิดปั๊มน้ำ",
+  "components": [
+   "water_level",
+   "relay"
+  ],
+  "inspired_by": "Auto Water Pump Switcher"
+ },
+ {
+  "id": "irrigation",
+  "emoji": "🌱",
+  "name_th": "รดน้ำต้นไม้อัตโนมัติ",
+  "desc_th": "ดินแห้งแล้วเปิดปั๊ม",
+  "level": "กลาง",
+  "category": "เกษตร",
+  "command": "ถ้าความชื้นในดินน้อยกว่า 30 ให้รีเลย์เปิดปั๊มน้ำ",
+  "components": [
+   "soil",
+   "relay"
+  ],
+  "inspired_by": "Auto Irrigation using soil moisture sensor"
+ },
+ {
+  "id": "rain_roof",
+  "emoji": "🌧️",
+  "name_th": "หลังคากันฝนอัตโนมัติ",
+  "desc_th": "ฝนตกแล้วเซอร์โวปิดหลังคา",
+  "level": "กลาง",
+  "category": "เกษตร",
+  "command": "ถ้าน้ำฝนมากกว่า 30 ให้ Servo หมุน 180 องศา",
+  "components": [
+   "rain",
+   "servo"
+  ],
+  "inspired_by": "Rain Sensing Automatic Car Wiper"
+ },
+ {
+  "id": "weather",
+  "emoji": "🌡️",
+  "name_th": "สถานีวัดอากาศ",
+  "desc_th": "อุณหภูมิและความชื้นบนจอ",
+  "level": "กลาง",
+  "category": "สภาพอากาศ",
+  "command": "อ่านอุณหภูมิและความชื้นด้วย DHT11 แล้วแสดงบนจอ OLED",
+  "components": [
+   "dht11",
+   "oled"
+  ],
+  "inspired_by": "IOT Weather Reporting System"
+ },
+ {
+  "id": "fan",
+  "emoji": "🌀",
+  "name_th": "พัดลมเปิดเองตอนร้อน",
+  "desc_th": "ร้อนเกิน 30 องศาแล้วเปิดพัดลม",
+  "level": "กลาง",
+  "category": "สภาพอากาศ",
+  "command": "ถ้าอุณหภูมิ DHT11 มากกว่า 30 ให้รีเลย์เปิดพัดลม",
+  "components": [
+   "dht11",
+   "relay"
+  ],
+  "inspired_by": "Smart Room Temperature Controller"
+ },
+ {
+  "id": "cold_box",
+  "emoji": "🧊",
+  "name_th": "กล่องเก็บความเย็นเตือนอุณหภูมิ",
+  "desc_th": "ของเหลวร้อนเกินกำหนดแล้วเตือน",
+  "level": "กลาง",
+  "category": "สภาพอากาศ",
+  "command": "ถ้าอุณหภูมิน้ำ DS18B20 มากกว่า 8 ให้ Buzzer ดัง",
+  "components": [
+   "ds18b20",
+   "buzzer"
+  ],
+  "inspired_by": "COVID-19 Vaccine Cold Storage Box"
+ },
+ {
+  "id": "gas",
+  "emoji": "🔥",
+  "name_th": "เตือนแก๊สรั่ว",
+  "desc_th": "แก๊สสูงแล้วเตือน",
+  "level": "ง่าย",
+  "category": "ความปลอดภัย",
+  "command": "ถ้าแก๊ส MQ-2 มากกว่า 60 ให้บัซเซอร์ดัง และไฟ LED ติด",
+  "components": [
+   "mq2",
+   "buzzer",
+   "led"
+  ],
+  "inspired_by": "Gas Leakage Detection with Buzzer System"
+ },
+ {
+  "id": "gas_fan",
+  "emoji": "🌬️",
+  "name_th": "ดูดอากาศเมื่อมีควัน",
+  "desc_th": "ควันเยอะแล้วเปิดพัดลมดูดอากาศ",
+  "level": "กลาง",
+  "category": "ความปลอดภัย",
+  "command": "ถ้าแก๊ส MQ-2 มากกว่า 50 ให้รีเลย์เปิดพัดลม",
+  "components": [
+   "mq2",
+   "relay"
+  ],
+  "inspired_by": "Fire & Gas Accident Avoider System"
+ },
+ {
+  "id": "fire",
+  "emoji": "🧯",
+  "name_th": "เตือนไฟไหม้",
+  "desc_th": "เจอเปลวไฟแล้วเตือน",
+  "level": "ง่าย",
+  "category": "ความปลอดภัย",
+  "command": "ถ้าเจอเปลวไฟให้ Buzzer ดัง",
+  "components": [
+   "flame",
+   "buzzer"
+  ],
+  "inspired_by": "Home And Industrial Safety Using Fire And Gas Detection"
+ },
+ {
+  "id": "clap",
+  "emoji": "👏",
+  "name_th": "ปรบมือเปิดไฟ",
+  "desc_th": "เสียงดังแล้วไฟติด",
+  "level": "ง่าย",
+  "category": "เสียง",
+  "command": "ถ้าเซนเซอร์เสียงมากกว่า 60 ให้ LED ติด",
+  "components": [
+   "sound",
+   "led"
+  ],
+  "inspired_by": "Clap Based Fan Switching System"
+ },
+ {
+  "id": "noise",
+  "emoji": "🔊",
+  "name_th": "เตือนห้องเสียงดัง",
+  "desc_th": "ห้องเรียนเสียงดังเกินแล้วไฟแดงติด",
+  "level": "ง่าย",
+  "category": "เสียง",
+  "command": "ถ้าเซนเซอร์เสียงมากกว่า 70 ให้ไฟ LED ติด",
+  "components": [
+   "sound",
+   "led"
+  ],
+  "inspired_by": "Automatic Noise Level Monitor & Controller"
+ },
+ {
+  "id": "counter",
+  "emoji": "🔢",
+  "name_th": "นับวัตถุผ่านสายพาน",
+  "desc_th": "ของผ่านหน้าเซนเซอร์แล้วมีเสียง",
+  "level": "ง่าย",
+  "category": "ตรวจจับวัตถุ",
+  "command": "ถ้าอินฟราเรดเจอวัตถุ ให้ Buzzer ดัง",
+  "components": [
+   "ir_obstacle",
+   "buzzer"
+  ],
+  "inspired_by": "Industrial Production Line Counter System"
+ },
+ {
+  "id": "line_follow",
+  "emoji": "🤖",
+  "name_th": "หุ่นยนต์เดินตามเส้น",
+  "desc_th": "เห็นเส้นดำแล้วมอเตอร์หมุน",
+  "level": "ยาก",
+  "category": "หุ่นยนต์",
+  "command": "ถ้าเจอเส้น TCRT5000 ให้มอเตอร์ L298N หมุน",
+  "components": [
+   "line_tcrt5000",
+   "motor_l298n"
+  ],
+  "inspired_by": "MC Based Line Follower Robot"
+ },
+ {
+  "id": "obstacle_robot",
+  "emoji": "🛻",
+  "name_th": "หุ่นยนต์หยุดเมื่อเจอสิ่งกีดขวาง",
+  "desc_th": "ทางโล่งแล้ววิ่ง เจอสิ่งกีดขวางแล้วหยุด",
+  "level": "ยาก",
+  "category": "หุ่นยนต์",
+  "command": "อ่านระยะทางด้วยอัลตราโซนิก ถ้าไกลกว่า 20 ซม. ให้มอเตอร์ L298N หมุน",
+  "components": [
+   "hc_sr04",
+   "motor_l298n"
+  ],
+  "inspired_by": "Obstacle Avoider Robotic Vehicle"
+ },
+ {
+  "id": "tilt",
+  "emoji": "📐",
+  "name_th": "เตือนเมื่อเอียงหรือล้ม",
+  "desc_th": "เอียงมากเกินแล้วมีเสียงเตือน",
+  "level": "กลาง",
+  "category": "การเคลื่อนที่",
+  "command": "ถ้าความเร่ง MPU6050 มากกว่า 0.5 ให้ Buzzer ดัง",
+  "components": [
+   "mpu6050",
+   "buzzer"
+  ],
+  "inspired_by": "Car Safety System With Airbag Notification"
+ },
+ {
+  "id": "joystick_servo",
+  "emoji": "🕹️",
+  "name_th": "บังคับแขนกลด้วยจอยสติ๊ก",
+  "desc_th": "ดันจอยแล้วเซอร์โวหมุน",
+  "level": "กลาง",
+  "category": "การเคลื่อนที่",
+  "command": "ถ้าจอยสติ๊กมากกว่า 70 ให้ Servo หมุน 180 องศา",
+  "components": [
+   "joystick",
+   "servo"
+  ],
+  "inspired_by": "Wireless Humanoid Bionic Arm"
+ },
+ {
+  "id": "seat",
+  "emoji": "💺",
+  "name_th": "ที่นั่งเปิดไฟเมื่อมีคนนั่ง",
+  "desc_th": "นั่งแล้วไฟและพัดลมเปิด",
+  "level": "กลาง",
+  "category": "แรงและน้ำหนัก",
+  "command": "วัดแรงกดด้วย FSR402 ถ้ามากกว่า 40 ให้รีเลย์เปิดพัดลม",
+  "components": [
+   "fsr402",
+   "relay"
+  ],
+  "inspired_by": "Load Sensing Seats With Lights Fan Control"
+ },
+ {
+  "id": "scale",
+  "emoji": "⚖️",
+  "name_th": "ตาชั่งดิจิทัล",
+  "desc_th": "ชั่งน้ำหนักเป็นกรัมแสดงบนจอ",
+  "level": "ยาก",
+  "category": "แรงและน้ำหนัก",
+  "command": "ชั่งน้ำหนักด้วย HX711 แล้วแสดงบนจอ OLED",
+  "components": [
+   "hx711",
+   "oled"
+  ],
+  "inspired_by": "IOT Garbage Monitoring With Weight Sensing"
+ },
+ {
+  "id": "overload",
+  "emoji": "🛗",
+  "name_th": "เตือนน้ำหนักเกิน",
+  "desc_th": "ของหนักเกิน 1 กิโลกรัมแล้วเตือน",
+  "level": "ยาก",
+  "category": "แรงและน้ำหนัก",
+  "command": "ชั่งน้ำหนักด้วย HX711 ถ้ามากกว่า 1000 ให้ Buzzer ดัง",
+  "components": [
+   "hx711",
+   "buzzer"
+  ],
+  "inspired_by": "Automatic Elevator With Overload Alert"
+ },
+ {
+  "id": "rainbow",
+  "emoji": "🌈",
+  "name_th": "ไฟสีรุ้งเปิดตอนมืด",
+  "desc_th": "มืดแล้วไฟ RGB สว่าง",
+  "level": "กลาง",
+  "category": "แสง",
+  "command": "ถ้าแสง LDR น้อยกว่า 30 ให้ไฟ RGB NeoPixel ติด",
+  "components": [
+   "ldr",
+   "neopixel"
+  ],
+  "inspired_by": ""
+ }
+]

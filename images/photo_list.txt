@@ -1,0 +1,54 @@
+รายชื่อรูปที่ต้องถ่าย
+ตั้งชื่อไฟล์ตามคอลัมน์ซ้าย (นามสกุล .jpg จากมือถือก็ได้ แล้วรัน prepare_images.bat)
+หรือเพิ่มทีละรูปได้ที่แท็บคลังความรู้ → ปุ่ม "เพิ่ม / เปลี่ยนรูป"
+
+== บอร์ด
+[ ] esp32-devkit       ESP32 DevKit V1 (ESP32-WROOM-32)
+[ ] esp32-s3           ESP32-S3 DevKitC
+[ ] esp32-c3           ESP32-C3 (DevKitM / SuperMini)
+[ ] kidbright32        KidBright32 (บอร์ดการศึกษาไทย ใช้ชิป ESP32)
+[ ] nano-esp32         Arduino Nano ESP32
+[ ] pico               Raspberry Pi Pico / Pico W / Pico 2
+[ ] nano-rp2040        Arduino Nano RP2040 Connect
+[ ] esp8266            ESP8266 NodeMCU / Wemos D1 mini
+[ ] microbit           BBC micro:bit V2
+[ ] arduino-uno        Arduino Uno R3
+[ ] arduino-nano       Arduino Nano (ATmega328P)
+[ ] arduino-mega       Arduino Mega 2560
+[ ] arduino-leonardo   Arduino Leonardo
+[ ] arduino-uno-r4     Arduino Uno R4 Minima / WiFi
+
+== อุปกรณ์และเซนเซอร์
+[ ] led                หลอดไฟ LED
+[ ] buzzer             บัซเซอร์แบบแอคทีฟ
+[ ] buzzer_passive     บัซเซอร์แบบพาสซีฟ (เล่นโน้ตได้)
+[ ] relay              โมดูลรีเลย์
+[ ] servo              เซอร์โวมอเตอร์ SG90
+[ ] neopixel           ไฟ RGB WS2812 (NeoPixel)
+[ ] l298n              มอเตอร์ DC กับไดรเวอร์ L298N
+[ ] stepper            สเต็ปเปอร์มอเตอร์ 28BYJ-48 + ULN2003
+[ ] oled               จอ OLED SSD1306 (I2C)
+[ ] button             ปุ่มกด
+[ ] touch              ขาสัมผัส (Touch) ในตัว ESP32
+[ ] potentiometer      ตัวต้านทานปรับค่าได้ (โพเทนชิโอมิเตอร์)
+[ ] ldr                เซนเซอร์แสง LDR
+[ ] hc-sr04            เซนเซอร์วัดระยะอัลตราโซนิก HC-SR04
+[ ] pir                เซนเซอร์ตรวจจับความเคลื่อนไหว PIR HC-SR501
+[ ] dht11              เซนเซอร์อุณหภูมิและความชื้น DHT11
+[ ] dht22              เซนเซอร์อุณหภูมิและความชื้น DHT22 (AM2302)
+[ ] ds18b20            เซนเซอร์อุณหภูมิกันน้ำ DS18B20
+[ ] soil               เซนเซอร์วัดความชื้นในดิน
+[ ] rain               เซนเซอร์ตรวจจับน้ำฝน
+[ ] mq2                เซนเซอร์แก๊สและควัน MQ-2
+[ ] ir                 เซนเซอร์อินฟราเรดตรวจจับวัตถุ
+[ ] tcrt5000           เซนเซอร์ตรวจจับเส้น TCRT5000
+[ ] sound              เซนเซอร์เสียง KY-038
+[ ] flame              เซนเซอร์ตรวจจับเปลวไฟ
+[ ] water_level        เซนเซอร์วัดระดับน้ำ
+[ ] joystick           จอยสติ๊ก
+[ ] mpu6050            เซนเซอร์วัดความเร่งและการหมุน MPU6050
+[ ] bmp280             เซนเซอร์ความกดอากาศ BMP280
+[ ] lcd1602            จอ LCD 16x2 แบบ I2C
+[ ] rc522              เครื่องอ่านบัตร RFID RC522
+[ ] fsr402             เซนเซอร์วัดแรงกด FSR402
+[ ] hx711              ชุดชั่งน้ำหนัก Load Cell + HX711

@@ -1,0 +1,1336 @@
+[
+ {
+  "id": "esp32-devkit",
+  "name": "ESP32 DevKit V1 (ESP32-WROOM-32)",
+  "family": "esp32",
+  "micropython": true,
+  "logic_v": 3.3,
+  "has_5v_pin": true,
+  "keywords": [
+   "esp32",
+   "devkit",
+   "wroom",
+   "nodemcu-32s",
+   "esp32 devkit"
+  ],
+  "led": 2,
+  "led_inverted": false,
+  "pools": {
+   "out": [
+    4,
+    18,
+    19,
+    23,
+    25,
+    26,
+    27,
+    13,
+    14,
+    16,
+    17,
+    32,
+    33,
+    5,
+    15,
+    2
+   ],
+   "inp": [
+    27,
+    26,
+    25,
+    33,
+    32,
+    14,
+    13,
+    34,
+    35,
+    36,
+    39,
+    4,
+    5,
+    18,
+    19,
+    23
+   ],
+   "adc": [
+    34,
+    35,
+    32,
+    33,
+    36,
+    39
+   ],
+   "pwm": [
+    18,
+    19,
+    23,
+    5,
+    4,
+    25,
+    26,
+    27,
+    13,
+    14
+   ],
+   "touch": [
+    4,
+    15,
+    13,
+    12,
+    14,
+    27,
+    33,
+    32
+   ]
+  },
+  "i2c": {
+   "sda": 21,
+   "scl": 22
+  },
+  "valid": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   21,
+   22,
+   23,
+   25,
+   26,
+   27,
+   32,
+   33,
+   34,
+   35,
+   36,
+   39
+  ],
+  "forbidden": {
+   "6-11": "ต่อกับหน่วยความจำแฟลชภายใน ห้ามใช้"
+  },
+  "forbidden_list": [
+   6,
+   7,
+   8,
+   9,
+   10,
+   11
+  ],
+  "input_only": [
+   34,
+   35,
+   36,
+   39
+  ],
+  "strapping": [
+   0,
+   2,
+   5,
+   12,
+   15
+  ],
+  "serial_pins": [
+   1,
+   3
+  ],
+  "adc2": [
+   0,
+   2,
+   4,
+   12,
+   13,
+   14,
+   15,
+   25,
+   26,
+   27
+  ],
+  "flash_tool": "MicroPython Installer / Thonny / esptool",
+  "notes_th": "บอร์ดแนะนำสำหรับเรียน MicroPython ราคาถูก มี Wi-Fi และ Bluetooth ทำงานที่ 3.3V ขา VIN จ่าย 5V จากสาย USB ได้",
+  "image": "images/esp32-devkit.jpg"
+ },
+ {
+  "id": "esp32-s3",
+  "name": "ESP32-S3 DevKitC",
+  "family": "esp32",
+  "micropython": true,
+  "logic_v": 3.3,
+  "has_5v_pin": true,
+  "keywords": [
+   "esp32-s3",
+   "esp32 s3",
+   "s3"
+  ],
+  "led": null,
+  "pools": {
+   "out": [
+    4,
+    5,
+    6,
+    7,
+    15,
+    16,
+    17,
+    18,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+   ],
+   "inp": [
+    4,
+    5,
+    6,
+    7,
+    15,
+    16,
+    17,
+    18,
+    10,
+    11,
+    12,
+    13,
+    14
+   ],
+   "adc": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ],
+   "pwm": [
+    4,
+    5,
+    6,
+    7,
+    15,
+    16,
+    17,
+    18
+   ],
+   "touch": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+   ]
+  },
+  "i2c": {
+   "sda": 8,
+   "scl": 9
+  },
+  "valid": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21,
+   35,
+   36,
+   37,
+   38,
+   39,
+   40,
+   41,
+   42,
+   45,
+   46,
+   47,
+   48
+  ],
+  "forbidden_list": [
+   26,
+   27,
+   28,
+   29,
+   30,
+   31,
+   32
+  ],
+  "input_only": [],
+  "strapping": [
+   0,
+   3,
+   45,
+   46
+  ],
+  "serial_pins": [
+   43,
+   44
+  ],
+  "adc2": [
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20
+  ],
+  "flash_tool": "MicroPython Installer / esptool",
+  "notes_th": "รุ่นใหม่ของ ESP32 แรงกว่าเดิม รองรับ USB ในตัว บางรุ่นมีไฟ RGB ที่ GPIO48 หรือ 38 (ตรวจจากรุ่นที่ซื้อ)",
+  "image": "images/esp32-s3.jpg"
+ },
+ {
+  "id": "esp32-c3",
+  "name": "ESP32-C3 (DevKitM / SuperMini)",
+  "family": "esp32",
+  "micropython": true,
+  "logic_v": 3.3,
+  "has_5v_pin": true,
+  "keywords": [
+   "esp32-c3",
+   "esp32 c3",
+   "c3",
+   "supermini"
+  ],
+  "led": 8,
+  "led_inverted": true,
+  "pools": {
+   "out": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    10,
+    20,
+    21
+   ],
+   "inp": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    10,
+    20,
+    21
+   ],
+   "adc": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "pwm": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    10
+   ]
+  },
+  "i2c": {
+   "sda": 8,
+   "scl": 9
+  },
+  "valid": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   20,
+   21
+  ],
+  "forbidden_list": [
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17
+  ],
+  "input_only": [],
+  "strapping": [
+   2,
+   8,
+   9
+  ],
+  "serial_pins": [
+   20,
+   21
+  ],
+  "adc2": [
+   5
+  ],
+  "flash_tool": "MicroPython Installer / esptool",
+  "notes_th": "บอร์ดเล็กราคาถูก ขาน้อย ไฟบนบอร์ดของรุ่น SuperMini อยู่ที่ GPIO8 และติดเมื่อสั่ง 0",
+  "image": "images/esp32-c3.jpg"
+ },
+ {
+  "id": "kidbright32",
+  "name": "KidBright32 (บอร์ดการศึกษาไทย ใช้ชิป ESP32)",
+  "family": "esp32",
+  "micropython": true,
+  "logic_v": 3.3,
+  "has_5v_pin": true,
+  "keywords": [
+   "kidbright",
+   "คิดไบรท์",
+   "kid bright"
+  ],
+  "led": 17,
+  "led_inverted": false,
+  "pools": {
+   "out": [
+    26,
+    27
+   ],
+   "inp": [
+    32,
+    33,
+    34,
+    35
+   ],
+   "adc": [
+    32,
+    33,
+    34,
+    35
+   ],
+   "pwm": [
+    26,
+    27
+   ]
+  },
+  "i2c": {
+   "sda": 21,
+   "scl": 22
+  },
+  "valid": [
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   2,
+   21,
+   22,
+   25,
+   26,
+   27,
+   32,
+   33,
+   34,
+   35,
+   36
+  ],
+  "forbidden_list": [
+   6,
+   7,
+   8,
+   9,
+   10,
+   11
+  ],
+  "input_only": [
+   34,
+   35,
+   36,
+   39
+  ],
+  "strapping": [
+   0,
+   2,
+   5,
+   12,
+   15
+  ],
+  "serial_pins": [
+   1,
+   3
+  ],
+  "adc2": [
+   26,
+   27
+  ],
+  "onboard": {
+   "buzzer": 13,
+   "sw1": 16,
+   "sw2": 14,
+   "ldr": 36,
+   "out1": 26,
+   "out2": 27,
+   "in1": 32,
+   "in2": 33,
+   "in3": 34,
+   "in4": 35
+  },
+  "flash_tool": "ใช้เฟิร์มแวร์ MicroPython ของ ESP32 หรือเครื่องมือของ KidBright",
+  "notes_th": "บอร์ดจาก NECTEC ที่โรงเรียนไทยนิยมใช้ มีจอ LED Matrix ปุ่ม SW1/SW2 บัซเซอร์ และเซนเซอร์แสงในตัว (ตำแหน่งขาควรตรวจสอบกับคู่มือ KidBright32 รุ่นที่ใช้)",
+  "image": "images/kidbright32.jpg"
+ },
+ {
+  "id": "nano-esp32",
+  "name": "Arduino Nano ESP32",
+  "family": "esp32",
+  "micropython": true,
+  "logic_v": 3.3,
+  "has_5v_pin": true,
+  "keywords": [
+   "nano esp32",
+   "arduino nano esp32"
+  ],
+  "led": 48,
+  "led_inverted": false,
+  "pools": {
+   "out": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    17,
+    18,
+    21,
+    38
+   ],
+   "inp": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    17,
+    18,
+    21,
+    38
+   ],
+   "adc": [
+    1,
+    2,
+    3,
+    4,
+    11,
+    12,
+    13,
+    14
+   ],
+   "pwm": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    17,
+    18
+   ]
+  },
+  "i2c": {
+   "sda": 11,
+   "scl": 12
+  },
+  "valid": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   17,
+   18,
+   21,
+   38,
+   43,
+   44,
+   46,
+   47,
+   48
+  ],
+  "forbidden_list": [],
+  "input_only": [],
+  "strapping": [
+   0,
+   3,
+   45,
+   46
+  ],
+  "serial_pins": [
+   43,
+   44
+  ],
+  "adc2": [
+   11,
+   12,
+   13,
+   14
+  ],
+  "flash_tool": "Arduino MicroPython Installer",
+  "notes_th": "Arduino ที่รองรับ MicroPython อย่างเป็นทางการ ใช้ชิป ESP32-S3 ใน MicroPython ให้ใช้เลข GPIO (ไม่ใช่เลข D บนบอร์ด) ตรวจตารางเทียบขาจากเอกสารของ Arduino",
+  "image": "images/nano-esp32.jpg"
+ },
+ {
+  "id": "pico",
+  "name": "Raspberry Pi Pico / Pico W / Pico 2",
+  "family": "rp2",
+  "micropython": true,
+  "logic_v": 3.3,
+  "has_5v_pin": true,
+  "keywords": [
+   "pico",
+   "raspberry pi pico",
+   "rp2040",
+   "rp2350",
+   "pico w"
+  ],
+  "led": "LED",
+  "led_inverted": false,
+  "pools": {
+   "out": [
+    15,
+    14,
+    13,
+    12,
+    11,
+    10,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    9,
+    8,
+    7,
+    6
+   ],
+   "inp": [
+    15,
+    14,
+    13,
+    12,
+    11,
+    10,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22
+   ],
+   "adc": [
+    26,
+    27,
+    28
+   ],
+   "pwm": [
+    15,
+    14,
+    13,
+    12,
+    16,
+    17,
+    18,
+    19
+   ]
+  },
+  "i2c": {
+   "sda": 4,
+   "scl": 5
+  },
+  "valid": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21,
+   22,
+   26,
+   27,
+   28
+  ],
+  "forbidden_list": [
+   23,
+   24,
+   25,
+   29
+  ],
+  "input_only": [],
+  "strapping": [],
+  "serial_pins": [],
+  "adc2": [],
+  "flash_tool": "ลากไฟล์ .uf2 ลงไดรฟ์ RPI-RP2 / Thonny",
+  "notes_th": "รองรับ MicroPython ดีมาก ขา VBUS จ่าย 5V จาก USB ขา ADC มี GP26 GP27 GP28",
+  "image": "images/pico.jpg"
+ },
+ {
+  "id": "nano-rp2040",
+  "name": "Arduino Nano RP2040 Connect",
+  "family": "rp2",
+  "micropython": true,
+  "logic_v": 3.3,
+  "has_5v_pin": false,
+  "keywords": [
+   "nano rp2040",
+   "rp2040 connect"
+  ],
+  "led": 6,
+  "led_inverted": false,
+  "pools": {
+   "out": [
+    25,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+   ],
+   "inp": [
+    25,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+   ],
+   "adc": [
+    26,
+    27,
+    28,
+    29
+   ],
+   "pwm": [
+    25,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+   ]
+  },
+  "i2c": {
+   "sda": 12,
+   "scl": 13
+  },
+  "valid": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21,
+   22,
+   23,
+   24,
+   25,
+   26,
+   27,
+   28,
+   29
+  ],
+  "forbidden_list": [],
+  "input_only": [],
+  "strapping": [],
+  "serial_pins": [],
+  "adc2": [],
+  "flash_tool": "Arduino MicroPython Installer",
+  "notes_th": "Arduino ที่รองรับ MicroPython อย่างเป็นทางการ ใช้เลข GPIO ตามเอกสารของ Arduino",
+  "image": "images/nano-rp2040.jpg"
+ },
+ {
+  "id": "esp8266-nodemcu",
+  "name": "ESP8266 NodeMCU / Wemos D1 mini",
+  "family": "esp8266",
+  "micropython": true,
+  "logic_v": 3.3,
+  "has_5v_pin": true,
+  "keywords": [
+   "esp8266",
+   "nodemcu",
+   "wemos",
+   "d1 mini"
+  ],
+  "led": 2,
+  "led_inverted": true,
+  "pools": {
+   "out": [
+    14,
+    12,
+    13,
+    5,
+    4
+   ],
+   "inp": [
+    14,
+    12,
+    13,
+    5,
+    4
+   ],
+   "adc": [
+    "A0"
+   ],
+   "pwm": [
+    14,
+    12,
+    13,
+    5,
+    4
+   ]
+  },
+  "i2c": {
+   "sda": 4,
+   "scl": 5
+  },
+  "valid": [
+   0,
+   2,
+   4,
+   5,
+   12,
+   13,
+   14,
+   15,
+   16
+  ],
+  "forbidden_list": [
+   6,
+   7,
+   8,
+   9,
+   10,
+   11
+  ],
+  "input_only": [],
+  "strapping": [
+   0,
+   2,
+   15
+  ],
+  "serial_pins": [
+   1,
+   3
+  ],
+  "adc2": [],
+  "pin_labels": {
+   "16": "D0",
+   "5": "D1",
+   "4": "D2",
+   "0": "D3",
+   "2": "D4",
+   "14": "D5",
+   "12": "D6",
+   "13": "D7",
+   "15": "D8"
+  },
+  "flash_tool": "esptool / Thonny",
+  "notes_th": "มีขา ADC เพียงขาเดียว (A0) ในโค้ดใช้เลข GPIO เช่น D5 = GPIO14 ไฟบนบอร์ดที่ GPIO2 ติดเมื่อสั่ง 0",
+  "image": "images/esp8266.jpg"
+ },
+ {
+  "id": "microbit-v2",
+  "name": "BBC micro:bit V2",
+  "family": "microbit",
+  "micropython": true,
+  "logic_v": 3.3,
+  "has_5v_pin": false,
+  "keywords": [
+   "micro:bit",
+   "microbit",
+   "ไมโครบิต"
+  ],
+  "led": null,
+  "pools": {
+   "out": [],
+   "inp": [],
+   "adc": [],
+   "pwm": []
+  },
+  "i2c": null,
+  "valid": [],
+  "forbidden_list": [],
+  "input_only": [],
+  "strapping": [],
+  "serial_pins": [],
+  "adc2": [],
+  "flash_tool": "python.microbit.org",
+  "notes_th": "ใช้ MicroPython แบบเฉพาะของ micro:bit (โมดูล microbit ไม่ใช่ machine) ควรเขียนผ่าน python.microbit.org โปรแกรมนี้ยังไม่สร้างโค้ดให้บอร์ดนี้",
+  "image": "images/microbit.jpg"
+ },
+ {
+  "id": "arduino-uno",
+  "name": "Arduino Uno R3",
+  "family": "avr",
+  "micropython": false,
+  "logic_v": 5.0,
+  "has_5v_pin": true,
+  "keywords": [
+   "uno",
+   "arduino uno r3"
+  ],
+  "led": 13,
+  "pools": {
+   "out": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "inp": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "adc": [
+    "A0",
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5"
+   ],
+   "pwm": [
+    3,
+    5,
+    6,
+    9,
+    10,
+    11
+   ]
+  },
+  "i2c": {
+   "sda": "A4",
+   "scl": "A5"
+  },
+  "valid": [],
+  "forbidden_list": [],
+  "input_only": [],
+  "strapping": [],
+  "serial_pins": [
+   0,
+   1
+  ],
+  "adc2": [],
+  "flash_tool": "Arduino IDE (ภาษา C/C++)",
+  "notes_th": "ชิปมีหน่วยความจำน้อย (Uno มี RAM 2 KB) จึงรัน MicroPython ไม่ได้ ใช้ภาษา C/C++ ผ่าน Arduino IDE หรือให้ Python บนคอมพิวเตอร์สั่งงานผ่าน Firmata",
+  "image": "images/arduino-uno.jpg"
+ },
+ {
+  "id": "arduino-nano",
+  "name": "Arduino Nano (ATmega328P)",
+  "family": "avr",
+  "micropython": false,
+  "logic_v": 5.0,
+  "has_5v_pin": true,
+  "keywords": [
+   "nano",
+   "arduino nano (atmega328p)"
+  ],
+  "led": 13,
+  "pools": {
+   "out": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "inp": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "adc": [
+    "A0",
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5"
+   ],
+   "pwm": [
+    3,
+    5,
+    6,
+    9,
+    10,
+    11
+   ]
+  },
+  "i2c": {
+   "sda": "A4",
+   "scl": "A5"
+  },
+  "valid": [],
+  "forbidden_list": [],
+  "input_only": [],
+  "strapping": [],
+  "serial_pins": [
+   0,
+   1
+  ],
+  "adc2": [],
+  "flash_tool": "Arduino IDE (ภาษา C/C++)",
+  "notes_th": "ชิปมีหน่วยความจำน้อย (Uno มี RAM 2 KB) จึงรัน MicroPython ไม่ได้ ใช้ภาษา C/C++ ผ่าน Arduino IDE หรือให้ Python บนคอมพิวเตอร์สั่งงานผ่าน Firmata",
+  "image": "images/arduino-nano.jpg"
+ },
+ {
+  "id": "arduino-mega",
+  "name": "Arduino Mega 2560",
+  "family": "avr",
+  "micropython": false,
+  "logic_v": 5.0,
+  "has_5v_pin": true,
+  "keywords": [
+   "mega",
+   "arduino mega 2560"
+  ],
+  "led": 13,
+  "pools": {
+   "out": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "inp": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "adc": [
+    "A0",
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5"
+   ],
+   "pwm": [
+    3,
+    5,
+    6,
+    9,
+    10,
+    11
+   ]
+  },
+  "i2c": {
+   "sda": 20,
+   "scl": 21
+  },
+  "valid": [],
+  "forbidden_list": [],
+  "input_only": [],
+  "strapping": [],
+  "serial_pins": [
+   0,
+   1
+  ],
+  "adc2": [],
+  "flash_tool": "Arduino IDE (ภาษา C/C++)",
+  "notes_th": "ชิปมีหน่วยความจำน้อย (Uno มี RAM 2 KB) จึงรัน MicroPython ไม่ได้ ใช้ภาษา C/C++ ผ่าน Arduino IDE หรือให้ Python บนคอมพิวเตอร์สั่งงานผ่าน Firmata",
+  "image": "images/arduino-mega.jpg"
+ },
+ {
+  "id": "arduino-leonardo",
+  "name": "Arduino Leonardo",
+  "family": "avr",
+  "micropython": false,
+  "logic_v": 5.0,
+  "has_5v_pin": true,
+  "keywords": [
+   "leonardo",
+   "arduino leonardo"
+  ],
+  "led": 13,
+  "pools": {
+   "out": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "inp": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "adc": [
+    "A0",
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5"
+   ],
+   "pwm": [
+    3,
+    5,
+    6,
+    9,
+    10,
+    11
+   ]
+  },
+  "i2c": {
+   "sda": "A4",
+   "scl": "A5"
+  },
+  "valid": [],
+  "forbidden_list": [],
+  "input_only": [],
+  "strapping": [],
+  "serial_pins": [
+   0,
+   1
+  ],
+  "adc2": [],
+  "flash_tool": "Arduino IDE (ภาษา C/C++)",
+  "notes_th": "ชิปมีหน่วยความจำน้อย (Uno มี RAM 2 KB) จึงรัน MicroPython ไม่ได้ ใช้ภาษา C/C++ ผ่าน Arduino IDE หรือให้ Python บนคอมพิวเตอร์สั่งงานผ่าน Firmata",
+  "image": "images/arduino-leonardo.jpg"
+ },
+ {
+  "id": "arduino-uno-r4",
+  "name": "Arduino Uno R4 Minima / WiFi",
+  "family": "avr",
+  "micropython": false,
+  "logic_v": 5.0,
+  "has_5v_pin": true,
+  "keywords": [
+   "uno-r4",
+   "arduino uno r4 minima / wifi"
+  ],
+  "led": 13,
+  "pools": {
+   "out": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "inp": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "adc": [
+    "A0",
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5"
+   ],
+   "pwm": [
+    3,
+    5,
+    6,
+    9,
+    10,
+    11
+   ]
+  },
+  "i2c": {
+   "sda": "A4",
+   "scl": "A5"
+  },
+  "valid": [],
+  "forbidden_list": [],
+  "input_only": [],
+  "strapping": [],
+  "serial_pins": [
+   0,
+   1
+  ],
+  "adc2": [],
+  "flash_tool": "Arduino IDE (ภาษา C/C++)",
+  "notes_th": "ยังไม่รองรับ MicroPython อย่างเป็นทางการ ใช้ภาษา C/C++ ผ่าน Arduino IDE ทำงานที่ 5V",
+  "image": "images/arduino-uno-r4.jpg"
+ }
+]

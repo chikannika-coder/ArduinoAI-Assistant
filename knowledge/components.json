@@ -1,0 +1,1629 @@
+[
+ {
+  "id": "led",
+  "name_th": "หลอดไฟ LED",
+  "name_en": "LED",
+  "category": "แสดงผล",
+  "type": "actuator",
+  "keywords": [
+   "led",
+   "แอลอีดี",
+   "หลอดไฟ",
+   "ไฟ"
+  ],
+  "voltage": "3.3V-5V",
+  "pins": [
+   {
+    "label": "ขายาว (+)",
+    "kind": "signal",
+    "need": "out",
+    "role": "SIG"
+   },
+   {
+    "label": "ขาสั้น (−)",
+    "kind": "gnd",
+    "need": null,
+    "role": "ขาสั้น (−)"
+   }
+  ],
+  "warnings": [
+   "ต้องต่อตัวต้านทาน 220Ω อนุกรมกับ LED เสมอ ไม่อย่างนั้น LED อาจขาด"
+  ],
+  "setup": "led = Pin({SIG}, Pin.OUT)",
+  "on": "led.value(1)",
+  "off": "led.value(0)",
+  "explain_th": "หลอดไฟขนาดเล็ก ขายาวคือขาบวก ขาสั้นคือขาลบ",
+  "image": "images/led.jpg"
+ },
+ {
+  "id": "buzzer",
+  "name_th": "บัซเซอร์แบบแอคทีฟ",
+  "name_en": "Active Buzzer",
+  "category": "เสียง",
+  "type": "actuator",
+  "keywords": [
+   "buzzer",
+   "บัซเซอร์",
+   "บัสเซอร์",
+   "ส่งเสียง",
+   "เสียงเตือน",
+   "ออด"
+  ],
+  "voltage": "3.3V-5V",
+  "pins": [
+   {
+    "label": "+",
+    "kind": "signal",
+    "need": "out",
+    "role": "SIG"
+   },
+   {
+    "label": "−",
+    "kind": "gnd",
+    "need": null,
+    "role": "−"
+   }
+  ],
+  "warnings": [],
+  "setup": "buzzer = Pin({SIG}, Pin.OUT)",
+  "on": "buzzer.value(1)",
+  "off": "buzzer.value(0)",
+  "explain_th": "จ่ายไฟแล้วดังเองทันที ใช้ทำเสียงเตือน",
+  "image": "images/buzzer.jpg"
+ },
+ {
+  "id": "buzzer_passive",
+  "name_th": "บัซเซอร์แบบพาสซีฟ (เล่นโน้ตได้)",
+  "name_en": "Passive Buzzer",
+  "category": "เสียง",
+  "type": "actuator",
+  "keywords": [
+   "passive buzzer",
+   "บัซเซอร์พาสซีฟ",
+   "เล่นเพลง",
+   "เล่นโน้ต"
+  ],
+  "voltage": "3.3V-5V",
+  "pins": [
+   {
+    "label": "+",
+    "kind": "signal",
+    "need": "pwm",
+    "role": "SIG"
+   },
+   {
+    "label": "−",
+    "kind": "gnd",
+    "need": null,
+    "role": "−"
+   }
+  ],
+  "warnings": [],
+  "setup": "buzzer_p = PWM(Pin({SIG}))\nbuzzer_p.duty_u16(0)",
+  "on": "buzzer_p.freq(1000)\nbuzzer_p.duty_u16(32768)",
+  "off": "buzzer_p.duty_u16(0)",
+  "explain_th": "ต้องส่งสัญญาณ PWM จึงจะดัง เปลี่ยนความถี่เพื่อเล่นโน้ตต่าง ๆ ได้",
+  "image": "images/buzzer_passive.jpg"
+ },
+ {
+  "id": "relay",
+  "name_th": "โมดูลรีเลย์",
+  "name_en": "Relay Module",
+  "category": "สวิตช์",
+  "type": "actuator",
+  "keywords": [
+   "relay",
+   "รีเลย์",
+   "พัดลม",
+   "ปั๊มน้ำ"
+  ],
+  "voltage": "5V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power5",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "IN",
+    "kind": "signal",
+    "need": "out",
+    "role": "SIG"
+   }
+  ],
+  "warnings": [
+   "โมดูลรีเลย์ส่วนใหญ่ทำงานเมื่อสั่ง 0 (Active LOW) ถ้าสั่งแล้วทำงานกลับด้าน ให้สลับค่า 0 กับ 1",
+   "ห้ามให้นักเรียนต่อไฟบ้าน 220V เข้ารีเลย์เองโดยไม่มีครูดูแล"
+  ],
+  "setup": "relay = Pin({SIG}, Pin.OUT)\nrelay.value(1)",
+  "on": "relay.value(0)",
+  "off": "relay.value(1)",
+  "explain_th": "สวิตช์ไฟฟ้าที่ควบคุมด้วยบอร์ด ใช้เปิดปิดอุปกรณ์ที่ใช้ไฟมากกว่า เช่น พัดลม ปั๊มน้ำ",
+  "image": "images/relay.jpg"
+ },
+ {
+  "id": "servo",
+  "name_th": "เซอร์โวมอเตอร์ SG90",
+  "name_en": "Servo SG90",
+  "category": "การเคลื่อนที่",
+  "type": "actuator",
+  "keywords": [
+   "servo",
+   "เซอร์โว",
+   "เซอโว",
+   "sg90",
+   "mg90",
+   "ประตู"
+  ],
+  "voltage": "5V",
+  "pins": [
+   {
+    "label": "สายแดง (VCC)",
+    "kind": "power5",
+    "need": null,
+    "role": "สายแดง (VCC)"
+   },
+   {
+    "label": "สายน้ำตาล (GND)",
+    "kind": "gnd",
+    "need": null,
+    "role": "สายน้ำตาล (GND)"
+   },
+   {
+    "label": "สายส้ม (สัญญาณ)",
+    "kind": "signal",
+    "need": "pwm",
+    "role": "SIG"
+   }
+  ],
+  "warnings": [
+   "เซอร์โวกินไฟมาก ถ้าบอร์ดรีเซ็ตเองขณะเซอร์โวหมุน ให้ใช้แหล่งจ่ายไฟแยก และต่อ GND ร่วมกัน"
+  ],
+  "helpers": "def servo_angle(angle):\n    angle = max(0, min(180, angle))\n    us = 500 + angle * 2000 // 180\n    servo.duty_u16(us * 65535 // 20000)",
+  "setup": "servo = PWM(Pin({SIG}), freq=50)",
+  "on": "servo_angle({ANGLE})",
+  "off": "servo_angle(0)",
+  "explain_th": "มอเตอร์ที่สั่งให้หมุนไปที่มุม 0 ถึง 180 องศาได้แม่นยำ ด้วยสัญญาณ PWM ความถี่ 50 Hz",
+  "image": "images/servo.jpg"
+ },
+ {
+  "id": "neopixel",
+  "name_th": "ไฟ RGB WS2812 (NeoPixel)",
+  "name_en": "WS2812 NeoPixel",
+  "category": "แสดงผล",
+  "type": "actuator",
+  "keywords": [
+   "ws2812",
+   "neopixel",
+   "นีโอพิกเซล",
+   "ไฟ rgb",
+   "ไฟหลากสี"
+  ],
+  "voltage": "5V",
+  "pins": [
+   {
+    "label": "5V",
+    "kind": "power5",
+    "need": null,
+    "role": "5V"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "DIN",
+    "kind": "signal",
+    "need": "out",
+    "role": "SIG"
+   }
+  ],
+  "warnings": [
+   "ถ้าใช้ไฟหลายดวง ควรใช้แหล่งจ่ายไฟแยก"
+  ],
+  "imports": [
+   "import neopixel"
+  ],
+  "setup": "np = neopixel.NeoPixel(Pin({SIG}), 8)",
+  "on": "np.fill((255, 0, 0))\nnp.write()",
+  "off": "np.fill((0, 0, 0))\nnp.write()",
+  "explain_th": "แถบไฟที่เลือกสีได้ทุกดวง ใช้สายสัญญาณเพียงเส้นเดียว",
+  "image": "images/neopixel.jpg"
+ },
+ {
+  "id": "motor_l298n",
+  "name_th": "มอเตอร์ DC กับไดรเวอร์ L298N",
+  "name_en": "DC Motor + L298N",
+  "category": "การเคลื่อนที่",
+  "type": "actuator",
+  "keywords": [
+   "l298n",
+   "มอเตอร์",
+   "motor",
+   "dc motor",
+   "รถ"
+  ],
+  "voltage": "5V-12V",
+  "pins": [
+   {
+    "label": "IN1",
+    "kind": "signal",
+    "need": "out",
+    "role": "IN1"
+   },
+   {
+    "label": "IN2",
+    "kind": "signal",
+    "need": "out",
+    "role": "IN2"
+   },
+   {
+    "label": "ENA",
+    "kind": "signal",
+    "need": "pwm",
+    "role": "ENA"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   }
+  ],
+  "warnings": [
+   "มอเตอร์ต้องใช้แหล่งจ่ายไฟแยกต่อที่ขา 12V ของ L298N และต่อ GND ร่วมกับบอร์ด"
+  ],
+  "setup": "in1 = Pin({IN1}, Pin.OUT)\nin2 = Pin({IN2}, Pin.OUT)\nena = PWM(Pin({ENA}), freq=1000)",
+  "on": "in1.value(1)\nin2.value(0)\nena.duty_u16(50000)",
+  "off": "ena.duty_u16(0)",
+  "explain_th": "L298N ขยายกำลังไฟให้มอเตอร์ IN1/IN2 กำหนดทิศทาง ENA กำหนดความเร็ว",
+  "image": "images/l298n.jpg"
+ },
+ {
+  "id": "stepper",
+  "name_th": "สเต็ปเปอร์มอเตอร์ 28BYJ-48 + ULN2003",
+  "name_en": "Stepper 28BYJ-48",
+  "category": "การเคลื่อนที่",
+  "type": "actuator",
+  "keywords": [
+   "stepper",
+   "สเต็ปเปอร์",
+   "28byj",
+   "uln2003"
+  ],
+  "voltage": "5V",
+  "pins": [
+   {
+    "label": "IN1",
+    "kind": "signal",
+    "need": "out",
+    "role": "A"
+   },
+   {
+    "label": "IN2",
+    "kind": "signal",
+    "need": "out",
+    "role": "B"
+   },
+   {
+    "label": "IN3",
+    "kind": "signal",
+    "need": "out",
+    "role": "C"
+   },
+   {
+    "label": "IN4",
+    "kind": "signal",
+    "need": "out",
+    "role": "D"
+   },
+   {
+    "label": "VCC",
+    "kind": "power5",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   }
+  ],
+  "warnings": [],
+  "helpers": "SEQ = [[1,0,0,0],[1,1,0,0],[0,1,0,0],[0,1,1,0],[0,0,1,0],[0,0,1,1],[0,0,0,1],[1,0,0,1]]\ndef stepper_turn(steps):\n    for i in range(steps):\n        for p, v in zip(coils, SEQ[i % 8]):\n            p.value(v)\n        time.sleep_ms(1)",
+  "setup": "coils = [Pin({A}, Pin.OUT), Pin({B}, Pin.OUT), Pin({C}, Pin.OUT), Pin({D}, Pin.OUT)]",
+  "on": "stepper_turn(512)",
+  "off": "pass",
+  "explain_th": "มอเตอร์ที่หมุนทีละขั้น ควบคุมจำนวนรอบได้แม่นยำ 4096 ขั้นครึ่งต่อ 1 รอบ",
+  "image": "images/stepper.jpg"
+ },
+ {
+  "id": "oled",
+  "name_th": "จอ OLED SSD1306 (I2C)",
+  "name_en": "OLED SSD1306",
+  "category": "แสดงผล",
+  "type": "display",
+  "keywords": [
+   "oled",
+   "ssd1306",
+   "จอ",
+   "หน้าจอ",
+   "แสดงผลบนจอ"
+  ],
+  "voltage": "3.3V-5V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "SDA",
+    "kind": "signal",
+    "need": "i2c_sda",
+    "role": "SDA"
+   },
+   {
+    "label": "SCL",
+    "kind": "signal",
+    "need": "i2c_scl",
+    "role": "SCL"
+   }
+  ],
+  "warnings": [
+   "ต้องติดตั้งไลบรารีก่อน: mpremote mip install ssd1306"
+  ],
+  "imports": [
+   "import ssd1306"
+  ],
+  "setup": "i2c = I2C(0, sda=Pin({SDA}), scl=Pin({SCL}))\noled = ssd1306.SSD1306_I2C(128, 64, i2c)",
+  "explain_th": "จอขนาดเล็กใช้สายเพียง 4 เส้น แสดงตัวหนังสือและกราฟิกได้",
+  "library": "ssd1306",
+  "image": "images/oled.jpg"
+ },
+ {
+  "id": "button",
+  "name_th": "ปุ่มกด",
+  "name_en": "Push Button",
+  "category": "อินพุต",
+  "type": "sensor",
+  "keywords": [
+   "button",
+   "ปุ่ม",
+   "กดปุ่ม",
+   "สวิตช์กด"
+  ],
+  "voltage": "3.3V-5V",
+  "pins": [
+   {
+    "label": "ขา 1",
+    "kind": "signal",
+    "need": "inp",
+    "role": "SIG"
+   },
+   {
+    "label": "ขา 2",
+    "kind": "gnd",
+    "need": null,
+    "role": "ขา 2"
+   }
+  ],
+  "warnings": [],
+  "setup": "btn = Pin({SIG}, Pin.IN, Pin.PULL_UP)",
+  "read": "button = 1 - btn.value()",
+  "keys": [
+   "button"
+  ],
+  "bool": true,
+  "sim": [
+   0,
+   1,
+   "bool"
+  ],
+  "explain_th": "ใช้ตัวต้านทาน Pull-up ภายในบอร์ด ไม่กดอ่านได้ 1 กดอ่านได้ 0 โค้ดกลับค่าให้ กด = 1",
+  "image": "images/button.jpg"
+ },
+ {
+  "id": "touch",
+  "name_th": "ขาสัมผัส (Touch) ในตัว ESP32",
+  "name_en": "ESP32 Touch",
+  "category": "อินพุต",
+  "type": "sensor",
+  "keywords": [
+   "touch",
+   "สัมผัส",
+   "แตะ"
+  ],
+  "voltage": "3.3V",
+  "pins": [
+   {
+    "label": "สายหรือแผ่นโลหะ",
+    "kind": "signal",
+    "need": "touch",
+    "role": "SIG"
+   }
+  ],
+  "warnings": [
+   "ใช้ได้เฉพาะ ESP32 รุ่นที่มีขา Touch"
+  ],
+  "imports": [
+   "from machine import TouchPad"
+  ],
+  "setup": "touch = TouchPad(Pin({SIG}))",
+  "read": "touch_value = touch.read()",
+  "keys": [
+   "touch_value"
+  ],
+  "sim": [
+   100,
+   600,
+   "float"
+  ],
+  "explain_th": "ESP32 วัดการสัมผัสได้โดยไม่ต้องใช้เซนเซอร์ ค่ายิ่งต่ำแปลว่ามีการสัมผัส",
+  "image": "images/touch.jpg"
+ },
+ {
+  "id": "potentiometer",
+  "name_th": "ตัวต้านทานปรับค่าได้ (โพเทนชิโอมิเตอร์)",
+  "name_en": "Potentiometer",
+  "category": "อินพุต",
+  "type": "sensor",
+  "keywords": [
+   "potentiometer",
+   "โพเทนชิโอ",
+   "ตัวต้านทานปรับค่า",
+   "ปุ่มหมุน",
+   "วอลลุ่ม"
+  ],
+  "voltage": "3.3V",
+  "pins": [
+   {
+    "label": "ขาซ้าย",
+    "kind": "power3",
+    "need": null,
+    "role": "ขาซ้าย"
+   },
+   {
+    "label": "ขากลาง",
+    "kind": "signal",
+    "need": "adc",
+    "role": "SIG"
+   },
+   {
+    "label": "ขาขวา",
+    "kind": "gnd",
+    "need": null,
+    "role": "ขาขวา"
+   }
+  ],
+  "warnings": [],
+  "setup": "{ADC_SETUP_SIG}",
+  "read": "pot = adc_SIG.read_u16() * 100 // 65535",
+  "keys": [
+   "pot"
+  ],
+  "sim": [
+   0,
+   100,
+   "float"
+  ],
+  "explain_th": "หมุนแล้วแรงดันที่ขากลางเปลี่ยน อ่านค่าด้วย ADC แปลงเป็น 0-100%",
+  "image": "images/potentiometer.jpg"
+ },
+ {
+  "id": "ldr",
+  "name_th": "เซนเซอร์แสง LDR",
+  "name_en": "LDR Light Sensor",
+  "category": "แสง",
+  "type": "sensor",
+  "keywords": [
+   "ldr",
+   "เซนเซอร์แสง",
+   "แสง",
+   "ความสว่าง",
+   "มืด",
+   "สว่าง"
+  ],
+  "voltage": "3.3V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "AO",
+    "kind": "signal",
+    "need": "adc",
+    "role": "SIG"
+   }
+  ],
+  "warnings": [
+   "โมดูลบางรุ่นค่าสูงเมื่อมืด บางรุ่นค่าสูงเมื่อสว่าง ให้ทดลองส่องไฟดูก่อน"
+  ],
+  "setup": "{ADC_SETUP_SIG}",
+  "read": "light = adc_SIG.read_u16() * 100 // 65535",
+  "keys": [
+   "light"
+  ],
+  "sim": [
+   10,
+   90,
+   "float"
+  ],
+  "explain_th": "ความต้านทานเปลี่ยนตามความสว่าง ใช้ทำไฟเปิดอัตโนมัติตอนมืด",
+  "image": "images/ldr.jpg"
+ },
+ {
+  "id": "hc_sr04",
+  "name_th": "เซนเซอร์วัดระยะอัลตราโซนิก HC-SR04",
+  "name_en": "Ultrasonic HC-SR04",
+  "category": "ระยะทาง",
+  "type": "sensor",
+  "keywords": [
+   "ultrasonic",
+   "อัลตราโซนิก",
+   "อัลตร้าโซนิก",
+   "hc-sr04",
+   "hcsr04",
+   "ระยะทาง",
+   "วัดระยะ",
+   "ระยะ"
+  ],
+  "voltage": "5V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power5",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "TRIG",
+    "kind": "signal",
+    "need": "out",
+    "role": "TRIG"
+   },
+   {
+    "label": "ECHO",
+    "kind": "signal",
+    "need": "inp",
+    "role": "ECHO"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   }
+  ],
+  "warnings": [
+   "ขา ECHO ส่งสัญญาณ 5V บอร์ด 3.3V (ESP32, Pico) ต้องต่อตัวต้านทานแบ่งแรงดัน (1kΩ กับ 2kΩ) ก่อนเข้าขาบอร์ด หรือใช้รุ่น HC-SR04P ที่ทำงาน 3.3V"
+  ],
+  "imports": [
+   "from machine import time_pulse_us"
+  ],
+  "helpers": "def read_distance():\n    trig.value(0)\n    time.sleep_us(2)\n    trig.value(1)\n    time.sleep_us(10)\n    trig.value(0)\n    t = time_pulse_us(echo, 1, 30000)\n    if t < 0:\n        return -1\n    return t * 0.0343 / 2",
+  "setup": "trig = Pin({TRIG}, Pin.OUT)\necho = Pin({ECHO}, Pin.IN)",
+  "read": "distance_cm = round(read_distance(), 1)",
+  "keys": [
+   "distance_cm"
+  ],
+  "sim": [
+   5,
+   100,
+   "float"
+  ],
+  "explain_th": "ส่งคลื่นเสียงความถี่สูงออกไป แล้วจับเวลาที่เสียงสะท้อนกลับ นำเวลามาคำนวณเป็นระยะทาง",
+  "image": "images/hc-sr04.jpg"
+ },
+ {
+  "id": "pir",
+  "name_th": "เซนเซอร์ตรวจจับความเคลื่อนไหว PIR HC-SR501",
+  "name_en": "PIR Motion HC-SR501",
+  "category": "ตรวจจับ",
+  "type": "sensor",
+  "keywords": [
+   "pir",
+   "hc-sr501",
+   "เคลื่อนไหว",
+   "ตรวจจับคน",
+   "มีคน"
+  ],
+  "voltage": "5V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power5",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "OUT",
+    "kind": "signal",
+    "need": "inp",
+    "role": "SIG"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   }
+  ],
+  "warnings": [
+   "หลังจ่ายไฟต้องรอประมาณ 30-60 วินาทีให้เซนเซอร์พร้อม ขา OUT ส่ง 3.3V จึงต่อกับ ESP32 ได้โดยตรง"
+  ],
+  "setup": "pir = Pin({SIG}, Pin.IN)",
+  "read": "motion = pir.value()",
+  "keys": [
+   "motion"
+  ],
+  "bool": true,
+  "sim": [
+   0,
+   1,
+   "bool"
+  ],
+  "explain_th": "ตรวจจับรังสีความร้อนจากร่างกายคนหรือสัตว์ที่เคลื่อนที่",
+  "image": "images/pir.jpg"
+ },
+ {
+  "id": "dht11",
+  "name_th": "เซนเซอร์อุณหภูมิและความชื้น DHT11",
+  "name_en": "DHT11",
+  "category": "สภาพอากาศ",
+  "type": "sensor",
+  "keywords": [
+   "dht11",
+   "อุณหภูมิ",
+   "ความชื้น",
+   "temperature",
+   "humidity"
+  ],
+  "voltage": "3.3V-5V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "DATA",
+    "kind": "signal",
+    "need": "inp",
+    "role": "SIG"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   }
+  ],
+  "warnings": [
+   "อ่านค่าได้ไม่เร็วกว่า 1 ครั้งต่อวินาที"
+  ],
+  "imports": [
+   "import dht"
+  ],
+  "setup": "dht_s = dht.DHT11(Pin({SIG}))",
+  "read": "dht_s.measure()\ntemp_c = dht_s.temperature()\nhumidity = dht_s.humidity()",
+  "keys": [
+   "temp_c",
+   "humidity"
+  ],
+  "min_interval": 1.0,
+  "sim": [
+   25,
+   40,
+   "float"
+  ],
+  "explain_th": "วัดอุณหภูมิ 0-50°C และความชื้น 20-90% ส่งข้อมูลผ่านสายเส้นเดียว",
+  "image": "images/dht11.jpg"
+ },
+ {
+  "id": "dht22",
+  "name_th": "เซนเซอร์อุณหภูมิและความชื้น DHT22 (AM2302)",
+  "name_en": "DHT22",
+  "category": "สภาพอากาศ",
+  "type": "sensor",
+  "keywords": [
+   "dht22",
+   "am2302"
+  ],
+  "voltage": "3.3V-5V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "DATA",
+    "kind": "signal",
+    "need": "inp",
+    "role": "SIG"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   }
+  ],
+  "warnings": [
+   "อ่านค่าได้ไม่เร็วกว่า 1 ครั้งทุก 2 วินาที"
+  ],
+  "imports": [
+   "import dht"
+  ],
+  "setup": "dht_s = dht.DHT22(Pin({SIG}))",
+  "read": "dht_s.measure()\ntemp_c = dht_s.temperature()\nhumidity = dht_s.humidity()",
+  "keys": [
+   "temp_c",
+   "humidity"
+  ],
+  "min_interval": 2.0,
+  "sim": [
+   25,
+   40,
+   "float"
+  ],
+  "explain_th": "แม่นยำกว่า DHT11 วัดได้ -40 ถึง 80°C",
+  "image": "images/dht22.jpg"
+ },
+ {
+  "id": "ds18b20",
+  "name_th": "เซนเซอร์อุณหภูมิกันน้ำ DS18B20",
+  "name_en": "DS18B20",
+  "category": "สภาพอากาศ",
+  "type": "sensor",
+  "keywords": [
+   "ds18b20",
+   "อุณหภูมิน้ำ",
+   "กันน้ำ"
+  ],
+  "voltage": "3.3V-5V",
+  "pins": [
+   {
+    "label": "สายแดง (VCC)",
+    "kind": "power3",
+    "need": null,
+    "role": "สายแดง (VCC)"
+   },
+   {
+    "label": "สายเหลือง (DATA)",
+    "kind": "signal",
+    "need": "inp",
+    "role": "SIG"
+   },
+   {
+    "label": "สายดำ (GND)",
+    "kind": "gnd",
+    "need": null,
+    "role": "สายดำ (GND)"
+   }
+  ],
+  "warnings": [
+   "ต้องต่อตัวต้านทาน 4.7kΩ ระหว่างสาย DATA กับ VCC"
+  ],
+  "imports": [
+   "import onewire, ds18x20"
+  ],
+  "setup": "ds = ds18x20.DS18X20(onewire.OneWire(Pin({SIG})))\nroms = ds.scan()",
+  "read": "ds.convert_temp()\ntime.sleep_ms(750)\ntemp_c = ds.read_temp(roms[0]) if roms else -127",
+  "keys": [
+   "temp_c"
+  ],
+  "sim": [
+   20,
+   35,
+   "float"
+  ],
+  "explain_th": "วัดอุณหภูมิของเหลวได้ ใช้โปรโตคอล 1-Wire",
+  "image": "images/ds18b20.jpg"
+ },
+ {
+  "id": "soil",
+  "name_th": "เซนเซอร์วัดความชื้นในดิน",
+  "name_en": "Soil Moisture",
+  "category": "การเกษตร",
+  "type": "sensor",
+  "keywords": [
+   "soil",
+   "ความชื้นในดิน",
+   "ดิน",
+   "รดน้ำ",
+   "ต้นไม้"
+  ],
+  "voltage": "3.3V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "AO",
+    "kind": "signal",
+    "need": "adc",
+    "role": "SIG"
+   }
+  ],
+  "warnings": [
+   "รุ่นขั้วโลหะจะสึกกร่อนเร็ว แนะนำรุ่น Capacitive"
+  ],
+  "setup": "{ADC_SETUP_SIG}",
+  "read": "soil = 100 - adc_SIG.read_u16() * 100 // 65535",
+  "keys": [
+   "soil"
+  ],
+  "sim": [
+   20,
+   80,
+   "float"
+  ],
+  "explain_th": "ดินยิ่งเปียกค่ายิ่งสูง ใช้ทำระบบรดน้ำต้นไม้อัตโนมัติ",
+  "image": "images/soil.jpg"
+ },
+ {
+  "id": "rain",
+  "name_th": "เซนเซอร์ตรวจจับน้ำฝน",
+  "name_en": "Rain Sensor",
+  "category": "สภาพอากาศ",
+  "type": "sensor",
+  "keywords": [
+   "rain",
+   "ฝน",
+   "น้ำฝน"
+  ],
+  "voltage": "3.3V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "AO",
+    "kind": "signal",
+    "need": "adc",
+    "role": "SIG"
+   }
+  ],
+  "warnings": [],
+  "setup": "{ADC_SETUP_SIG}",
+  "read": "rain = 100 - adc_SIG.read_u16() * 100 // 65535",
+  "keys": [
+   "rain"
+  ],
+  "sim": [
+   0,
+   60,
+   "float"
+  ],
+  "explain_th": "แผ่นตรวจจับน้ำ ยิ่งเปียกค่ายิ่งสูง",
+  "image": "images/rain.jpg"
+ },
+ {
+  "id": "mq2",
+  "name_th": "เซนเซอร์แก๊สและควัน MQ-2",
+  "name_en": "MQ-2 Gas",
+  "category": "ความปลอดภัย",
+  "type": "sensor",
+  "keywords": [
+   "mq2",
+   "mq-2",
+   "แก๊ส",
+   "ควัน",
+   "gas",
+   "smoke"
+  ],
+  "voltage": "5V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power5",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "AO",
+    "kind": "signal",
+    "need": "adc",
+    "role": "SIG"
+   }
+  ],
+  "warnings": [
+   "ต้องอุ่นเครื่องหลายนาทีก่อนค่าจะนิ่ง",
+   "ขา AO อาจส่งแรงดันเกิน 3.3V ควรใช้ตัวต้านทานแบ่งแรงดันเมื่อต่อกับบอร์ด 3.3V"
+  ],
+  "setup": "{ADC_SETUP_SIG}",
+  "read": "gas = adc_SIG.read_u16() * 100 // 65535",
+  "keys": [
+   "gas"
+  ],
+  "sim": [
+   10,
+   70,
+   "float"
+  ],
+  "explain_th": "ตรวจจับแก๊ส LPG และควัน ใช้ทำระบบเตือนไฟไหม้",
+  "image": "images/mq2.jpg"
+ },
+ {
+  "id": "ir_obstacle",
+  "name_th": "เซนเซอร์อินฟราเรดตรวจจับวัตถุ",
+  "name_en": "IR Obstacle",
+  "category": "ตรวจจับ",
+  "type": "sensor",
+  "keywords": [
+   "ir",
+   "อินฟราเรด",
+   "วัตถุ",
+   "สิ่งกีดขวาง",
+   "obstacle"
+  ],
+  "voltage": "3.3V-5V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "OUT",
+    "kind": "signal",
+    "need": "inp",
+    "role": "SIG"
+   }
+  ],
+  "warnings": [
+   "ปรับความไวด้วยสกรูบนโมดูล"
+  ],
+  "setup": "ir = Pin({SIG}, Pin.IN)",
+  "read": "obstacle = 1 - ir.value()",
+  "keys": [
+   "obstacle"
+  ],
+  "bool": true,
+  "sim": [
+   0,
+   1,
+   "bool"
+  ],
+  "explain_th": "ส่งแสงอินฟราเรดแล้วรับแสงสะท้อน เจอวัตถุอ่านได้ 0 โค้ดกลับค่าให้ เจอ = 1",
+  "image": "images/ir.jpg"
+ },
+ {
+  "id": "line_tcrt5000",
+  "name_th": "เซนเซอร์ตรวจจับเส้น TCRT5000",
+  "name_en": "Line Tracker TCRT5000",
+  "category": "หุ่นยนต์",
+  "type": "sensor",
+  "keywords": [
+   "tcrt5000",
+   "เส้น",
+   "เดินตามเส้น",
+   "line"
+  ],
+  "voltage": "3.3V-5V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "DO",
+    "kind": "signal",
+    "need": "inp",
+    "role": "SIG"
+   }
+  ],
+  "warnings": [],
+  "setup": "line = Pin({SIG}, Pin.IN)",
+  "read": "on_line = line.value()",
+  "keys": [
+   "on_line"
+  ],
+  "bool": true,
+  "sim": [
+   0,
+   1,
+   "bool"
+  ],
+  "explain_th": "แยกพื้นสีดำกับสีขาว ใช้ทำหุ่นยนต์เดินตามเส้น",
+  "image": "images/tcrt5000.jpg"
+ },
+ {
+  "id": "sound",
+  "name_th": "เซนเซอร์เสียง KY-038",
+  "name_en": "Sound KY-038",
+  "category": "เสียง",
+  "type": "sensor",
+  "keywords": [
+   "ky-038",
+   "เซนเซอร์เสียง",
+   "ไมโครโฟน",
+   "เสียงดัง",
+   "ปรบมือ"
+  ],
+  "voltage": "3.3V-5V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "AO",
+    "kind": "signal",
+    "need": "adc",
+    "role": "SIG"
+   }
+  ],
+  "warnings": [],
+  "setup": "{ADC_SETUP_SIG}",
+  "read": "sound = adc_SIG.read_u16() * 100 // 65535",
+  "keys": [
+   "sound"
+  ],
+  "sim": [
+   10,
+   80,
+   "float"
+  ],
+  "explain_th": "วัดระดับความดังของเสียง ใช้ทำไฟเปิดด้วยการปรบมือ",
+  "image": "images/sound.jpg"
+ },
+ {
+  "id": "flame",
+  "name_th": "เซนเซอร์ตรวจจับเปลวไฟ",
+  "name_en": "Flame Sensor",
+  "category": "ความปลอดภัย",
+  "type": "sensor",
+  "keywords": [
+   "flame",
+   "เปลวไฟ",
+   "ไฟไหม้"
+  ],
+  "voltage": "3.3V-5V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "DO",
+    "kind": "signal",
+    "need": "inp",
+    "role": "SIG"
+   }
+  ],
+  "warnings": [
+   "ห้ามทดลองกับไฟจริงโดยไม่มีครูดูแล ใช้ไฟแช็กในระยะไกลพอ"
+  ],
+  "setup": "flame_s = Pin({SIG}, Pin.IN)",
+  "read": "flame = 1 - flame_s.value()",
+  "keys": [
+   "flame"
+  ],
+  "bool": true,
+  "sim": [
+   0,
+   1,
+   "bool"
+  ],
+  "explain_th": "ตรวจจับแสงอินฟราเรดจากเปลวไฟ",
+  "image": "images/flame.jpg"
+ },
+ {
+  "id": "water_level",
+  "name_th": "เซนเซอร์วัดระดับน้ำ",
+  "name_en": "Water Level",
+  "category": "การเกษตร",
+  "type": "sensor",
+  "keywords": [
+   "water level",
+   "ระดับน้ำ",
+   "น้ำล้น"
+  ],
+  "voltage": "3.3V",
+  "pins": [
+   {
+    "label": "+",
+    "kind": "power3",
+    "need": null,
+    "role": "+"
+   },
+   {
+    "label": "−",
+    "kind": "gnd",
+    "need": null,
+    "role": "−"
+   },
+   {
+    "label": "S",
+    "kind": "signal",
+    "need": "adc",
+    "role": "SIG"
+   }
+  ],
+  "warnings": [],
+  "setup": "{ADC_SETUP_SIG}",
+  "read": "water = adc_SIG.read_u16() * 100 // 65535",
+  "keys": [
+   "water"
+  ],
+  "sim": [
+   0,
+   90,
+   "float"
+  ],
+  "explain_th": "ยิ่งจุ่มน้ำลึก ค่ายิ่งสูง",
+  "image": "images/water_level.jpg"
+ },
+ {
+  "id": "joystick",
+  "name_th": "จอยสติ๊ก",
+  "name_en": "Joystick",
+  "category": "อินพุต",
+  "type": "sensor",
+  "keywords": [
+   "joystick",
+   "จอยสติ๊ก",
+   "จอย"
+  ],
+  "voltage": "3.3V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "VRx",
+    "kind": "signal",
+    "need": "adc",
+    "role": "X"
+   },
+   {
+    "label": "VRy",
+    "kind": "signal",
+    "need": "adc",
+    "role": "Y"
+   }
+  ],
+  "warnings": [
+   "ESP8266 มี ADC ขาเดียว ใช้จอยสติ๊กไม่ได้"
+  ],
+  "setup": "{ADC_SETUP_X}\n{ADC_SETUP_Y}",
+  "read": "joy_x = adc_X.read_u16() * 100 // 65535\njoy_y = adc_Y.read_u16() * 100 // 65535",
+  "keys": [
+   "joy_x",
+   "joy_y"
+  ],
+  "sim": [
+   0,
+   100,
+   "float"
+  ],
+  "explain_th": "อ่านตำแหน่งแกน X และ Y เป็นค่า 0-100",
+  "image": "images/joystick.jpg"
+ },
+ {
+  "id": "mpu6050",
+  "name_th": "เซนเซอร์วัดความเร่งและการหมุน MPU6050",
+  "name_en": "MPU6050",
+  "category": "การเคลื่อนที่",
+  "type": "sensor",
+  "keywords": [
+   "mpu6050",
+   "ความเร่ง",
+   "เอียง",
+   "gyro",
+   "accelerometer"
+  ],
+  "voltage": "3.3V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "SDA",
+    "kind": "signal",
+    "need": "i2c_sda",
+    "role": "SDA"
+   },
+   {
+    "label": "SCL",
+    "kind": "signal",
+    "need": "i2c_scl",
+    "role": "SCL"
+   }
+  ],
+  "warnings": [],
+  "helpers": "def mpu_read():\n    d = i2c.readfrom_mem(0x68, 0x3B, 6)\n    def s(h, l):\n        v = h << 8 | l\n        return v - 65536 if v > 32767 else v\n    return [round(s(d[i], d[i+1]) / 16384, 2) for i in (0, 2, 4)]",
+  "setup": "i2c = I2C(0, sda=Pin({SDA}), scl=Pin({SCL}))\ni2c.writeto_mem(0x68, 0x6B, b'\\x00')",
+  "read": "accel_x, accel_y, accel_z = mpu_read()",
+  "keys": [
+   "accel_x",
+   "accel_y",
+   "accel_z"
+  ],
+  "sim": [
+   -1,
+   1,
+   "float"
+  ],
+  "explain_th": "วัดความเร่งสามแกน ใช้ตรวจการเอียงหรือการตก สื่อสารผ่าน I2C",
+  "image": "images/mpu6050.jpg"
+ },
+ {
+  "id": "bmp280",
+  "name_th": "เซนเซอร์ความกดอากาศ BMP280",
+  "name_en": "BMP280",
+  "category": "สภาพอากาศ",
+  "type": "info",
+  "keywords": [
+   "bmp280",
+   "ความกดอากาศ",
+   "pressure"
+  ],
+  "voltage": "3.3V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "SDA",
+    "kind": "signal",
+    "need": "i2c_sda",
+    "role": "SDA"
+   },
+   {
+    "label": "SCL",
+    "kind": "signal",
+    "need": "i2c_scl",
+    "role": "SCL"
+   }
+  ],
+  "warnings": [
+   "ต้องติดตั้งไลบรารี BMP280 สำหรับ MicroPython เพิ่ม"
+  ],
+  "explain_th": "วัดความกดอากาศและอุณหภูมิ ใช้คำนวณความสูงได้",
+  "image": "images/bmp280.jpg"
+ },
+ {
+  "id": "lcd1602",
+  "name_th": "จอ LCD 16x2 แบบ I2C",
+  "name_en": "LCD1602 I2C",
+  "category": "แสดงผล",
+  "type": "info",
+  "keywords": [
+   "lcd",
+   "lcd1602",
+   "จอ lcd"
+  ],
+  "voltage": "5V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power5",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "SDA",
+    "kind": "signal",
+    "need": "i2c_sda",
+    "role": "SDA"
+   },
+   {
+    "label": "SCL",
+    "kind": "signal",
+    "need": "i2c_scl",
+    "role": "SCL"
+   }
+  ],
+  "warnings": [
+   "ต้องติดตั้งไลบรารี lcd_api และ i2c_lcd สำหรับ MicroPython",
+   "ปรับความคมชัดด้วยสกรูด้านหลังถ้ามองไม่เห็นตัวหนังสือ"
+  ],
+  "explain_th": "จอแสดงตัวอักษร 2 บรรทัด บรรทัดละ 16 ตัว",
+  "image": "images/lcd1602.jpg"
+ },
+ {
+  "id": "rc522",
+  "name_th": "เครื่องอ่านบัตร RFID RC522",
+  "name_en": "RFID RC522",
+  "category": "ความปลอดภัย",
+  "type": "info",
+  "keywords": [
+   "rfid",
+   "rc522",
+   "บัตร",
+   "คีย์การ์ด"
+  ],
+  "voltage": "3.3V",
+  "pins": [
+   {
+    "label": "3.3V",
+    "kind": "power3",
+    "need": null,
+    "role": "3.3V"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "SDA(SS)",
+    "kind": "signal",
+    "need": "out",
+    "role": "SS"
+   },
+   {
+    "label": "SCK",
+    "kind": "signal",
+    "need": "out",
+    "role": "SCK"
+   },
+   {
+    "label": "MOSI",
+    "kind": "signal",
+    "need": "out",
+    "role": "MOSI"
+   },
+   {
+    "label": "MISO",
+    "kind": "signal",
+    "need": "inp",
+    "role": "MISO"
+   },
+   {
+    "label": "RST",
+    "kind": "signal",
+    "need": "out",
+    "role": "RST"
+   }
+  ],
+  "warnings": [
+   "ห้ามต่อกับ 5V",
+   "ต้องติดตั้งไลบรารี mfrc522 สำหรับ MicroPython"
+  ],
+  "explain_th": "อ่านเลขประจำตัวของบัตรหรือพวงกุญแจ RFID ผ่าน SPI",
+  "image": "images/rc522.jpg"
+ },
+ {
+  "id": "fsr402",
+  "name_th": "เซนเซอร์วัดแรงกด FSR402",
+  "name_en": "FSR402 Force Sensor",
+  "category": "แรง/น้ำหนัก",
+  "type": "sensor",
+  "keywords": [
+   "fsr402",
+   "fsr 402",
+   "fsr",
+   "แรงกด",
+   "วัดแรง",
+   "เซนเซอร์แรง",
+   "เซ็นเซอร์วัดแรงกด",
+   "เซนเซอร์วัดแรงกด",
+   "force sensor"
+  ],
+  "voltage": "3.3V-5V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "AO",
+    "kind": "signal",
+    "need": "adc",
+    "role": "SIG"
+   }
+  ],
+  "warnings": [
+   "FSR402 บอกได้แค่ว่ากดแรงหรือเบา ค่าคลาดเคลื่อนมาก ใช้ทำตาชั่งที่อ่านเป็นกรัมไม่ได้ ถ้าต้องการชั่งน้ำหนักจริงให้ใช้ Load Cell + HX711",
+   "ถ้าใช้ FSR เปล่า (ไม่มีโมดูล) ต้องต่อตัวต้านทาน 10kΩ จากขา AO ลง GND เป็นวงจรแบ่งแรงดัน",
+   "โมดูลบางรุ่นค่าลดลงเมื่อกดแรง ให้ลองกดดูในแท็บข้อมูลเรียลไทม์ก่อน"
+  ],
+  "setup": "{ADC_SETUP_SIG}",
+  "read": "force = adc_SIG.read_u16() * 100 // 65535",
+  "keys": [
+   "force"
+  ],
+  "sim": [
+   0,
+   100,
+   "float"
+  ],
+  "explain_th": "ความต้านทานลดลงเมื่อถูกกด อ่านเป็นค่าแรงกด 0-100 (ไม่ใช่กรัม) ใช้ทำปุ่มกดแรง ตรวจว่ามีของวางอยู่ หรือเกมวัดแรงกด",
+  "image": "images/fsr402.jpg"
+ },
+ {
+  "id": "hx711",
+  "name_th": "ชุดชั่งน้ำหนัก Load Cell + HX711",
+  "name_en": "Load Cell + HX711",
+  "category": "แรง/น้ำหนัก",
+  "type": "sensor",
+  "keywords": [
+   "hx711",
+   "load cell",
+   "loadcell",
+   "โหลดเซลล์",
+   "โหลดเซล",
+   "ตาชั่ง",
+   "เครื่องชั่ง",
+   "ชั่งน้ำหนัก",
+   "วัดน้ำหนัก",
+   "น้ำหนัก",
+   "ชั่ง"
+  ],
+  "voltage": "3.3V-5V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "DT",
+    "kind": "signal",
+    "need": "inp",
+    "role": "DT"
+   },
+   {
+    "label": "SCK",
+    "kind": "signal",
+    "need": "out",
+    "role": "SCK"
+   }
+  ],
+  "warnings": [
+   "ต่อสาย Load Cell เข้า HX711: แดง→E+  ดำ→E-  ขาว→A-  เขียว→A+ (ถ้าค่าติดลบเมื่อวางของ ให้สลับสายขาวกับเขียว)",
+   "ต้องปรับเทียบ (calibrate): วางของที่รู้น้ำหนัก แล้วแก้ค่า HX_SCALE ในโค้ดจนตัวเลขตรง",
+   "ห้ามวางของบนตาชั่งตอนเปิดเครื่อง เพราะโปรแกรมจะตั้งศูนย์ (tare) ตอนเริ่ม"
+  ],
+  "setup": "hx_dt = Pin({DT}, Pin.IN)\nhx_sck = Pin({SCK}, Pin.OUT, value=0)\nHX_SCALE = 420.0   # ปรับค่านี้ตอน calibrate\nhx_offset = None",
+  "helpers": "def hx_raw():\n    t = time.ticks_ms()\n    while hx_dt.value():                 # รอจนกว่า HX711 พร้อม\n        if time.ticks_diff(time.ticks_ms(), t) > 1000:\n            return None\n    v = 0\n    for _ in range(24):\n        hx_sck.value(1)\n        hx_sck.value(0)\n        v = (v << 1) | hx_dt.value()\n    hx_sck.value(1)                      # พัลส์ที่ 25 = เลือกช่อง A เกน 128\n    hx_sck.value(0)\n    if v & 0x800000:\n        v -= 0x1000000\n    return v\n\ndef hx_avg(n=5):\n    s, k = 0, 0\n    for _ in range(n):\n        r = hx_raw()\n        if r is not None:\n            s += r\n            k += 1\n    return s // k if k else 0\n\ndef read_weight():\n    global hx_offset\n    if hx_offset is None:\n        hx_offset = hx_avg(15)           # ตั้งศูนย์ครั้งแรก\n    return round((hx_avg(5) - hx_offset) / HX_SCALE, 1)",
+  "read": "weight_g = read_weight()",
+  "keys": [
+   "weight_g"
+  ],
+  "sim": [
+   0,
+   1000,
+   "float"
+  ],
+  "explain_th": "Load Cell โค้งงอเล็กน้อยเมื่อรับน้ำหนัก HX711 ขยายสัญญาณที่เล็กมากแล้วแปลงเป็นตัวเลข นำมาคำนวณเป็นกรัม",
+  "image": "images/hx711.jpg"
+ }
+]
