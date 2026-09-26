@@ -192,7 +192,7 @@ def evaluate_rule(rule, values, actuator_ids):
         return {}
     thr = rule["thr"]
     ok = {"<": v < thr, "<=": v <= thr, ">": v > thr, ">=": v >= thr, "==": v == thr}.get(rule["op"], False)
-    if rule["key"] == "distance_cm" and v <= 0:
+    if rule["key"] in ("distance_cm", "distance_mm", "ir_distance_cm") and v <= 0:
         ok = False
     return {a: ok for a in rule.get("actuators", actuator_ids)}
 
@@ -237,7 +237,7 @@ except Exception as e:
 """
 
 I2C_KNOWN = {0x3C: "oled", 0x3D: "oled", 0x68: "mpu6050", 0x69: "mpu6050", 0x76: "bmp280", 0x77: "bmp280",
-             0x27: "lcd1602", 0x3F: "lcd1602"}
+             0x27: "lcd1602", 0x3F: "lcd1602", 0x29: "vl53l0x", 0x5A: "mlx90614", 0x57: "max30102"}
 
 
 def guess_board(machine):

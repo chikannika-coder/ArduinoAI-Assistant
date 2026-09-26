@@ -69,6 +69,37 @@ class AIClient:
             return data.get("message", {}).get("content", "")
         raise RuntimeError("ยังไม่ได้เลือก AI ในแท็บตั้งค่า")
 
+    def chat_with_images(self, user_text, images=None, max_tokens=6000):
+        """ส่งข้อความพร้อมรูป images = [(media_type, base64), ...] คืนค่า (คำตอบ, หมายเหตุ)
+        Claude อ่านรูปได้ทุกรุ่น ส่วน Ollama ต้องใช้โมเดลที่อ่านรูปได้ เช่น qwen2.5vl หรือ llava"""
+        images = images or []
+        if self.backend == "claude":
+            content = [{"type": "image", "source": {"type": "base64", "media_type": mt, "data": b64}} for mt, b64 in images]
+            content.append({"type": "text", "text": user_text})
+            data = self._post("https://api.anthropic.com/v1/messages",
+                              {"model": self.config.get("claude_model", "claude-sonnet-5"), "max_tokens": max_tokens,
+                               "system": self._system(), "messages": [{"role": "user", "content": content}]},
+                              {"x-api-key": self._claude_key(), "anthropic-version": "2023-06-01"}, timeout=240)
+            return "".join(b.get("text", "") for b in data.get("content", []) if b.get("type") == "text"), ""
+        if self.backend == "ollama":
+            url = self.config.get("ollama_url", "http://localhost:11434").rstrip("/") + "/api/chat"
+            msg = {"role": "user", "content": user_text}
+            note = ""
+            if images:
+                msg["images"] = [b64 for _, b64 in images]
+            body = {"model": self.config.get("ollama_model", "qwen2.5-coder:7b"), "stream": False,
+                    "messages": [{"role": "system", "content": self._system()}, msg]}
+            try:
+                data = self._post(url, body, {}, timeout=600)
+            except Exception:  # noqa: BLE001  โมเดลอ่านรูปไม่ได้ ลองส่งเฉพาะข้อความ
+                if not images:
+                    raise
+                msg.pop("images")
+                data = self._post(url, body, {}, timeout=600)
+                note = "โมเดล Ollama ที่เลือกอ่านรูปไม่ได้ จึงวิเคราะห์จากข้อความอย่างเดียว (ถ้าต้องการให้อ่านรูป ใช้โมเดล qwen2.5vl หรือ llava)"
+            return data.get("message", {}).get("content", ""), note
+        raise RuntimeError("ยังไม่ได้เลือก AI ในแท็บตั้งค่า")
+
     # ---------- งานเฉพาะ
     def generate_code(self, command, board, plan, kb):
         wiring = "\n".join("- %s ขา %s -> บอร์ด %s" % (w["comp_name"], w["comp_pin"], w["board_pin"]) for w in plan.wiring)

@@ -25,8 +25,9 @@ from ai_client import AIClient, extract_code
 from device import BoardLink, Simulator, list_ports, parse_line, evaluate_rule, has_mpremote
 from wiring import WiringCanvas, SIGNAL_COLORS
 from wizard import WizardTab
+from component_dialog import NewComponentDialog
 
-VERSION = "2.0"
+VERSION = "2.1"
 CONFIG_PATH = os.path.join(BASE, "config.json")
 MY_CODE = os.path.join(BASE, "my_code")
 IMAGES = os.path.join(BASE, "images")
@@ -47,6 +48,11 @@ EXAMPLES = [
     "ถ้าแสงน้อยกว่า 30 ให้ LED ติด",
     "ถ้าแก๊สมากกว่า 60 ให้บัซเซอร์ดัง และไฟ LED ติด",
     "อ่านค่าจอยสติ๊ก",
+    "วัดแรงกัดด้วย FSR402 ถ้ามากกว่า 70 ให้ Buzzer ดัง",
+    "วัดค่า pH น้ำลายด้วย PH-4502C ถ้าน้อยกว่า 5.5 ให้ LED ติด",
+    "วัดไข้ด้วย MLX90614 ถ้ามากกว่า 37.5 ให้ Buzzer ดัง",
+    "วัดชีพจรด้วย MAX30102 แล้วแสดงบนจอ OLED",
+    "อ่านคลื่นสมองด้วย EEG ถ้ามากกว่า 2 ให้ LED ติด",
 ]
 PALETTE = dict(bg="#F4F7FB", card="#FFFFFF", ink="#1D2433", muted="#5A6478", blue="#2457C5",
                green="#1E8C5A", orange="#D9661A", red="#C0392B")
@@ -739,14 +745,18 @@ class App:
         btns.pack(side="bottom", fill="x")      # ปุ่มอยู่ล่างสุดเสมอ ไม่ถูกรายการดันตกขอบจอ
         ttk.Button(btns, text="ใช้อุปกรณ์นี้ในคำสั่ง", command=self._kb_use).pack(fill="x")
         ttk.Button(btns, text="🖼 เพิ่ม / เปลี่ยนรูป", command=self._kb_add_image).pack(fill="x", pady=4)
-        ttk.Button(btns, text="➕ เพิ่มอุปกรณ์ใหม่", command=lambda: NewComponentDialog(self)).pack(fill="x")
+        ttk.Button(btns, text="✏ แก้ไข / ให้ AI วิเคราะห์อุปกรณ์นี้", command=self._kb_edit).pack(fill="x")
+        ttk.Button(btns, text="➕ เพิ่มอุปกรณ์ใหม่ (แนบรูป/ข้อความได้)", command=lambda: NewComponentDialog(self)).pack(fill="x", pady=(4, 0))
         self.lst_kb = tk.Listbox(left, font=self.f, width=38, height=10, activestyle="none", relief="flat")
         self.lst_kb.pack(fill="both", expand=True, pady=6)
         self.lst_kb.bind("<<ListboxSelect>>", lambda e: self._kb_show())
         right = ttk.Frame(tab)
         right.pack(side="left", fill="both", expand=True, padx=(12, 0))
-        self.lbl_img = tk.Label(right, bg=PALETTE["bg"], text="")
-        self.lbl_img.pack(anchor="w")
+        self.img_row = tk.Frame(right, bg=PALETTE["bg"])
+        self.img_row.pack(anchor="w", fill="x")
+        self.lbl_img = tk.Label(self.img_row, bg=PALETTE["bg"], text="")
+        self.lbl_img.pack(side="left")
+        self._gallery = []
         fr, self.txt_kb = self._text(right)
         fr.pack(fill="both", expand=True)
         self.txt_kb.tag_configure("h", font=self.fbig, foreground=PALETTE["blue"])
@@ -773,6 +783,14 @@ class App:
         self._img = self.load_thumb(it, 320)
         self.lbl_img.configure(image=self._img or "",
                                text="" if self._img else "(ยังไม่มีรูป กดปุ่ม \"เพิ่ม / เปลี่ยนรูป\" ด้านซ้าย)")
+        for w in self.img_row.winfo_children()[1:]:
+            w.destroy()
+        self._gallery = []
+        for g in it.get("gallery", [])[:4]:          # รูปเพิ่มเติมที่แนบตอนเพิ่มอุปกรณ์
+            im = self.load_thumb({"image": g}, 150)
+            if im:
+                self._gallery.append(im)
+                tk.Label(self.img_row, image=im, bg=PALETTE["bg"]).pack(side="left", padx=(8, 0), anchor="s")
         if kind == "board":
             t.insert("end", it["name"] + "\n", "h")
             t.insert("end", "เขียน MicroPython ได้: %s\n" % ("ได้ ✔" if it["micropython"] else "ไม่ได้ (ใช้ C++)"))
@@ -799,6 +817,12 @@ class App:
             if it.get("library"):
                 t.insert("end", "\nติดตั้งไลบรารี: mpremote mip install %s\n" % it["library"])
             t.insert("end", "\nคำค้นที่ใช้ในคำสั่งได้: " + ", ".join(it["keywords"]) + "\n")
+            if it.get("ai_analysis_th"):
+                t.insert("end", "\nผลการวิเคราะห์จาก AI\n", "h")
+                t.insert("end", re.sub(r"^#+\s*", "", it["ai_analysis_th"].replace("**", ""), flags=re.M).strip() + "\n")
+            if it.get("notes_th"):
+                t.insert("end", "\nข้อมูลประกอบที่ครูแนบไว้\n", "h")
+                t.insert("end", it["notes_th"][:3000] + ("\n..." if len(it["notes_th"]) > 3000 else "") + "\n")
 
     def _kb_add_image(self):
         sel = self.lst_kb.curselection()
@@ -832,10 +856,32 @@ class App:
         self._kb_show()
         self.status("เพิ่มรูปแล้ว: images/" + os.path.basename(dst))
 
-    def reload_kb(self):
+    def reload_kb(self, select=None):
         self.kb = KnowledgeBase()
         self.gen.kb = self.kb
         self._kb_fill()
+        if select:
+            if not any(k == "comp" and it["id"] == select for k, it in self._kb_items):
+                self.ent_search.delete(0, "end")     # ช่องค้นหาซ่อนอุปกรณ์ใหม่อยู่ ล้างก่อน
+                self._kb_fill()
+            for i, (kind, it) in enumerate(self._kb_items):
+                if kind == "comp" and it["id"] == select:
+                    self.lst_kb.selection_clear(0, "end")
+                    self.lst_kb.selection_set(i)
+                    self.lst_kb.see(i)
+                    self._kb_show()
+                    break
+
+    def _kb_edit(self):
+        sel = self.lst_kb.curselection()
+        if not sel:
+            messagebox.showinfo("แก้ไขอุปกรณ์", "เลือกอุปกรณ์ในรายการด้านซ้ายก่อน")
+            return
+        kind, it = self._kb_items[sel[0]]
+        if kind == "board":
+            messagebox.showinfo("แก้ไขอุปกรณ์", "ข้อมูลบอร์ดแก้ได้ที่ไฟล์ knowledge/boards.json\nปุ่มนี้ใช้กับอุปกรณ์และเซนเซอร์")
+            return
+        NewComponentDialog(self, it)
 
     def _kb_use(self):
         sel = self.lst_kb.curselection()
@@ -931,169 +977,6 @@ class App:
 
 def _fmt(v):
     return str(int(v)) if float(v).is_integer() else "%.1f" % v
-
-
-class NewComponentDialog(tk.Toplevel):
-    """ฟอร์มเพิ่มอุปกรณ์ใหม่ลงคลังความรู้ (บันทึกลง knowledge/components.json)"""
-    FIELDS = [("id", "รหัสอุปกรณ์ (ภาษาอังกฤษ ไม่มีช่องว่าง)", "bh1750"),
-              ("name_th", "ชื่อภาษาไทย", "เซนเซอร์วัดความเข้มแสง BH1750"),
-              ("name_en", "ชื่อภาษาอังกฤษ", "BH1750"),
-              ("category", "หมวด", "แสง"),
-              ("keywords", "คำที่นักเรียนอาจพิมพ์ (คั่นด้วย ,) ใส่คำแรกเป็นคำเฉพาะของอุปกรณ์", "bh1750, ความเข้มแสง, ลักซ์"),
-              ("voltage", "แรงดันที่ใช้", "3.3V-5V"),
-              ("keys", "ชื่อค่าที่อ่านได้ (เฉพาะเซนเซอร์ ภาษาอังกฤษ คั่นด้วย ,)", "lux")]
-    CODE = [("pins", "ขาของอุปกรณ์ บรรทัดละขา  ชื่อขา=ชนิด\nชนิดที่ใช้ได้: power5, power3, gnd, signal:out, signal:inp, signal:adc, signal:pwm, signal:i2c_sda, signal:i2c_scl",
-             "VCC=power3\nGND=gnd\nSDA=signal:i2c_sda\nSCL=signal:i2c_scl"),
-            ("imports", "import เพิ่มเติม บรรทัดละคำสั่ง (ถ้ามี)", ""),
-            ("setup", "โค้ดตั้งค่า MicroPython ใช้ {ชื่อขา} แทนเลขขา เช่น {SDA} {SCL} {SIG}\nขา ADC ใช้ {ADC_SETUP_SIG} แล้วอ่านด้วย adc_SIG.read_u16()",
-             "i2c = I2C(0, sda=Pin({SDA}), scl=Pin({SCL}))\ni2c.writeto(0x23, b'\\x10')"),
-            ("read", "โค้ดอ่านค่า (เซนเซอร์) ต้องกำหนดตัวแปรตามชื่อค่าที่อ่านได้", "d = i2c.readfrom(0x23, 2)\nlux = round((d[0] << 8 | d[1]) / 1.2, 1)"),
-            ("on", "โค้ดสั่งเปิด (อุปกรณ์สั่งงาน)", ""),
-            ("off", "โค้ดสั่งปิด (อุปกรณ์สั่งงาน)", ""),
-            ("explain_th", "คำอธิบายสั้น ๆ สำหรับนักเรียน", "วัดความสว่างเป็นหน่วยลักซ์ สื่อสารผ่าน I2C"),
-            ("warnings", "คำเตือน บรรทัดละข้อ", "")]
-
-    def __init__(self, app):
-        super().__init__(app.root)
-        self.app = app
-        self.title("เพิ่มอุปกรณ์ใหม่ลงคลังความรู้")
-        self.geometry("900x760")
-        canvas = tk.Canvas(self, highlightthickness=0)
-        sb = ttk.Scrollbar(self, command=canvas.yview)
-        frm = ttk.Frame(canvas, padding=14)
-        frm.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-        canvas.create_window((0, 0), window=frm, anchor="nw")
-        canvas.configure(yscrollcommand=sb.set)
-        sb.pack(side="right", fill="y")
-        canvas.pack(fill="both", expand=True)
-        ttk.Label(frm, text="ข้อความในช่องเป็นตัวอย่างเซนเซอร์ BH1750 แก้เป็นข้อมูลของอุปกรณ์ใหม่ได้เลย",
-                  foreground="#5A6478").grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 8))
-        self.v = {}
-        r = 1
-        for k, label, ex in self.FIELDS:
-            ttk.Label(frm, text=label).grid(row=r, column=0, sticky="w", pady=3)
-            e = ttk.Entry(frm, width=52, font=app.f)
-            e.insert(0, ex)
-            e.grid(row=r, column=1, sticky="w", padx=8)
-            self.v[k] = e
-            r += 1
-        ttk.Label(frm, text="ชนิด").grid(row=r, column=0, sticky="w", pady=3)
-        self.cmb_type = ttk.Combobox(frm, state="readonly", width=40,
-                                     values=["sensor (เซนเซอร์ อ่านค่า)", "actuator (อุปกรณ์สั่งงาน)", "info (มีแค่ข้อมูล)"])
-        self.cmb_type.current(0)
-        self.cmb_type.grid(row=r, column=1, sticky="w", padx=8)
-        r += 1
-        for k, label, ex in self.CODE:
-            ttk.Label(frm, text=label, wraplength=840, justify="left").grid(row=r, column=0, columnspan=2, sticky="w", pady=(10, 2))
-            t = tk.Text(frm, height=4, width=94, font=app.fmono)
-            t.insert("1.0", ex)
-            t.grid(row=r + 1, column=0, columnspan=2, sticky="w")
-            self.v[k] = t
-            r += 2
-        row = ttk.Frame(frm)
-        row.grid(row=r, column=0, columnspan=2, sticky="w", pady=12)
-        ttk.Button(row, text="🧪 ทดลองสร้างโค้ด", command=self.preview).pack(side="left")
-        ttk.Button(row, text="💾 บันทึกลงคลังความรู้", style="Accent.TButton", command=self.save).pack(side="left", padx=8)
-        ttk.Button(row, text="ยกเลิก", command=self.destroy).pack(side="left")
-
-    def _get(self, k):
-        w = self.v[k]
-        return (w.get("1.0", "end") if isinstance(w, tk.Text) else w.get()).strip()
-
-    def build(self):
-        """อ่านฟอร์มเป็นข้อมูลอุปกรณ์ คืนค่า (comp, error)"""
-        cid = re.sub(r"\W", "_", self._get("id").lower()).strip("_")
-        if not cid:
-            return None, "ใส่รหัสอุปกรณ์ก่อน"
-        pins = []
-        for line in self._get("pins").splitlines():
-            if not line.strip():
-                continue
-            if "=" not in line:
-                return None, "บรรทัดขาไม่ถูกรูปแบบ (ต้องเป็น ชื่อขา=ชนิด): " + line
-            label, kind = [x.strip() for x in line.split("=", 1)]
-            need = None
-            if kind.startswith("signal"):
-                kind, _, need = kind.partition(":")
-                need = need.strip() or "out"
-                if need not in ("out", "inp", "adc", "pwm", "i2c_sda", "i2c_scl", "touch"):
-                    return None, "ชนิดสัญญาณไม่ถูกต้อง: " + line
-            if kind not in ("power5", "power3", "gnd", "signal"):
-                return None, "ชนิดขาไม่ถูกต้อง: " + line
-            role = re.sub(r"\W", "_", label.upper()) if kind == "signal" else label
-            pins.append(dict(label=label, kind=kind, need=need, role=role))
-        if not any(p["kind"] == "signal" for p in pins):
-            return None, "ต้องมีขาสัญญาณอย่างน้อย 1 ขา"
-        ctype = self.cmb_type.get().split()[0]
-        keywords = [k.strip().lower() for k in self._get("keywords").split(",") if k.strip()]
-        if not keywords:
-            return None, "ใส่คำที่นักเรียนอาจพิมพ์อย่างน้อย 1 คำ"
-        comp = dict(id=cid, name_th=self._get("name_th"), name_en=self._get("name_en") or cid, category=self._get("category"),
-                    type=ctype, keywords=keywords, voltage=self._get("voltage"), pins=pins,
-                    explain_th=self._get("explain_th"), image="images/%s.jpg" % cid,
-                    warnings=[w.strip() for w in self._get("warnings").splitlines() if w.strip()])
-        imports = [l.strip() for l in self._get("imports").splitlines() if l.strip()]
-        if imports:
-            comp["imports"] = imports
-        for k in ("setup", "read", "on", "off"):
-            if self._get(k):
-                comp[k] = self._get(k)
-        if ctype == "sensor":
-            comp["keys"] = [k.strip() for k in self._get("keys").split(",") if k.strip()]
-            comp["sim"] = [0, 100, "float"]
-            if not comp.get("read") or not comp["keys"]:
-                return None, "เซนเซอร์ต้องมีโค้ดอ่านค่าและชื่อค่าที่อ่านได้"
-            if not comp.get("setup"):
-                return None, "เซนเซอร์ต้องมีโค้ดตั้งค่า"
-        if ctype == "actuator" and not (comp.get("setup") and comp.get("on") and comp.get("off")):
-            return None, "อุปกรณ์สั่งงานต้องมีโค้ดตั้งค่า สั่งเปิด และสั่งปิด"
-        return comp, None
-
-    def _trial(self, comp):
-        """ทดลองสร้างโค้ดด้วยคลังความรู้ชั่วคราว คืนค่า (result, errors)"""
-        board = self.app.board()
-        if not board["micropython"]:
-            board = self.app.kb.board_by_id["esp32-devkit"]
-        kb = KnowledgeBase()
-        kb.components = [c for c in kb.components if c["id"] != comp["id"]] + [comp]
-        kb.reindex()
-        res = CodeGenerator(kb).generate(("อ่าน " if comp["type"] == "sensor" else "") + comp["keywords"][0], board["id"])
-        errs = list(res.errors)
-        if comp["id"] not in [c["id"] for c in res.components]:
-            errs.append("คำค้นแรก \"%s\" ไปตรงกับอุปกรณ์อื่น ให้ใช้คำที่เฉพาะเจาะจงกว่านี้" % comp["keywords"][0])
-        if comp["type"] != "info":
-            errs += check_code(res.code, board)[0]
-        return res, errs
-
-    def preview(self):
-        comp, err = self.build()
-        if err:
-            messagebox.showerror("เพิ่มอุปกรณ์", err, parent=self)
-            return
-        res, errs = self._trial(comp)
-        win = tk.Toplevel(self)
-        win.title("ตัวอย่างโค้ดที่จะได้")
-        t = tk.Text(win, font=self.app.fmono, width=90, height=30)
-        t.pack(fill="both", expand=True)
-        t.insert("1.0", ("✖ " + "\n✖ ".join(errs) + "\n\n" if errs else "✔ สร้างโค้ดได้\n\n") + res.code)
-
-    def save(self):
-        comp, err = self.build()
-        if err:
-            messagebox.showerror("เพิ่มอุปกรณ์", err, parent=self)
-            return
-        if comp["id"] in self.app.kb.comp_by_id and not messagebox.askyesno(
-                "เพิ่มอุปกรณ์", "มีอุปกรณ์รหัสนี้อยู่แล้ว ต้องการแทนที่หรือไม่", parent=self):
-            return
-        _, errs = self._trial(comp)
-        if errs:
-            messagebox.showerror("เพิ่มอุปกรณ์", "ยังบันทึกไม่ได้ เพราะโค้ดที่ได้มีปัญหา:\n" + "\n".join(errs), parent=self)
-            return
-        self.app.kb.save_component(comp)
-        self.app.reload_kb()
-        messagebox.showinfo("เพิ่มอุปกรณ์", "เพิ่ม %s ลงคลังความรู้แล้ว\nพิมพ์คำสั่งที่มีคำว่า \"%s\" ได้เลย\n"
-                            "กด \"เพิ่ม / เปลี่ยนรูป\" เพื่อใส่รูปของอุปกรณ์นี้" % (comp["name_th"], comp["keywords"][0]), parent=self)
-        self.destroy()
 
 
 def _log_error(exc, val, tb):

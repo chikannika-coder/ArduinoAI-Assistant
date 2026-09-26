@@ -20,6 +20,13 @@ CASES = [
     ("arduino-uno", "อ่านระยะทาง ultrasonic trig 9 echo 10 ถ้าใกล้กว่า 20 ให้ servo ขา 6 หมุน 90 องศา"),
     ("esp32-devkit", "อ่านค่า BMP280"),
     ("esp32-devkit", "สวัสดีครับ"),
+    ("esp32-devkit", "วัดค่า pH น้ำลายด้วย PH-4502C ถ้าน้อยกว่า 5.5 ให้ LED ติด"),
+    ("esp32-devkit", "วัดไข้ด้วย MLX90614 แล้วแสดงบนจอ OLED"),
+    ("esp32-devkit", "วัดชีพจรด้วย MAX30102 ถ้ามากกว่า 100 ให้ Buzzer ดัง"),
+    ("esp32-devkit", "อ่านคลื่นสมองด้วย EEG ถ้ามากกว่า 2 ให้ LED ติด"),
+    ("pico", "วัดระยะด้วยเลเซอร์ VL53L0X ถ้าใกล้กว่า 100 ให้ LED ติด"),
+    ("esp32-cam", "ถ้า Sharp IR ใกล้กว่า 20 ให้ LED ติด"),
+    ("arduino-uno", "อ่านคลื่นไฟฟ้าหัวใจด้วย AD8232"),
 ]
 ok = 0
 for board, cmd in CASES:

@@ -13,7 +13,10 @@ DEFAULT_RULES = {
     "temp_c": (">", 30), "humidity": (">", 80), "sound": (">", 60), "water": (">", 70),
     "touch_value": ("<", 200), "pot": (">", 50), "rain": (">", 30), "joy_x": (">", 70),
     "accel_x": (">", 0.5), "force": (">", 30), "weight_g": (">", 100),
+    "ph": ("<", 5.5), "distance_mm": ("<", 200), "ir_distance_cm": ("<", 20), "obj_temp_c": (">", 37.5),
+    "bpm": (">", 100), "ecg": (">", 70), "alpha1": (">", 2), "red": (">", 150),
 }
+DISTANCE_KEYS = ("distance_cm", "distance_mm", "ir_distance_cm")   # ค่า 0 หรือติดลบ = วัดไม่ได้
 OP_WORDS = [
     (r"น้อยกว่าหรือเท่ากับ|<=", "<="), (r"มากกว่าหรือเท่ากับ|>=", ">="),
     (r"น้อยกว่า|ต่ำกว่า|ไม่ถึง|ใกล้กว่า|<", "<"), (r"มากกว่า|สูงกว่า|เกิน|ไกลกว่า|>", ">"),
@@ -276,6 +279,8 @@ class CodeGenerator:
         if missing:
             return "print('TEST_FAIL บอร์ดนี้ไม่มีขาว่างสำหรับ %s ขา %s')\n" % (comp["name_en"], ", ".join(missing))
         i2c_addr = {"oled": [0x3C, 0x3D], "mpu6050": [0x68, 0x69], "bmp280": [0x76, 0x77], "lcd1602": [0x27, 0x3F]}
+        if comp.get("i2c_addr"):
+            i2c_addr[comp["id"]] = comp["i2c_addr"]
         soft = board["family"] == "esp8266"
         if comp["id"] in i2c_addr or (comp["type"] == "info" and "SDA" in roles):
             cls = "SoftI2C" if soft else "I2C"
@@ -365,6 +370,14 @@ class CodeGenerator:
             if c.get("helpers"):
                 helpers.append(c["helpers"])
 
+        # อุปกรณ์ I2C หลายตัวใช้สายเดียวกัน: เหลือบรรทัดสร้าง i2c บรรทัดเดียว เลือกแบบความเร็วต่ำสุดเพื่อให้ทุกตัวใช้ได้
+        i2c_lines = [l for l in setup if l.startswith("i2c = I2C(")]
+        if len(i2c_lines) > 1:
+            keep = next((l for l in i2c_lines if "freq=" in l), i2c_lines[0])
+            first = setup.index(i2c_lines[0])
+            setup = [l for l in setup if l not in i2c_lines]
+            setup.insert(first, keep)
+
         body = []
         ind = "    "
 
@@ -398,7 +411,7 @@ class CodeGenerator:
                             op = "<"
                         res.explanation.append("ไม่ได้ระบุตัวเลขในเงื่อนไข จึงใช้ค่าเริ่มต้น %s %s %s" % (key, op, thr))
                 cond = "%s %s %s" % (key, op, thr)
-                if key == "distance_cm" and op in ("<", "<="):
+                if key in DISTANCE_KEYS and op in ("<", "<="):
                     cond = "0 < " + cond
                 res.rule = dict(key=key, op=op, thr=thr, actuators=[a["id"] for a in actuators])
                 body.append(ind + "if %s:" % cond)
@@ -516,7 +529,7 @@ class CodeGenerator:
             if op is None:
                 op, thr = DEFAULT_RULES.get(s["keys"][0], (">", 50))
             res.rule = dict(key=s["keys"][0], op=op, thr=thr, actuators=[a["id"] for a in actuators])
-            pre = "%s > 0 && " % key if key == "distance_cm" and op in ("<", "<=") else ""
+            pre = "%s > 0 && " % key if key in DISTANCE_KEYS and op in ("<", "<=") else ""
             body.append("  if (%s%s %s %s) {" % (pre, key, op, thr))
             body += ["    " + a["_cpp"]["on"] for a in actuators if "_cpp" in a]
             body.append("  } else {")
@@ -580,6 +593,12 @@ CPP = {
                          "delay(500);", "hx_offset = hx_avg(15);  // ตั้งศูนย์ ห้ามวางของตอนเปิดเครื่อง"],
                   read=["float weight_g = (hx_avg(5) - hx_offset) / HX_SCALE;"], key="weight_g"),
     "line_tcrt5000": dict(setup=["pinMode({SIG}, INPUT);"], read=["int on_line = digitalRead({SIG});"], key="on_line"),
+    "ph_sensor": dict(glob=["const float PH_MID_V = 2.5;   // แรงดันที่ pH 7 (ปรับตอน calibrate)", "const float PH_SLOPE = 0.18;"],
+                      read=["float ph = 7 + (PH_MID_V - analogRead({SIG}) * 5.0 / 1023) / PH_SLOPE;"], key="ph"),
+    "sharp_ir": dict(read=["float ir_v = analogRead({SIG}) * 5.0 / 1023;",
+                           "float ir_distance_cm = 27.86 * pow(ir_v < 0.3 ? 0.3 : ir_v, -1.15);"], key="ir_distance_cm"),
+    "ad8232": dict(setup=["pinMode({LOP}, INPUT);", "pinMode({LOM}, INPUT);"],
+                   read=["long ecg = (digitalRead({LOP}) || digitalRead({LOM})) ? 0 : analogRead({SIG}) * 100L / 1023;"], key="ecg"),
 }
 for _id, _key, _inv in [("ldr", "light", False), ("potentiometer", "pot", False), ("soil", "soil", True), ("rain", "rain", True),
                         ("mq2", "gas", False), ("sound", "sound", False), ("water_level", "water", False),
@@ -600,6 +619,9 @@ HELP_TEXT = """# ยังไม่พบชื่ออุปกรณ์ใน
 #   ถ้ามีคนเคลื่อนไหวให้ไฟ LED ติด
 #   วัดแรงกดด้วย FSR402 ถ้าเกิน 50 ให้ LED ติด
 #   ชั่งน้ำหนักด้วย HX711 แล้วแสดงบนจอ OLED
+#   วัดค่า pH น้ำลายด้วย PH-4502C ถ้าน้อยกว่า 5.5 ให้ LED ติด
+#   วัดไข้ด้วย MLX90614 ถ้ามากกว่า 37.5 ให้ Buzzer ดัง
+#   วัดชีพจรด้วย MAX30102 แล้วแสดงบนจอ OLED
 #
 # ดูรายชื่ออุปกรณ์ทั้งหมดได้ที่แท็บ "คลังความรู้"
 """

@@ -62,6 +62,16 @@ class KnowledgeBase:
         self.components = data
         self.reindex()
 
+    def delete_component(self, cid):
+        path = os.path.join(BASE, "knowledge", "components.json")
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        data = [c for c in data if c["id"] != cid]
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=1)
+        self.components = data
+        self.reindex()
+
     def detect(self, text):
         """หาอุปกรณ์ที่ถูกพูดถึงในคำสั่ง คืนค่าเป็นรายการ (อุปกรณ์, ตำแหน่งในข้อความ)"""
         low = text.lower()
