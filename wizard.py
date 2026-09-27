@@ -8,12 +8,14 @@
 5 ตรวจการต่อสาย   → ส่งโค้ดทดสอบไปรันบนบอร์ดจริงทีละอุปกรณ์
 6 เขียนโค้ดและรัน → สร้างโค้ด รันบนบอร์ดจริง และดูการทำงานแบบเรียลไทม์
 """
+import re
 import threading
 import tkinter as tk
 from tkinter import ttk, messagebox
 
 from device import DETECT_SCRIPT, parse_detect, parse_test, has_mpremote
 from wiring import WiringCanvas
+from flasher import FlashDialog
 
 STEPS = ["เชื่อมต่อบอร์ด", "อยากทำอะไร", "เตรียมอุปกรณ์", "ต่อสายทีละเส้น", "ตรวจการต่อสาย", "เขียนโค้ดและรัน"]
 EXTRA_PARTS = [("220Ω", "ตัวต้านทาน 220Ω"), ("4.7kΩ", "ตัวต้านทาน 4.7kΩ"), ("10kΩ", "ตัวต้านทาน 10kΩ"),
@@ -103,6 +105,8 @@ class WizardTab(ttk.Frame):
 
     def board_changed(self):
         """ครูเปลี่ยนรุ่นบอร์ด: วางแผนขาใหม่ แล้ววาดขั้นปัจจุบันใหม่"""
+        if self.step == 0:
+            self.go(0)          # ปุ่มลง MicroPython และคำแนะนำขึ้นกับรุ่นบอร์ด
         if self.command:
             self.res = self.app.gen.generate(self.command, self.app.board()["id"], self.app.cfg["app_name"])
             self.test_status = {}
@@ -138,13 +142,19 @@ class WizardTab(ttk.Frame):
         row = ttk.Frame(b)
         row.pack(fill="x", pady=10)
         ttk.Button(row, text="🔍 ตรวจบอร์ด", style="Accent.TButton", command=self._detect).pack(side="left")
+        if self.app.board()["micropython"]:
+            ttk.Button(row, text="⬇ ลง MicroPython", command=self._flash).pack(side="left", padx=(10, 0))
         ttk.Button(row, text="ยังไม่มีบอร์ด ใช้โหมดจำลองไปก่อน ▶", command=lambda: self.go(1)).pack(side="left", padx=10)
         self.lbl_detect = tk.Label(b, text="ยังไม่ได้ตรวจ", font=self.f, bg="#FFFFFF", fg="#5A6478", justify="left",
                                    anchor="nw", padx=14, pady=12, wraplength=900)
         self.lbl_detect.pack(fill="x", pady=8)
-        self._box(b, "ถ้าเป็นบอร์ดใหม่ ต้องลง MicroPython ก่อน 1 ครั้ง (ดู README ข้อ 2)\n"
-                     "ถ้าเป็น Arduino Uno / Nano / Mega บอร์ดจะรัน Python ไม่ได้ แต่ยังใช้ผู้ช่วยนำทางดูการต่อสายและได้โค้ด C++ ได้",
-                  "#EEF1F6", "#1D2433")
+        if self.app.board()["micropython"]:
+            self._box(b, "บอร์ดใหม่ต้องลง MicroPython ก่อน 1 ครั้ง กดปุ่ม \"⬇ ลง MicroPython\" "
+                         "โปรแกรมจะดาวน์โหลดเฟิร์มแวร์และบอกว่าต้องกดปุ่ม BOOT ตอนไหน",
+                      "#EEF1F6", "#1D2433")
+        else:
+            self._box(b, "%s รัน Python ไม่ได้ แต่ยังใช้ผู้ช่วยนำทางดูการต่อสายและได้โค้ด C++ ได้ กดขั้นต่อไปได้เลย"
+                      % self.app.board()["name"], "#EEF1F6", "#1D2433")
         if self.detected:
             self._show_detect(self.detected)
 
@@ -172,10 +182,17 @@ class WizardTab(ttk.Frame):
             return
         info = parse_detect(out)
         if not info["mp"]:
-            self.lbl_detect.configure(fg="#C0392B", text=(
-                "คุยกับบอร์ดไม่ได้\n• ถ้าเป็นบอร์ดใหม่ ต้องลง MicroPython ก่อน\n"
-                "• ถ้าเป็น Arduino Uno / Nano / Mega ให้เลือกรุ่นบอร์ดที่ช่องด้านบนเอง แล้วกดขั้นต่อไป\n"
-                "• ปิดโปรแกรมอื่นที่ใช้พอร์ตอยู่ เช่น Thonny หรือ Arduino IDE\n\nรายละเอียด: " + out.strip()[-300:]))
+            if re.search(r"could not open port|Access is denied|PermissionError", out, re.I):
+                why = ("เปิดพอร์ตไม่ได้ เพราะมีโปรแกรมอื่นใช้พอร์ตอยู่\n"
+                       "• ปิด Thonny, Arduino IDE และ Serial Monitor แล้วกด \"ตรวจบอร์ด\" ใหม่")
+            else:
+                why = ("คุยกับบอร์ดไม่ได้\n"
+                       "• ถ้าเป็นบอร์ดใหม่ หรือเคยอัปโหลดโค้ดจาก Arduino IDE ต้องลง MicroPython ก่อน → กดปุ่ม \"⬇ ลง MicroPython\"\n"
+                       "• ถ้ามี MicroPython อยู่แล้ว อาจมีโปรแกรมรันค้างอยู่ กดปุ่ม EN/RST บนบอร์ดแล้วกด \"ตรวจบอร์ด\" ทันที\n"
+                       "• ตรวจว่าเลือกพอร์ตถูก (ไม่ใช่พอร์ต Bluetooth)\n"
+                       "• ถ้าเป็น Arduino Uno / Nano / Mega ให้เลือกรุ่นบอร์ดที่ช่องด้านบนเอง แล้วกดขั้นต่อไป")
+            self.lbl_detect.configure(fg="#C0392B", text=why + "\n\nรายละเอียด: " + out.strip().splitlines()[-1][-200:]
+                                      if out.strip() else why)
             return
         self.detected = info
         if info["board_id"]:
@@ -186,6 +203,13 @@ class WizardTab(ttk.Frame):
                 self.app.cmb_board.current(ids.index(info["board_id"]))
                 self.app._board_changed()
         self._show_detect(info)
+
+    def _flash(self):
+        def done():
+            self.app.refresh_ports()
+            if self.step == 0 and self.lbl_detect.winfo_exists():
+                self._detect()
+        FlashDialog(self.app, on_success=done)
 
     def _show_detect(self, info):
         board = self.app.board()

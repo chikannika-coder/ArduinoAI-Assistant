@@ -1,0 +1,1131 @@
+{
+ "source": "ตัวอย่างจาก Arduino IDE 1.6.0 (โฟลเดอร์ examples) และไลบรารี Servo, LiquidCrystal, Stepper, EEPROM จาก Arduino IDE 1.5.3 โค้ดตัวอย่างเป็นสาธารณสมบัติ (public domain) ตามที่ระบุในไฟล์ต้นฉบับ",
+ "count": 98,
+ "with_micropython": 28,
+ "categories": {
+  "01.Basics": "พื้นฐาน",
+  "02.Digital": "ขาดิจิทัล",
+  "03.Analog": "ขาแอนะล็อก",
+  "04.Communication": "สื่อสารกับคอมพิวเตอร์",
+  "05.Control": "คำสั่งควบคุม",
+  "06.Sensors": "เซนเซอร์",
+  "07.Display": "แสดงผล",
+  "08.Strings": "ข้อความ (String)",
+  "09.USB": "คีย์บอร์ด/เมาส์ USB (Leonardo)",
+  "10.StarterKit": "ชุด Starter Kit",
+  "11.Servo": "เซอร์โว",
+  "12.LiquidCrystal": "จอ LCD",
+  "13.Stepper": "สเต็ปเปอร์มอเตอร์",
+  "14.EEPROM": "เก็บค่าถาวร (EEPROM)"
+ },
+ "examples": [
+  {
+   "id": "01.Basics/Blink",
+   "category": "01.Basics",
+   "category_th": "พื้นฐาน",
+   "name": "Blink",
+   "title_th": "ไฟกะพริบ",
+   "level": "ง่าย",
+   "desc_th": "โปรแกรมแรกของทุกคน ให้ไฟ LED บนบอร์ดติด 1 วินาที ดับ 1 วินาที",
+   "ino": "01.Basics/Blink/Blink.ino",
+   "py": "01.Basics/Blink/Blink.py",
+   "components": [
+    "led"
+   ]
+  },
+  {
+   "id": "01.Basics/Fade",
+   "category": "01.Basics",
+   "category_th": "พื้นฐาน",
+   "name": "Fade",
+   "title_th": "ไฟค่อย ๆ สว่าง-หรี่",
+   "level": "ง่าย",
+   "desc_th": "ใช้ PWM ทำให้ LED ค่อย ๆ สว่างขึ้นแล้วหรี่ลง วนไปเรื่อย ๆ",
+   "ino": "01.Basics/Fade/Fade.ino",
+   "py": "01.Basics/Fade/Fade.py",
+   "components": [
+    "led"
+   ]
+  },
+  {
+   "id": "01.Basics/DigitalReadSerial",
+   "category": "01.Basics",
+   "category_th": "พื้นฐาน",
+   "name": "DigitalReadSerial",
+   "title_th": "อ่านปุ่มแล้วพิมพ์ออกจอ",
+   "level": "ง่าย",
+   "desc_th": "อ่านสถานะปุ่มกด (กด/ไม่กด) แล้วส่งมาแสดงบนคอมพิวเตอร์",
+   "ino": "01.Basics/DigitalReadSerial/DigitalReadSerial.ino",
+   "py": "01.Basics/DigitalReadSerial/DigitalReadSerial.py",
+   "components": [
+    "button"
+   ]
+  },
+  {
+   "id": "01.Basics/AnalogReadSerial",
+   "category": "01.Basics",
+   "category_th": "พื้นฐาน",
+   "name": "AnalogReadSerial",
+   "title_th": "อ่านค่าแอนะล็อกแล้วพิมพ์ออกจอ",
+   "level": "ง่าย",
+   "desc_th": "อ่านค่าตัวต้านทานปรับค่า (0-1023) แล้วส่งตัวเลขมาแสดงบนคอมพิวเตอร์",
+   "ino": "01.Basics/AnalogReadSerial/AnalogReadSerial.ino",
+   "py": "01.Basics/AnalogReadSerial/AnalogReadSerial.py",
+   "components": [
+    "potentiometer"
+   ]
+  },
+  {
+   "id": "01.Basics/BareMinimum",
+   "category": "01.Basics",
+   "category_th": "พื้นฐาน",
+   "name": "BareMinimum",
+   "title_th": "โครงโปรแกรมเปล่า",
+   "level": "ง่าย",
+   "desc_th": "โครงสร้างขั้นต่ำของโปรแกรม Arduino: setup() กับ loop()",
+   "ino": "01.Basics/BareMinimum/BareMinimum.ino"
+  },
+  {
+   "id": "01.Basics/ReadAnalogVoltage",
+   "category": "01.Basics",
+   "category_th": "พื้นฐาน",
+   "name": "ReadAnalogVoltage",
+   "title_th": "วัดแรงดันไฟฟ้า",
+   "level": "ง่าย",
+   "desc_th": "แปลงค่าที่อ่านได้ (0-1023) เป็นแรงดันไฟฟ้า (โวลต์)",
+   "ino": "01.Basics/ReadAnalogVoltage/ReadAnalogVoltage.ino",
+   "py": "01.Basics/ReadAnalogVoltage/ReadAnalogVoltage.py",
+   "components": [
+    "potentiometer"
+   ]
+  },
+  {
+   "id": "02.Digital/toneKeyboard",
+   "category": "02.Digital",
+   "category_th": "ขาดิจิทัล",
+   "name": "toneKeyboard",
+   "title_th": "เปียโนเซนเซอร์แรงกด",
+   "level": "กลาง",
+   "desc_th": "กดเซนเซอร์แรงกด 3 ตัว ให้ลำโพงเล่นโน้ตต่างกัน",
+   "ino": "02.Digital/toneKeyboard/toneKeyboard.ino"
+  },
+  {
+   "id": "02.Digital/Button",
+   "category": "02.Digital",
+   "category_th": "ขาดิจิทัล",
+   "name": "Button",
+   "title_th": "กดปุ่มไฟติด",
+   "level": "ง่าย",
+   "desc_th": "กดปุ่มค้างไว้ LED ติด ปล่อยปุ่ม LED ดับ",
+   "ino": "02.Digital/Button/Button.ino",
+   "py": "02.Digital/Button/Button.py",
+   "components": [
+    "button",
+    "led"
+   ]
+  },
+  {
+   "id": "02.Digital/DigitalInputPullup",
+   "category": "02.Digital",
+   "category_th": "ขาดิจิทัล",
+   "name": "DigitalInputPullup",
+   "title_th": "ปุ่มกดแบบ INPUT_PULLUP",
+   "level": "ง่าย",
+   "desc_th": "ใช้ตัวต้านทานในชิป จึงต่อปุ่มได้โดยไม่ต้องใช้ตัวต้านทานภายนอก",
+   "ino": "02.Digital/DigitalInputPullup/DigitalInputPullup.ino",
+   "py": "02.Digital/DigitalInputPullup/DigitalInputPullup.py",
+   "components": [
+    "button",
+    "led"
+   ]
+  },
+  {
+   "id": "02.Digital/Debounce",
+   "category": "02.Digital",
+   "category_th": "ขาดิจิทัล",
+   "name": "Debounce",
+   "title_th": "กดปุ่มสลับไฟ (กันปุ่มเด้ง)",
+   "level": "กลาง",
+   "desc_th": "กดหนึ่งครั้งไฟติด กดอีกครั้งไฟดับ พร้อมวิธีกันสัญญาณปุ่มสั่น",
+   "ino": "02.Digital/Debounce/Debounce.ino",
+   "py": "02.Digital/Debounce/Debounce.py",
+   "components": [
+    "button",
+    "led"
+   ]
+  },
+  {
+   "id": "02.Digital/BlinkWithoutDelay",
+   "category": "02.Digital",
+   "category_th": "ขาดิจิทัล",
+   "name": "BlinkWithoutDelay",
+   "title_th": "ไฟกะพริบแบบไม่ใช้ delay",
+   "level": "กลาง",
+   "desc_th": "ใช้ millis() จับเวลาแทน delay() เพื่อให้บอร์ดทำงานอื่นพร้อมกันได้",
+   "ino": "02.Digital/BlinkWithoutDelay/BlinkWithoutDelay.ino",
+   "py": "02.Digital/BlinkWithoutDelay/BlinkWithoutDelay.py",
+   "components": [
+    "led"
+   ]
+  },
+  {
+   "id": "02.Digital/tonePitchFollower",
+   "category": "02.Digital",
+   "category_th": "ขาดิจิทัล",
+   "name": "tonePitchFollower",
+   "title_th": "เสียงเปลี่ยนตามแสง",
+   "level": "กลาง",
+   "desc_th": "ความถี่เสียงเปลี่ยนตามค่าที่อ่านจากเซนเซอร์แสง",
+   "ino": "02.Digital/tonePitchFollower/tonePitchFollower.ino"
+  },
+  {
+   "id": "02.Digital/toneMultiple",
+   "category": "02.Digital",
+   "category_th": "ขาดิจิทัล",
+   "name": "toneMultiple",
+   "title_th": "เล่นเสียงหลายลำโพง",
+   "level": "กลาง",
+   "desc_th": "เล่นโน้ตสลับกันบนลำโพง 3 ตัว",
+   "ino": "02.Digital/toneMultiple/toneMultiple.ino"
+  },
+  {
+   "id": "02.Digital/StateChangeDetection",
+   "category": "02.Digital",
+   "category_th": "ขาดิจิทัล",
+   "name": "StateChangeDetection",
+   "title_th": "นับจำนวนครั้งที่กดปุ่ม",
+   "level": "กลาง",
+   "desc_th": "ตรวจจังหวะที่ปุ่มเปลี่ยนจากปล่อยเป็นกด แล้วนับจำนวนครั้ง ไฟติดทุก 4 ครั้ง",
+   "ino": "02.Digital/StateChangeDetection/StateChangeDetection.ino",
+   "py": "02.Digital/StateChangeDetection/StateChangeDetection.py",
+   "components": [
+    "button",
+    "led"
+   ]
+  },
+  {
+   "id": "02.Digital/toneMelody",
+   "category": "02.Digital",
+   "category_th": "ขาดิจิทัล",
+   "name": "toneMelody",
+   "title_th": "เล่นทำนองเพลง",
+   "level": "ง่าย",
+   "desc_th": "ให้บัซเซอร์แบบ passive เล่นทำนองสั้น ๆ ครั้งเดียว",
+   "ino": "02.Digital/toneMelody/toneMelody.ino",
+   "py": "02.Digital/toneMelody/toneMelody.py",
+   "components": [
+    "buzzer_passive"
+   ]
+  },
+  {
+   "id": "03.Analog/AnalogInOutSerial",
+   "category": "03.Analog",
+   "category_th": "ขาแอนะล็อก",
+   "name": "AnalogInOutSerial",
+   "title_th": "หมุนปุ่มปรับไฟ",
+   "level": "ง่าย",
+   "desc_th": "อ่านตัวต้านทานปรับค่า แล้วปรับความสว่าง LED ตาม พร้อมแสดงค่า",
+   "ino": "03.Analog/AnalogInOutSerial/AnalogInOutSerial.ino",
+   "py": "03.Analog/AnalogInOutSerial/AnalogInOutSerial.py",
+   "components": [
+    "led",
+    "potentiometer"
+   ]
+  },
+  {
+   "id": "03.Analog/Fading",
+   "category": "03.Analog",
+   "category_th": "ขาแอนะล็อก",
+   "name": "Fading",
+   "title_th": "ไฟค่อย ๆ สว่าง-หรี่ ด้วย for",
+   "level": "ง่าย",
+   "desc_th": "ใช้ลูป for ปรับค่า PWM ขึ้นลง",
+   "ino": "03.Analog/Fading/Fading.ino"
+  },
+  {
+   "id": "03.Analog/Calibration",
+   "category": "03.Analog",
+   "category_th": "ขาแอนะล็อก",
+   "name": "Calibration",
+   "title_th": "ปรับเทียบเซนเซอร์",
+   "level": "กลาง",
+   "desc_th": "5 วินาทีแรกหาค่าต่ำสุด-สูงสุดของเซนเซอร์ แล้วใช้ช่วงนั้นควบคุมไฟ",
+   "ino": "03.Analog/Calibration/Calibration.ino",
+   "py": "03.Analog/Calibration/Calibration.py",
+   "components": [
+    "ldr",
+    "led"
+   ]
+  },
+  {
+   "id": "03.Analog/AnalogInput",
+   "category": "03.Analog",
+   "category_th": "ขาแอนะล็อก",
+   "name": "AnalogInput",
+   "title_th": "ปรับความเร็วไฟกะพริบ",
+   "level": "ง่าย",
+   "desc_th": "หมุนตัวต้านทานปรับค่าเพื่อเปลี่ยนความเร็วการกะพริบของ LED",
+   "ino": "03.Analog/AnalogInput/AnalogInput.ino"
+  },
+  {
+   "id": "03.Analog/AnalogWriteMega",
+   "category": "03.Analog",
+   "category_th": "ขาแอนะล็อก",
+   "name": "AnalogWriteMega",
+   "title_th": "ไฟหรี่หลายดวง (Mega)",
+   "level": "กลาง",
+   "desc_th": "หรี่ไฟ LED 12 ดวงบนขา PWM ของ Arduino Mega",
+   "ino": "03.Analog/AnalogWriteMega/AnalogWriteMega.ino",
+   "boards_th": "Arduino Mega เท่านั้น"
+  },
+  {
+   "id": "03.Analog/Smoothing",
+   "category": "03.Analog",
+   "category_th": "ขาแอนะล็อก",
+   "name": "Smoothing",
+   "title_th": "ทำค่าเซนเซอร์ให้นิ่ง",
+   "level": "กลาง",
+   "desc_th": "หาค่าเฉลี่ยของ 10 ค่าล่าสุด ช่วยให้กราฟไม่แกว่ง",
+   "ino": "03.Analog/Smoothing/Smoothing.ino",
+   "py": "03.Analog/Smoothing/Smoothing.py",
+   "components": [
+    "potentiometer"
+   ]
+  },
+  {
+   "id": "04.Communication/MultiSerialMega",
+   "category": "04.Communication",
+   "category_th": "สื่อสารกับคอมพิวเตอร์",
+   "name": "MultiSerialMega",
+   "title_th": "พอร์ตอนุกรมหลายชุด (Mega)",
+   "level": "ยาก",
+   "desc_th": "รับส่งข้อมูลระหว่าง Serial กับ Serial1 ของ Mega",
+   "ino": "04.Communication/MultiSerialMega/MultiSerialMega.ino",
+   "boards_th": "Arduino Mega เท่านั้น"
+  },
+  {
+   "id": "04.Communication/Graph",
+   "category": "04.Communication",
+   "category_th": "สื่อสารกับคอมพิวเตอร์",
+   "name": "Graph",
+   "title_th": "ส่งค่าไปวาดกราฟ",
+   "level": "ง่าย",
+   "desc_th": "ส่งค่าเซนเซอร์ไปวาดกราฟบนคอมพิวเตอร์",
+   "ino": "04.Communication/Graph/Graph.ino"
+  },
+  {
+   "id": "04.Communication/PhysicalPixel",
+   "category": "04.Communication",
+   "category_th": "สื่อสารกับคอมพิวเตอร์",
+   "name": "PhysicalPixel",
+   "title_th": "สั่งไฟจากคอมพิวเตอร์",
+   "level": "ง่าย",
+   "desc_th": "พิมพ์ H เพื่อเปิดไฟ L เพื่อปิดไฟ",
+   "ino": "04.Communication/PhysicalPixel/PhysicalPixel.ino"
+  },
+  {
+   "id": "04.Communication/ASCIITable",
+   "category": "04.Communication",
+   "category_th": "สื่อสารกับคอมพิวเตอร์",
+   "name": "ASCIITable",
+   "title_th": "ตารางรหัส ASCII",
+   "level": "ง่าย",
+   "desc_th": "พิมพ์ตัวอักษรพร้อมรหัสเลขฐานต่าง ๆ",
+   "ino": "04.Communication/ASCIITable/ASCIITable.ino"
+  },
+  {
+   "id": "04.Communication/SerialEvent",
+   "category": "04.Communication",
+   "category_th": "สื่อสารกับคอมพิวเตอร์",
+   "name": "SerialEvent",
+   "title_th": "รับข้อความจากคอมพิวเตอร์",
+   "level": "กลาง",
+   "desc_th": "เก็บตัวอักษรที่ส่งมาจนครบบรรทัดแล้วพิมพ์กลับ",
+   "ino": "04.Communication/SerialEvent/SerialEvent.ino"
+  },
+  {
+   "id": "04.Communication/ReadASCIIString",
+   "category": "04.Communication",
+   "category_th": "สื่อสารกับคอมพิวเตอร์",
+   "name": "ReadASCIIString",
+   "title_th": "อ่านตัวเลขหลายค่าจากคอมพิวเตอร์",
+   "level": "กลาง",
+   "desc_th": "รับค่าสี R,G,B จากคอมพิวเตอร์มาปรับไฟ RGB",
+   "ino": "04.Communication/ReadASCIIString/ReadASCIIString.ino"
+  },
+  {
+   "id": "04.Communication/SerialCallResponseASCII",
+   "category": "04.Communication",
+   "category_th": "สื่อสารกับคอมพิวเตอร์",
+   "name": "SerialCallResponseASCII",
+   "title_th": "ถาม-ตอบกับคอมพิวเตอร์ (ข้อความ)",
+   "level": "ยาก",
+   "desc_th": "เหมือนข้างบนแต่ส่งเป็นข้อความ",
+   "ino": "04.Communication/SerialCallResponseASCII/SerialCallResponseASCII.ino"
+  },
+  {
+   "id": "04.Communication/Dimmer",
+   "category": "04.Communication",
+   "category_th": "สื่อสารกับคอมพิวเตอร์",
+   "name": "Dimmer",
+   "title_th": "ปรับไฟจากคอมพิวเตอร์",
+   "level": "กลาง",
+   "desc_th": "ส่งตัวเลขจากคอมพิวเตอร์มาปรับความสว่าง LED",
+   "ino": "04.Communication/Dimmer/Dimmer.ino"
+  },
+  {
+   "id": "04.Communication/VirtualColorMixer",
+   "category": "04.Communication",
+   "category_th": "สื่อสารกับคอมพิวเตอร์",
+   "name": "VirtualColorMixer",
+   "title_th": "ผสมสีบนจอคอมพิวเตอร์",
+   "level": "กลาง",
+   "desc_th": "ส่งค่าเซนเซอร์ 3 ตัวไปผสมสีบนคอมพิวเตอร์",
+   "ino": "04.Communication/VirtualColorMixer/VirtualColorMixer.ino"
+  },
+  {
+   "id": "04.Communication/SerialCallResponse",
+   "category": "04.Communication",
+   "category_th": "สื่อสารกับคอมพิวเตอร์",
+   "name": "SerialCallResponse",
+   "title_th": "ถาม-ตอบกับคอมพิวเตอร์",
+   "level": "ยาก",
+   "desc_th": "ส่งข้อมูลเมื่อคอมพิวเตอร์ขอเท่านั้น",
+   "ino": "04.Communication/SerialCallResponse/SerialCallResponse.ino"
+  },
+  {
+   "id": "04.Communication/Midi",
+   "category": "04.Communication",
+   "category_th": "สื่อสารกับคอมพิวเตอร์",
+   "name": "Midi",
+   "title_th": "ส่งโน้ต MIDI",
+   "level": "ยาก",
+   "desc_th": "ส่งคำสั่ง MIDI ไปเล่นเสียงบนเครื่องดนตรี",
+   "ino": "04.Communication/Midi/Midi.ino"
+  },
+  {
+   "id": "05.Control/IfStatementConditional",
+   "category": "05.Control",
+   "category_th": "คำสั่งควบคุม",
+   "name": "IfStatementConditional",
+   "title_th": "ถ้า...แล้ว (if)",
+   "level": "ง่าย",
+   "desc_th": "ถ้าค่าเซนเซอร์เกินเกณฑ์ให้ไฟติด ถ้าไม่เกินให้ไฟดับ",
+   "ino": "05.Control/IfStatementConditional/IfStatementConditional.ino",
+   "py": "05.Control/IfStatementConditional/IfStatementConditional.py",
+   "components": [
+    "potentiometer",
+    "led"
+   ]
+  },
+  {
+   "id": "05.Control/Arrays",
+   "category": "05.Control",
+   "category_th": "คำสั่งควบคุม",
+   "name": "Arrays",
+   "title_th": "อาร์เรย์กับไฟวิ่ง",
+   "level": "กลาง",
+   "desc_th": "เก็บเลขขาในอาร์เรย์แล้วไล่เปิดไฟตามลำดับ",
+   "ino": "05.Control/Arrays/Arrays.ino"
+  },
+  {
+   "id": "05.Control/ForLoopIteration",
+   "category": "05.Control",
+   "category_th": "คำสั่งควบคุม",
+   "name": "ForLoopIteration",
+   "title_th": "ไฟวิ่งด้วย for",
+   "level": "ง่าย",
+   "desc_th": "ใช้ลูป for ไล่เปิดไฟ LED 6 ดวงไปทางซ้ายแล้วกลับทางขวา",
+   "ino": "05.Control/ForLoopIteration/ForLoopIteration.ino",
+   "py": "05.Control/ForLoopIteration/ForLoopIteration.py",
+   "components": []
+  },
+  {
+   "id": "05.Control/WhileStatementConditional",
+   "category": "05.Control",
+   "category_th": "คำสั่งควบคุม",
+   "name": "WhileStatementConditional",
+   "title_th": "วนซ้ำขณะกดปุ่ม (while)",
+   "level": "กลาง",
+   "desc_th": "ขณะกดปุ่มค้างให้ปรับเทียบเซนเซอร์",
+   "ino": "05.Control/WhileStatementConditional/WhileStatementConditional.ino"
+  },
+  {
+   "id": "05.Control/switchCase2",
+   "category": "05.Control",
+   "category_th": "คำสั่งควบคุม",
+   "name": "switchCase2",
+   "title_th": "เลือกทำตามตัวอักษร (switch)",
+   "level": "กลาง",
+   "desc_th": "พิมพ์ a-e จากคอมพิวเตอร์เพื่อเปิดไฟดวงต่าง ๆ",
+   "ino": "05.Control/switchCase2/switchCase2.ino"
+  },
+  {
+   "id": "05.Control/switchCase",
+   "category": "05.Control",
+   "category_th": "คำสั่งควบคุม",
+   "name": "switchCase",
+   "title_th": "เลือกทำตามช่วงค่า (switch)",
+   "level": "ง่าย",
+   "desc_th": "แบ่งค่าแสงเป็น 4 ช่วง: มืด สลัว ปานกลาง สว่าง",
+   "ino": "05.Control/switchCase/switchCase.ino",
+   "py": "05.Control/switchCase/switchCase.py",
+   "components": [
+    "ldr"
+   ]
+  },
+  {
+   "id": "06.Sensors/ADXL3xx",
+   "category": "06.Sensors",
+   "category_th": "เซนเซอร์",
+   "name": "ADXL3xx",
+   "title_th": "วัดความเอียง ADXL3xx",
+   "level": "กลาง",
+   "desc_th": "อ่านค่าแกน X Y Z จากเซนเซอร์ความเร่งแบบแอนะล็อก",
+   "ino": "06.Sensors/ADXL3xx/ADXL3xx.ino"
+  },
+  {
+   "id": "06.Sensors/Ping",
+   "category": "06.Sensors",
+   "category_th": "เซนเซอร์",
+   "name": "Ping",
+   "title_th": "วัดระยะด้วยคลื่นเสียง",
+   "level": "ง่าย",
+   "desc_th": "วัดระยะทางด้วยเซนเซอร์อัลตราโซนิก แสดงเป็นเซนติเมตร",
+   "ino": "06.Sensors/Ping/Ping.ino",
+   "py": "06.Sensors/Ping/Ping.py",
+   "components": [
+    "hc_sr04"
+   ]
+  },
+  {
+   "id": "06.Sensors/Knock",
+   "category": "06.Sensors",
+   "category_th": "เซนเซอร์",
+   "name": "Knock",
+   "title_th": "ตรวจจับการเคาะ",
+   "level": "ง่าย",
+   "desc_th": "เคาะโต๊ะแรงพอ ไฟ LED จะสลับติด/ดับ",
+   "ino": "06.Sensors/Knock/Knock.ino",
+   "py": "06.Sensors/Knock/Knock.py",
+   "components": [
+    "sound",
+    "led"
+   ]
+  },
+  {
+   "id": "06.Sensors/Memsic2125",
+   "category": "06.Sensors",
+   "category_th": "เซนเซอร์",
+   "name": "Memsic2125",
+   "title_th": "วัดความเอียง Memsic 2125",
+   "level": "ยาก",
+   "desc_th": "อ่านความเร่งจากความกว้างพัลส์",
+   "ino": "06.Sensors/Memsic2125/Memsic2125.ino"
+  },
+  {
+   "id": "07.Display/RowColumnScanning",
+   "category": "07.Display",
+   "category_th": "แสดงผล",
+   "name": "RowColumnScanning",
+   "title_th": "จอ LED 8x8",
+   "level": "ยาก",
+   "desc_th": "สแกนแถวและคอลัมน์ของจอ LED 8x8",
+   "ino": "07.Display/RowColumnScanning/RowColumnScanning.ino"
+  },
+  {
+   "id": "07.Display/barGraph",
+   "category": "07.Display",
+   "category_th": "แสดงผล",
+   "name": "barGraph",
+   "title_th": "แถบไฟแสดงระดับ",
+   "level": "ง่าย",
+   "desc_th": "หมุนปุ่มปรับค่า ไฟ LED จะติดเป็นแถบยาวตามค่า",
+   "ino": "07.Display/barGraph/barGraph.ino",
+   "py": "07.Display/barGraph/barGraph.py",
+   "components": [
+    "potentiometer"
+   ]
+  },
+  {
+   "id": "08.Strings/StringReplace",
+   "category": "08.Strings",
+   "category_th": "ข้อความ (String)",
+   "name": "StringReplace",
+   "title_th": "แทนที่คำ",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "08.Strings/StringReplace/StringReplace.ino"
+  },
+  {
+   "id": "08.Strings/StringSubstring",
+   "category": "08.Strings",
+   "category_th": "ข้อความ (String)",
+   "name": "StringSubstring",
+   "title_th": "ตัดข้อความบางส่วน",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "08.Strings/StringSubstring/StringSubstring.ino"
+  },
+  {
+   "id": "08.Strings/CharacterAnalysis",
+   "category": "08.Strings",
+   "category_th": "ข้อความ (String)",
+   "name": "CharacterAnalysis",
+   "title_th": "วิเคราะห์ตัวอักษร",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "08.Strings/CharacterAnalysis/CharacterAnalysis.ino"
+  },
+  {
+   "id": "08.Strings/StringLength",
+   "category": "08.Strings",
+   "category_th": "ข้อความ (String)",
+   "name": "StringLength",
+   "title_th": "ความยาวข้อความ",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "08.Strings/StringLength/StringLength.ino"
+  },
+  {
+   "id": "08.Strings/StringToInt",
+   "category": "08.Strings",
+   "category_th": "ข้อความ (String)",
+   "name": "StringToInt",
+   "title_th": "แปลงข้อความเป็นตัวเลข",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "08.Strings/StringToInt/StringToInt.ino"
+  },
+  {
+   "id": "08.Strings/StringComparisonOperators",
+   "category": "08.Strings",
+   "category_th": "ข้อความ (String)",
+   "name": "StringComparisonOperators",
+   "title_th": "เปรียบเทียบข้อความ",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "08.Strings/StringComparisonOperators/StringComparisonOperators.ino"
+  },
+  {
+   "id": "08.Strings/StringAdditionOperator",
+   "category": "08.Strings",
+   "category_th": "ข้อความ (String)",
+   "name": "StringAdditionOperator",
+   "title_th": "บวกข้อความ",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "08.Strings/StringAdditionOperator/StringAdditionOperator.ino"
+  },
+  {
+   "id": "08.Strings/StringStartsWithEndsWith",
+   "category": "08.Strings",
+   "category_th": "ข้อความ (String)",
+   "name": "StringStartsWithEndsWith",
+   "title_th": "ขึ้นต้น/ลงท้ายด้วย",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "08.Strings/StringStartsWithEndsWith/StringStartsWithEndsWith.ino"
+  },
+  {
+   "id": "08.Strings/StringConstructors",
+   "category": "08.Strings",
+   "category_th": "ข้อความ (String)",
+   "name": "StringConstructors",
+   "title_th": "สร้างข้อความจากตัวเลข",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "08.Strings/StringConstructors/StringConstructors.ino"
+  },
+  {
+   "id": "08.Strings/StringLengthTrim",
+   "category": "08.Strings",
+   "category_th": "ข้อความ (String)",
+   "name": "StringLengthTrim",
+   "title_th": "ตัดช่องว่างหัวท้าย",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "08.Strings/StringLengthTrim/StringLengthTrim.ino"
+  },
+  {
+   "id": "08.Strings/StringToIntRGB",
+   "category": "08.Strings",
+   "category_th": "ข้อความ (String)",
+   "name": "StringToIntRGB",
+   "title_th": "รับค่าสี RGB เป็นข้อความ",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "08.Strings/StringToIntRGB/StringToIntRGB.ino"
+  },
+  {
+   "id": "08.Strings/StringAppendOperator",
+   "category": "08.Strings",
+   "category_th": "ข้อความ (String)",
+   "name": "StringAppendOperator",
+   "title_th": "ต่อท้ายข้อความ",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "08.Strings/StringAppendOperator/StringAppendOperator.ino"
+  },
+  {
+   "id": "08.Strings/StringIndexOf",
+   "category": "08.Strings",
+   "category_th": "ข้อความ (String)",
+   "name": "StringIndexOf",
+   "title_th": "ค้นหาคำในข้อความ",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "08.Strings/StringIndexOf/StringIndexOf.ino"
+  },
+  {
+   "id": "08.Strings/StringCharacters",
+   "category": "08.Strings",
+   "category_th": "ข้อความ (String)",
+   "name": "StringCharacters",
+   "title_th": "อ่าน/แก้ตัวอักษรในข้อความ",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "08.Strings/StringCharacters/StringCharacters.ino"
+  },
+  {
+   "id": "08.Strings/StringCaseChanges",
+   "category": "08.Strings",
+   "category_th": "ข้อความ (String)",
+   "name": "StringCaseChanges",
+   "title_th": "ตัวพิมพ์ใหญ่-เล็ก",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "08.Strings/StringCaseChanges/StringCaseChanges.ino"
+  },
+  {
+   "id": "09.USB/Mouse/ButtonMouseControl",
+   "category": "09.USB",
+   "category_th": "คีย์บอร์ด/เมาส์ USB (Leonardo)",
+   "name": "ButtonMouseControl",
+   "title_th": "เลื่อนเมาส์ด้วยปุ่มกด",
+   "level": "กลาง",
+   "desc_th": "ปุ่ม 5 ปุ่ม: ขึ้น ลง ซ้าย ขวา คลิก",
+   "ino": "09.USB/ButtonMouseControl/ButtonMouseControl.ino",
+   "boards_th": "Arduino Leonardo / Micro เท่านั้น"
+  },
+  {
+   "id": "09.USB/Mouse/JoystickMouseControl",
+   "category": "09.USB",
+   "category_th": "คีย์บอร์ด/เมาส์ USB (Leonardo)",
+   "name": "JoystickMouseControl",
+   "title_th": "เลื่อนเมาส์ด้วยจอยสติ๊ก",
+   "level": "กลาง",
+   "desc_th": "ใช้จอยสติ๊กคุมเมาส์ของคอมพิวเตอร์",
+   "ino": "09.USB/JoystickMouseControl/JoystickMouseControl.ino",
+   "boards_th": "Arduino Leonardo / Micro เท่านั้น"
+  },
+  {
+   "id": "09.USB/Keyboard/KeyboardLogout",
+   "category": "09.USB",
+   "category_th": "คีย์บอร์ด/เมาส์ USB (Leonardo)",
+   "name": "KeyboardLogout",
+   "title_th": "ออกจากระบบด้วยคีย์บอร์ดจำลอง",
+   "level": "ยาก",
+   "desc_th": "Leonardo กดแป้นลัดออกจากระบบให้เอง",
+   "ino": "09.USB/KeyboardLogout/KeyboardLogout.ino",
+   "boards_th": "Arduino Leonardo / Micro เท่านั้น"
+  },
+  {
+   "id": "09.USB/Keyboard/KeyboardMessage",
+   "category": "09.USB",
+   "category_th": "คีย์บอร์ด/เมาส์ USB (Leonardo)",
+   "name": "KeyboardMessage",
+   "title_th": "พิมพ์ข้อความด้วยปุ่มกด",
+   "level": "กลาง",
+   "desc_th": "กดปุ่มแล้ว Leonardo พิมพ์ข้อความลงคอมพิวเตอร์เหมือนคีย์บอร์ด",
+   "ino": "09.USB/KeyboardMessage/KeyboardMessage.ino",
+   "boards_th": "Arduino Leonardo / Micro เท่านั้น"
+  },
+  {
+   "id": "09.USB/Keyboard/KeyboardReprogram",
+   "category": "09.USB",
+   "category_th": "คีย์บอร์ด/เมาส์ USB (Leonardo)",
+   "name": "KeyboardReprogram",
+   "title_th": "พิมพ์โปรแกรมให้เอง",
+   "level": "ยาก",
+   "desc_th": "Leonardo พิมพ์โค้ดลงใน Arduino IDE เอง",
+   "ino": "09.USB/KeyboardReprogram/KeyboardReprogram.ino",
+   "boards_th": "Arduino Leonardo / Micro เท่านั้น"
+  },
+  {
+   "id": "09.USB/Keyboard/KeyboardSerial",
+   "category": "09.USB",
+   "category_th": "คีย์บอร์ด/เมาส์ USB (Leonardo)",
+   "name": "KeyboardSerial",
+   "title_th": "แปลงตัวอักษรเป็นคีย์บอร์ด",
+   "level": "กลาง",
+   "desc_th": "รับตัวอักษรทาง Serial แล้วพิมพ์ออกเป็นคีย์บอร์ด",
+   "ino": "09.USB/KeyboardSerial/KeyboardSerial.ino",
+   "boards_th": "Arduino Leonardo / Micro เท่านั้น"
+  },
+  {
+   "id": "09.USB/KeyboardAndMouseControl",
+   "category": "09.USB",
+   "category_th": "คีย์บอร์ด/เมาส์ USB (Leonardo)",
+   "name": "KeyboardAndMouseControl",
+   "title_th": "คุมคีย์บอร์ดและเมาส์ด้วยปุ่ม",
+   "level": "กลาง",
+   "desc_th": "ใช้ปุ่ม 5 ปุ่มเลื่อนเมาส์และกดแป้น",
+   "ino": "09.USB/KeyboardAndMouseControl/KeyboardAndMouseControl.ino",
+   "boards_th": "Arduino Leonardo / Micro เท่านั้น"
+  },
+  {
+   "id": "10.StarterKit/p06_LightTheremin",
+   "category": "10.StarterKit",
+   "category_th": "ชุด Starter Kit",
+   "name": "p06_LightTheremin",
+   "title_th": "เครื่องดนตรีแสง (เทอร์มิน)",
+   "level": "ง่าย",
+   "desc_th": "โบกมือเหนือเซนเซอร์แสง เสียงสูงต่ำเปลี่ยนตาม",
+   "ino": "10.StarterKit/p06_LightTheremin/p06_LightTheremin.ino",
+   "py": "10.StarterKit/p06_LightTheremin/p06_LightTheremin.py",
+   "components": [
+    "ldr",
+    "buzzer_passive"
+   ]
+  },
+  {
+   "id": "10.StarterKit/p03_LoveOMeter",
+   "category": "10.StarterKit",
+   "category_th": "ชุด Starter Kit",
+   "name": "p03_LoveOMeter",
+   "title_th": "เครื่องวัดความร้อนแรง",
+   "level": "ง่าย",
+   "desc_th": "จับเซนเซอร์อุณหภูมิ TMP36 แล้วไฟติดตามอุณหภูมิมือ",
+   "ino": "10.StarterKit/p03_LoveOMeter/p03_LoveOMeter.ino"
+  },
+  {
+   "id": "10.StarterKit/p11_CrystalBall",
+   "category": "10.StarterKit",
+   "category_th": "ชุด Starter Kit",
+   "name": "p11_CrystalBall",
+   "title_th": "ลูกแก้วทำนาย",
+   "level": "กลาง",
+   "desc_th": "เขย่าสวิตช์เอียง จอ LCD สุ่มคำตอบ",
+   "ino": "10.StarterKit/p11_CrystalBall/p11_CrystalBall.ino"
+  },
+  {
+   "id": "10.StarterKit/p09_MotorizedPinwheel",
+   "category": "10.StarterKit",
+   "category_th": "ชุด Starter Kit",
+   "name": "p09_MotorizedPinwheel",
+   "title_th": "กังหันมอเตอร์",
+   "level": "กลาง",
+   "desc_th": "กดปุ่มให้มอเตอร์ DC หมุนผ่านทรานซิสเตอร์",
+   "ino": "10.StarterKit/p09_MotorizedPinwheel/p09_MotorizedPinwheel.ino"
+  },
+  {
+   "id": "10.StarterKit/p15_HackingButtons",
+   "category": "10.StarterKit",
+   "category_th": "ชุด Starter Kit",
+   "name": "p15_HackingButtons",
+   "title_th": "แฮกปุ่มอุปกรณ์",
+   "level": "กลาง",
+   "desc_th": "ใช้ออปโตคัปเปลอร์กดปุ่มของอุปกรณ์อื่นแทนมือ",
+   "ino": "10.StarterKit/p15_HackingButtons/p15_HackingButtons.ino"
+  },
+  {
+   "id": "10.StarterKit/p07_Keyboard",
+   "category": "10.StarterKit",
+   "category_th": "ชุด Starter Kit",
+   "name": "p07_Keyboard",
+   "title_th": "คีย์บอร์ดดนตรี",
+   "level": "กลาง",
+   "desc_th": "ปุ่ม 4 ปุ่มต่อผ่านตัวต้านทานเข้าขาเดียว เล่นโน้ต 4 ตัว",
+   "ino": "10.StarterKit/p07_Keyboard/p07_Keyboard.ino"
+  },
+  {
+   "id": "10.StarterKit/p02_SpaceshipInterface",
+   "category": "10.StarterKit",
+   "category_th": "ชุด Starter Kit",
+   "name": "p02_SpaceshipInterface",
+   "title_th": "แผงควบคุมยานอวกาศ",
+   "level": "ง่าย",
+   "desc_th": "กดปุ่มแล้วไฟแดงกะพริบสลับกัน ไม่กดไฟเขียวติด",
+   "ino": "10.StarterKit/p02_SpaceshipInterface/p02_SpaceshipInterface.ino"
+  },
+  {
+   "id": "10.StarterKit/p04_ColorMixingLamp",
+   "category": "10.StarterKit",
+   "category_th": "ชุด Starter Kit",
+   "name": "p04_ColorMixingLamp",
+   "title_th": "โคมไฟผสมสี",
+   "level": "กลาง",
+   "desc_th": "เซนเซอร์แสง 3 ตัว (แดง เขียว น้ำเงิน) ควบคุมไฟ RGB",
+   "ino": "10.StarterKit/p04_ColorMixingLamp/p04_ColorMixingLamp.ino"
+  },
+  {
+   "id": "10.StarterKit/p10_Zoetrope",
+   "category": "10.StarterKit",
+   "category_th": "ชุด Starter Kit",
+   "name": "p10_Zoetrope",
+   "title_th": "ภาพเคลื่อนไหวหมุน",
+   "level": "ยาก",
+   "desc_th": "ควบคุมทิศทางและความเร็วมอเตอร์ด้วยไอซี H-bridge",
+   "ino": "10.StarterKit/p10_Zoetrope/p10_Zoetrope.ino"
+  },
+  {
+   "id": "10.StarterKit/p05_ServoMoodIndicator",
+   "category": "10.StarterKit",
+   "category_th": "ชุด Starter Kit",
+   "name": "p05_ServoMoodIndicator",
+   "title_th": "เข็มบอกอารมณ์",
+   "level": "ง่าย",
+   "desc_th": "หมุนปุ่มปรับค่า เซอร์โวหมุนตาม",
+   "ino": "10.StarterKit/p05_ServoMoodIndicator/p05_ServoMoodIndicator.ino",
+   "py": "10.StarterKit/p05_ServoMoodIndicator/p05_ServoMoodIndicator.py",
+   "components": [
+    "servo",
+    "potentiometer"
+   ]
+  },
+  {
+   "id": "10.StarterKit/p14_TweakTheArduinoLogo",
+   "category": "10.StarterKit",
+   "category_th": "ชุด Starter Kit",
+   "name": "p14_TweakTheArduinoLogo",
+   "title_th": "เปลี่ยนสีโลโก้บนจอคอม",
+   "level": "กลาง",
+   "desc_th": "ส่งค่าปุ่มหมุนไปเปลี่ยนสีภาพในโปรแกรม Processing",
+   "ino": "10.StarterKit/p14_TweakTheArduinoLogo/p14_TweakTheArduinoLogo.ino"
+  },
+  {
+   "id": "10.StarterKit/p12_KnockLock",
+   "category": "10.StarterKit",
+   "category_th": "ชุด Starter Kit",
+   "name": "p12_KnockLock",
+   "title_th": "กลอนประตูเคาะรหัส",
+   "level": "ยาก",
+   "desc_th": "เคาะให้ถูกจังหวะ เซอร์โวจะปลดล็อก",
+   "ino": "10.StarterKit/p12_KnockLock/p12_KnockLock.ino"
+  },
+  {
+   "id": "10.StarterKit/p08_DigitalHourglass",
+   "category": "10.StarterKit",
+   "category_th": "ชุด Starter Kit",
+   "name": "p08_DigitalHourglass",
+   "title_th": "นาฬิกาทรายดิจิทัล",
+   "level": "กลาง",
+   "desc_th": "ไฟติดทีละดวงตามเวลา เอียงบอร์ดเพื่อเริ่มใหม่",
+   "ino": "10.StarterKit/p08_DigitalHourglass/p08_DigitalHourglass.ino",
+   "py": "10.StarterKit/p08_DigitalHourglass/p08_DigitalHourglass.py",
+   "components": [
+    "button"
+   ]
+  },
+  {
+   "id": "10.StarterKit/p13_TouchSensorLamp",
+   "category": "10.StarterKit",
+   "category_th": "ชุด Starter Kit",
+   "name": "p13_TouchSensorLamp",
+   "title_th": "โคมไฟสัมผัส",
+   "level": "กลาง",
+   "desc_th": "แตะแผ่นโลหะเพื่อเปิดปิดไฟ (ใช้ไลบรารี CapacitiveSensor)",
+   "ino": "10.StarterKit/p13_TouchSensorLamp/p13_TouchSensorLamp.ino"
+  },
+  {
+   "id": "11.Servo/Knob",
+   "category": "11.Servo",
+   "category_th": "เซอร์โว",
+   "name": "Knob",
+   "title_th": "หมุนเซอร์โวด้วยปุ่มหมุน",
+   "level": "ง่าย",
+   "desc_th": "หมุนตัวต้านทานปรับค่า เซอร์โวหมุนตามมุม",
+   "ino": "11.Servo/Knob/Knob.ino",
+   "py": "11.Servo/Knob/Knob.py",
+   "components": [
+    "servo",
+    "potentiometer"
+   ]
+  },
+  {
+   "id": "11.Servo/Sweep",
+   "category": "11.Servo",
+   "category_th": "เซอร์โว",
+   "name": "Sweep",
+   "title_th": "เซอร์โวกวาดไปมา",
+   "level": "ง่าย",
+   "desc_th": "เซอร์โวหมุน 0 ถึง 180 องศา แล้วหมุนกลับ",
+   "ino": "11.Servo/Sweep/Sweep.ino",
+   "py": "11.Servo/Sweep/Sweep.py",
+   "components": [
+    "servo"
+   ]
+  },
+  {
+   "id": "12.LiquidCrystal/Autoscroll",
+   "category": "12.LiquidCrystal",
+   "category_th": "จอ LCD",
+   "name": "Autoscroll",
+   "title_th": "จอ LCD เลื่อนข้อความอัตโนมัติ",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "12.LiquidCrystal/Autoscroll/Autoscroll.ino"
+  },
+  {
+   "id": "12.LiquidCrystal/Blink",
+   "category": "12.LiquidCrystal",
+   "category_th": "จอ LCD",
+   "name": "Blink",
+   "title_th": "จอ LCD เคอร์เซอร์กะพริบ",
+   "level": "ง่าย",
+   "desc_th": "",
+   "ino": "12.LiquidCrystal/Blink/Blink.ino"
+  },
+  {
+   "id": "12.LiquidCrystal/Cursor",
+   "category": "12.LiquidCrystal",
+   "category_th": "จอ LCD",
+   "name": "Cursor",
+   "title_th": "จอ LCD แสดง/ซ่อนเคอร์เซอร์",
+   "level": "ง่าย",
+   "desc_th": "",
+   "ino": "12.LiquidCrystal/Cursor/Cursor.ino"
+  },
+  {
+   "id": "12.LiquidCrystal/Display",
+   "category": "12.LiquidCrystal",
+   "category_th": "จอ LCD",
+   "name": "Display",
+   "title_th": "จอ LCD เปิด/ปิดการแสดงผล",
+   "level": "ง่าย",
+   "desc_th": "",
+   "ino": "12.LiquidCrystal/Display/Display.ino"
+  },
+  {
+   "id": "12.LiquidCrystal/HelloWorld",
+   "category": "12.LiquidCrystal",
+   "category_th": "จอ LCD",
+   "name": "HelloWorld",
+   "title_th": "สวัสดีชาวโลกบนจอ",
+   "level": "ง่าย",
+   "desc_th": "แสดงข้อความ hello, world! และนับวินาทีบนจอ (ตัวอย่าง MicroPython ใช้จอ OLED)",
+   "ino": "12.LiquidCrystal/HelloWorld/HelloWorld.ino",
+   "py": "12.LiquidCrystal/HelloWorld/HelloWorld.py",
+   "components": [
+    "oled"
+   ]
+  },
+  {
+   "id": "12.LiquidCrystal/Scroll",
+   "category": "12.LiquidCrystal",
+   "category_th": "จอ LCD",
+   "name": "Scroll",
+   "title_th": "จอ LCD เลื่อนข้อความซ้าย-ขวา",
+   "level": "ง่าย",
+   "desc_th": "",
+   "ino": "12.LiquidCrystal/Scroll/Scroll.ino"
+  },
+  {
+   "id": "12.LiquidCrystal/SerialDisplay",
+   "category": "12.LiquidCrystal",
+   "category_th": "จอ LCD",
+   "name": "SerialDisplay",
+   "title_th": "แสดงข้อความจากคอมพิวเตอร์บน LCD",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "12.LiquidCrystal/SerialDisplay/SerialDisplay.ino"
+  },
+  {
+   "id": "12.LiquidCrystal/TextDirection",
+   "category": "12.LiquidCrystal",
+   "category_th": "จอ LCD",
+   "name": "TextDirection",
+   "title_th": "จอ LCD เปลี่ยนทิศทางตัวอักษร",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "12.LiquidCrystal/TextDirection/TextDirection.ino"
+  },
+  {
+   "id": "12.LiquidCrystal/setCursor",
+   "category": "12.LiquidCrystal",
+   "category_th": "จอ LCD",
+   "name": "setCursor",
+   "title_th": "จอ LCD วางตัวอักษรทุกช่อง",
+   "level": "ง่าย",
+   "desc_th": "",
+   "ino": "12.LiquidCrystal/setCursor/setCursor.ino"
+  },
+  {
+   "id": "13.Stepper/MotorKnob",
+   "category": "13.Stepper",
+   "category_th": "สเต็ปเปอร์มอเตอร์",
+   "name": "MotorKnob",
+   "title_th": "สเต็ปเปอร์หมุนตามปุ่มหมุน",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "13.Stepper/MotorKnob/MotorKnob.ino"
+  },
+  {
+   "id": "13.Stepper/stepper_oneRevolution",
+   "category": "13.Stepper",
+   "category_th": "สเต็ปเปอร์มอเตอร์",
+   "name": "stepper_oneRevolution",
+   "title_th": "สเต็ปเปอร์หมุนครบรอบ",
+   "level": "ง่าย",
+   "desc_th": "หมุนตามเข็ม 1 รอบ แล้วหมุนทวนเข็ม 1 รอบ",
+   "ino": "13.Stepper/stepper_oneRevolution/stepper_oneRevolution.ino",
+   "py": "13.Stepper/stepper_oneRevolution/stepper_oneRevolution.py",
+   "components": [
+    "stepper"
+   ]
+  },
+  {
+   "id": "13.Stepper/stepper_oneStepAtATime",
+   "category": "13.Stepper",
+   "category_th": "สเต็ปเปอร์มอเตอร์",
+   "name": "stepper_oneStepAtATime",
+   "title_th": "สเต็ปเปอร์หมุนทีละขั้น",
+   "level": "ง่าย",
+   "desc_th": "",
+   "ino": "13.Stepper/stepper_oneStepAtATime/stepper_oneStepAtATime.ino"
+  },
+  {
+   "id": "13.Stepper/stepper_speedControl",
+   "category": "13.Stepper",
+   "category_th": "สเต็ปเปอร์มอเตอร์",
+   "name": "stepper_speedControl",
+   "title_th": "ปรับความเร็วสเต็ปเปอร์",
+   "level": "กลาง",
+   "desc_th": "",
+   "ino": "13.Stepper/stepper_speedControl/stepper_speedControl.ino"
+  },
+  {
+   "id": "14.EEPROM/eeprom_clear",
+   "category": "14.EEPROM",
+   "category_th": "เก็บค่าถาวร (EEPROM)",
+   "name": "eeprom_clear",
+   "title_th": "ล้างค่า EEPROM",
+   "level": "ง่าย",
+   "desc_th": "",
+   "ino": "14.EEPROM/eeprom_clear/eeprom_clear.ino"
+  },
+  {
+   "id": "14.EEPROM/eeprom_read",
+   "category": "14.EEPROM",
+   "category_th": "เก็บค่าถาวร (EEPROM)",
+   "name": "eeprom_read",
+   "title_th": "อ่านค่า EEPROM",
+   "level": "ง่าย",
+   "desc_th": "",
+   "ino": "14.EEPROM/eeprom_read/eeprom_read.ino"
+  },
+  {
+   "id": "14.EEPROM/eeprom_write",
+   "category": "14.EEPROM",
+   "category_th": "เก็บค่าถาวร (EEPROM)",
+   "name": "eeprom_write",
+   "title_th": "เก็บค่าไว้แม้ปิดไฟ",
+   "level": "ง่าย",
+   "desc_th": "เก็บค่าลงหน่วยความจำถาวร (MicroPython ใช้ไฟล์แทน EEPROM: นับจำนวนครั้งที่เปิดบอร์ด)",
+   "ino": "14.EEPROM/eeprom_write/eeprom_write.ino",
+   "py": "14.EEPROM/eeprom_write/eeprom_write.py",
+   "components": []
+  }
+ ]
+}

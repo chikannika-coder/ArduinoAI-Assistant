@@ -26,8 +26,10 @@ from device import BoardLink, Simulator, list_ports, parse_line, evaluate_rule, 
 from wiring import WiringCanvas, SIGNAL_COLORS
 from wizard import WizardTab
 from component_dialog import NewComponentDialog
+from examples_dialog import ExamplesDialog
+import examples_lib
 
-VERSION = "2.1"
+VERSION = "2.3"
 CONFIG_PATH = os.path.join(BASE, "config.json")
 MY_CODE = os.path.join(BASE, "my_code")
 IMAGES = os.path.join(BASE, "images")
@@ -220,12 +222,14 @@ class App:
         fr2.pack(fill="both", expand=True)
         for tag, color in (("err", PALETTE["red"]), ("warn", PALETTE["orange"]), ("ok", PALETTE["green"]), ("h", PALETTE["blue"])):
             self.txt_info.tag_configure(tag, foreground=color, font=self.fb if tag == "h" else self.f)
+        self.txt_info.tag_configure("code", font=self.fmono, background="#F1F4F9")
         mid.add(left, weight=3)
         mid.add(right, weight=2)
-        ttk.Button(files, text="📂 เปิดไฟล์โค้ด (.py / .ino)", command=self.open_code).pack(side="left")
-        ttk.Button(files, text="⭐ เก็บเป็นโค้ดของฉัน", command=self.save_my_code).pack(side="left", padx=6)
+        ttk.Button(files, text="📚 ตัวอย่าง Arduino", command=lambda: ExamplesDialog(self)).pack(side="left", padx=(0, 6))
+        ttk.Button(files, text="📂 เปิดไฟล์", command=self.open_code).pack(side="left")
+        ttk.Button(files, text="⭐ เก็บไว้ในโค้ดของฉัน", command=self.save_my_code).pack(side="left", padx=6)
         ttk.Label(files, text="โค้ดของฉัน:").pack(side="left", padx=(10, 4))
-        self.cmb_my = ttk.Combobox(files, values=self._my_code_list(), state="readonly", width=26)
+        self.cmb_my = ttk.Combobox(files, values=self._my_code_list(), state="readonly", width=22)
         self.cmb_my.pack(side="left")
         self.cmb_my.bind("<<ComboboxSelected>>", lambda e: self.open_code(os.path.join(MY_CODE, self.cmb_my.get())))
         ttk.Button(files, text="📋 คัดลอก", command=self.copy_code).pack(side="left", padx=(16, 6))
@@ -311,6 +315,14 @@ class App:
                 t.insert("end", "• " + x + "\n")
         if res.keys:
             t.insert("end", "\nค่าที่บอร์ดจะส่งกลับมา: " + ", ".join(res.keys) + "\n", "ok")
+        if res.refs:
+            t.insert("end", "\nคำสั่ง Arduino ในโค้ดนี้ → เขียนใน MicroPython ว่า\n", "h")
+            for r in res.refs:
+                t.insert("end", "• %s — %s\n" % (r["name"], r.get("th", "")))
+                t.insert("end", "    " + r["micropython"].replace("\n", "\n    ") + "\n", "code")
+                if r.get("note_th"):
+                    t.insert("end", "    ↳ " + r["note_th"] + "\n", "warn")
+            t.insert("end", "(ดูคำสั่งทั้งหมดได้ในแท็บ ⑤ คลังความรู้ พิมพ์ชื่อคำสั่งในช่องค้นหา)\n")
         libs = [c.get("library") for c in res.components if c.get("library")]
         self.btn_lib.configure(state="normal" if libs else "disabled")
         self.status("สร้างโค้ดเสร็จ" + (" (มีข้อผิดพลาด)" if res.errors else ""))
@@ -328,7 +340,10 @@ class App:
             code = f.read()
         from generator import Result
         m = re.search(r"^(?:#|//) คำสั่ง:\s*(.+)$", code, re.M)
-        if m:   # ไฟล์ที่โปรแกรมนี้เคยสร้าง: กู้แผนการต่อสายกลับมาให้ด้วย
+        if examples_lib.header(code, "แผนขา") and self.board()["micropython"]:
+            code, res, notes = examples_lib.adapt(code, self.gen, self.board())
+            res.warnings = notes + res.warnings
+        elif m:   # ไฟล์ที่โปรแกรมนี้เคยสร้าง: กู้แผนการต่อสายกลับมาให้ด้วย
             _, _, res = self.gen.plan(m.group(1), self.board()["id"])
             res.keys = [k for c in res.components if c["type"] == "sensor" for k in c.get("keys", [])]
             self.txt_cmd.delete("1.0", "end")
@@ -340,7 +355,10 @@ class App:
         res.code = code
         res.language = "cpp" if ("void setup" in code or path.lower().endswith(".ino")) else "micropython"
         if res.language == "cpp" and self.board()["micropython"]:
-            res.warnings.append("ไฟล์นี้เป็นโค้ด C++ ของ Arduino บอร์ด MicroPython รันไม่ได้ ให้เปิดด้วย Arduino IDE")
+            res.warnings.append("ไฟล์นี้เป็นโค้ด C++ ของ Arduino บอร์ด MicroPython รันไม่ได้ ให้เปิดด้วย Arduino IDE "
+                                "หรือดูวิธีเขียนแต่ละคำสั่งใน MicroPython ด้านล่าง")
+        if res.language == "cpp":
+            res.refs = self.kb.ref_for_code(code)
         errs, warns = check_code(code, self.board()) if res.language == "micropython" else ([], [])
         res.errors += errs
         res.warnings += warns
@@ -353,6 +371,39 @@ class App:
         self._reset_live_ui()
         self.nb.select(self.tab_index["code"])
         self.status("เปิดไฟล์แล้ว: " + os.path.basename(path))
+
+    def open_example(self, e, kind):
+        """เปิดตัวอย่าง Arduino: kind = "py" (MicroPython ปรับขาตามบอร์ด) หรือ "ino" (C++ ต้นฉบับ)"""
+        board = self.board()
+        self.txt_cmd.delete("1.0", "end")          # ล้างคำสั่งเดิม จะได้ไม่สับสนกับโค้ดตัวอย่าง
+        if kind == "ino" or "py" not in e or not board["micropython"]:
+            self.open_code(os.path.join(examples_lib.FOLDER, e["ino"]))
+            self.result.explanation.insert(1, "ตัวอย่าง: %s — %s" % (e["title_th"], e.get("desc_th", "")))
+            if e.get("note_th"):
+                self.result.warnings.append(e["note_th"])
+            if e.get("boards_th"):
+                self.result.warnings.append("ตัวอย่างนี้ใช้ได้กับ " + e["boards_th"])
+            self._show_result(self.result)
+            return
+        with open(os.path.join(examples_lib.FOLDER, e["py"]), encoding="utf-8") as f:
+            src = f.read()
+        code, res, notes = examples_lib.adapt(src, self.gen, board)
+        res.warnings = notes + res.warnings
+        if examples_lib.header(src, "แผนขา"):
+            self.txt_cmd.insert("1.0", examples_lib.header(src, "แผนขา"))
+        res.explanation.insert(0, "ตัวอย่าง: %s (%s) — %s" % (e["title_th"], e["name"], e.get("desc_th", "")))
+        res.explanation.insert(1, "เลขขาในโค้ดเลือกให้ตรงกับบอร์ด %s แล้ว ถ้าเปลี่ยนบอร์ด ให้เปิดตัวอย่างนี้ใหม่" % board["name"])
+        with open(os.path.join(examples_lib.FOLDER, e["ino"]), encoding="utf-8", errors="replace") as f:
+            res.refs = self.kb.ref_for_code(f.read())
+        errs, warns = check_code(code, board)
+        res.errors += errs
+        res.warnings += warns
+        self.result = res
+        self._show_result(res)
+        self.wc.load(res, board)
+        self._reset_live_ui()
+        self.nb.select(self.tab_index["code"])
+        self.status("เปิดตัวอย่าง: " + e["name"])
 
     def save_my_code(self):
         name = simpledialog.askstring("เก็บเป็นโค้ดของฉัน", "ตั้งชื่อโค้ด:", parent=self.root)
@@ -675,17 +726,18 @@ class App:
     def _tab_chat(self):
         tab = ttk.Frame(self.nb, padding=10)
         self.nb.add(tab, text="④ ถาม AI")
+        row = ttk.Frame(tab)
+        row.pack(side="bottom", fill="x", pady=(8, 0))   # ช่องพิมพ์คำถามอยู่ล่างสุดเสมอ ไม่ถูกดันตกขอบจอ
         fr, self.txt_chat = self._text(tab, state="normal")
         fr.pack(fill="both", expand=True)
         self.txt_chat.tag_configure("me", foreground=PALETTE["blue"], font=self.fb)
         self.txt_chat.tag_configure("ai", foreground=PALETTE["green"], font=self.fb)
-        row = ttk.Frame(tab)
-        row.pack(fill="x", pady=(8, 0))
         self.ent_chat = ttk.Entry(row, font=self.fbig)
         self.ent_chat.pack(side="left", fill="x", expand=True)
         self.ent_chat.bind("<Return>", lambda e: self.send_chat())
         ttk.Button(row, text="ส่งคำถาม", style="Accent.TButton", command=self.send_chat).pack(side="left", padx=6)
-        self._chat_add(self.cfg["app_name"], "สวัสดีครับ ถามเรื่องบอร์ด เซนเซอร์ หรือการต่อวงจรได้เลย เช่น \"DHT11 ต่อกับ ESP32 ยังไง\"")
+        self._chat_add(self.cfg["app_name"], "สวัสดีครับ ถามเรื่องบอร์ด เซนเซอร์ หรือการต่อวงจรได้เลย เช่น \"DHT11 ต่อกับ ESP32 ยังไง\" "
+                       "หรือถามคำสั่ง Arduino เช่น \"digitalWrite เขียนใน MicroPython ยังไง\" และวางโค้ด Arduino มาให้ช่วยแปลได้")
 
     def _chat_add(self, who, text):
         self.txt_chat.insert("end", who + ":\n", "me" if who == "คุณ" else "ai")
@@ -715,10 +767,27 @@ class App:
         except Exception as e:  # noqa: BLE001
             self.q.put(("chat", "เชื่อมต่อ AI ไม่ได้: %s\nตรวจการตั้งค่าในแท็บ ⚙ ตั้งค่า" % e))
 
+    def _ref_answer(self, q):
+        """ตอบคำถามเรื่องคำสั่ง Arduino จากคู่มือ (ไม่ใช้ AI)"""
+        refs = self.kb.ref_for_code(q, limit=4)
+        if not refs:
+            for w in re.findall(r"[A-Za-z_][\w.]{2,}", q):
+                refs += [r for r in self.kb.ref_search(w, translated_only=True)[:1] if r not in refs]
+        out = []
+        for r in refs[:4]:
+            out.append("\n📘 %s — %s\nMicroPython:\n%s" % (r["name"], r["th"], r["micropython"]))
+            if r.get("note_th"):
+                out.append("💡 " + r["note_th"])
+        return out
+
     def _offline_answer(self, q):
         found = [c for c, _ in self.kb.detect(q)]
+        refs = self._ref_answer(q)
+        if not found and refs:
+            return "\n".join(["(โหมดไม่ใช้ AI ตอบจากคู่มือคำสั่ง Arduino → MicroPython)"] + refs)
         if not found:
-            return "(โหมดไม่ใช้ AI) ยังไม่พบอุปกรณ์ในคำถาม ลองพิมพ์ชื่ออุปกรณ์ เช่น DHT11, Servo หรือดูที่แท็บคลังความรู้"
+            return ("(โหมดไม่ใช้ AI) ยังไม่พบอุปกรณ์หรือคำสั่งในคำถาม ลองพิมพ์ชื่ออุปกรณ์ เช่น DHT11, Servo "
+                    "หรือชื่อคำสั่ง Arduino เช่น digitalWrite, analogRead, millis หรือดูที่แท็บคลังความรู้")
         board = self.board()
         out = ["(โหมดไม่ใช้ AI ตอบจากคลังความรู้)"]
         for c in found:
@@ -730,7 +799,7 @@ class App:
                     out.append("• ขา %s → %s" % (w["comp_pin"], w["board_pin"]))
             for w in c.get("warnings", []):
                 out.append("⚠ " + w)
-        return "\n".join(out)
+        return "\n".join(out + refs)
 
     # ================================================================ แท็บ 5 คลังความรู้
     def _tab_kb(self):
@@ -741,9 +810,14 @@ class App:
         self.ent_search = ttk.Entry(left, font=self.f, width=30)
         self.ent_search.pack(fill="x")
         self.ent_search.bind("<KeyRelease>", lambda e: self._kb_fill())
+        self.cmb_kb_kind = ttk.Combobox(left, state="readonly", values=[
+            "แสดงทั้งหมด", "บอร์ด", "อุปกรณ์ / เซนเซอร์", "คำสั่ง Arduino → MicroPython"])
+        self.cmb_kb_kind.current(0)
+        self.cmb_kb_kind.pack(fill="x", pady=(6, 0))
+        self.cmb_kb_kind.bind("<<ComboboxSelected>>", lambda e: self._kb_fill())
         btns = ttk.Frame(left)
         btns.pack(side="bottom", fill="x")      # ปุ่มอยู่ล่างสุดเสมอ ไม่ถูกรายการดันตกขอบจอ
-        ttk.Button(btns, text="ใช้อุปกรณ์นี้ในคำสั่ง", command=self._kb_use).pack(fill="x")
+        ttk.Button(btns, text="ใช้อุปกรณ์นี้ในคำสั่ง / คัดลอกโค้ดคำสั่ง", command=self._kb_use).pack(fill="x")
         ttk.Button(btns, text="🖼 เพิ่ม / เปลี่ยนรูป", command=self._kb_add_image).pack(fill="x", pady=4)
         ttk.Button(btns, text="✏ แก้ไข / ให้ AI วิเคราะห์อุปกรณ์นี้", command=self._kb_edit).pack(fill="x")
         ttk.Button(btns, text="➕ เพิ่มอุปกรณ์ใหม่ (แนบรูป/ข้อความได้)", command=lambda: NewComponentDialog(self)).pack(fill="x", pady=(4, 0))
@@ -760,16 +834,31 @@ class App:
         fr, self.txt_kb = self._text(right)
         fr.pack(fill="both", expand=True)
         self.txt_kb.tag_configure("h", font=self.fbig, foreground=PALETTE["blue"])
+        self.txt_kb.tag_configure("h2", font=self.fb, foreground=PALETTE["blue"])
         self.txt_kb.tag_configure("warn", foreground=PALETTE["orange"])
+        self.txt_kb.tag_configure("code", font=self.fmono, background="#F1F4F9")
+        self.txt_kb.tag_configure("muted", foreground=PALETTE["muted"])
         self._kb_items = []
         self._kb_fill()
 
     def _kb_fill(self):
-        self._kb_items = self.kb.search(self.ent_search.get())
+        q = self.ent_search.get()
+        what = self.cmb_kb_kind.current() if hasattr(self, "cmb_kb_kind") else 0
+        items = []
+        if what in (0, 1):
+            items += [x for x in self.kb.search(q) if x[0] == "board"]
+        if what in (0, 2):
+            items += [x for x in self.kb.search(q) if x[0] == "comp"]
+        if what in (0, 3):
+            # ไม่ได้ค้นหา: แสดงเฉพาะคำสั่งที่มีคำอธิบายไทย ค้นหาแล้ว: แสดงทุกหน้าในคู่มือที่ตรง
+            items += [("ref", r) for r in self.kb.ref_search(q, translated_only=not q.strip())]
+        self._kb_items = items
         self.lst_kb.delete(0, "end")
         for kind, it in self._kb_items:
             if kind == "board":
                 self.lst_kb.insert("end", "🟦 " + it["name"])
+            elif kind == "ref":
+                self.lst_kb.insert("end", "%s %s  (%s)" % ("📘" if it.get("micropython") else "📄", it["name"][:34], it["category_th"]))
             else:
                 self.lst_kb.insert("end", "🔹 %s  (%s)" % (it["name_en"], it["category"]))
 
@@ -791,6 +880,9 @@ class App:
             if im:
                 self._gallery.append(im)
                 tk.Label(self.img_row, image=im, bg=PALETTE["bg"]).pack(side="left", padx=(8, 0), anchor="s")
+        if kind == "ref":
+            self._kb_show_ref(it)
+            return
         if kind == "board":
             t.insert("end", it["name"] + "\n", "h")
             t.insert("end", "เขียน MicroPython ได้: %s\n" % ("ได้ ✔" if it["micropython"] else "ไม่ได้ (ใช้ C++)"))
@@ -806,6 +898,18 @@ class App:
                 t.insert("end", "⚠ ห้ามใช้: %s\n" % ", ".join(map(str, it["forbidden_list"])), "warn")
             if it.get("onboard"):
                 t.insert("end", "\nอุปกรณ์บนบอร์ด: %s\n" % ", ".join("%s=%s" % kv for kv in it["onboard"].items()))
+            if p.get("pwm"):
+                t.insert("end", "ขา PWM: %s\n" % ", ".join(map(str, sorted(p["pwm"], key=lambda x: (isinstance(x, str), x)))))
+            if it.get("analog_only"):
+                t.insert("end", "⚠ อ่านแอนะล็อกได้อย่างเดียว (ใช้ digitalRead/Write ไม่ได้): %s\n" % ", ".join(it["analog_only"]), "warn")
+            spi = it.get("spi")
+            if spi:
+                t.insert("end", "SPI: %s\n" % (spi["note"] if "note" in spi else
+                                                 "SS=%s MOSI=%s MISO=%s SCK=%s" % (spi["ss"], spi["mosi"], spi["miso"], spi["sck"])))
+            if it.get("memory"):
+                t.insert("end", "หน่วยความจำ: Flash %s KB, RAM %s KB\n" % (it["memory"]["flash_kb"], it["memory"]["ram_kb"]))
+            if it.get("pin_source"):
+                t.insert("end", "\nที่มาของข้อมูลขา: %s\n" % it["pin_source"])
         else:
             t.insert("end", "%s\n" % it["name_th"], "h")
             t.insert("end", "%s | หมวด: %s | แรงดัน: %s\n\n%s\n\n" % (it["name_en"], it["category"], it["voltage"], it["explain_th"]))
@@ -824,12 +928,42 @@ class App:
                 t.insert("end", "\nข้อมูลประกอบที่ครูแนบไว้\n", "h")
                 t.insert("end", it["notes_th"][:3000] + ("\n..." if len(it["notes_th"]) > 3000 else "") + "\n")
 
+    def _kb_show_ref(self, r):
+        t = self.txt_kb
+        t.insert("end", r["name"] + "\n", "h")
+        t.insert("end", "หมวด: %s (%s)\n\n" % (r["category_th"], r["category"]))
+        if r.get("th"):
+            t.insert("end", r["th"] + "\n\n")
+            t.insert("end", "เขียนใน MicroPython ว่า\n", "h2")
+            t.insert("end", r["micropython"] + "\n", "code")
+            if r.get("note_th"):
+                t.insert("end", "\n💡 " + r["note_th"] + "\n", "warn")
+        else:
+            t.insert("end", "(คำสั่งนี้ยังไม่มีคำอธิบายภาษาไทย ถาม AI ในแท็บ ④ ได้ว่าใช้ใน MicroPython อย่างไร)\n\n")
+        if r.get("syntax"):
+            t.insert("end", "\nวิธีเขียนใน Arduino (C++)\n", "h2")
+            t.insert("end", r["syntax"] + "\n", "code")
+        if r.get("parameters"):
+            t.insert("end", "\nพารามิเตอร์:\n" + r["parameters"] + "\n")
+        if r.get("returns"):
+            t.insert("end", "คืนค่า: " + r["returns"] + "\n")
+        if r.get("example_cpp"):
+            t.insert("end", "\nตัวอย่าง C++\n", "h2")
+            t.insert("end", r["example_cpp"] + "\n", "code")
+        t.insert("end", "\nคำอธิบายต้นฉบับ (Arduino Reference)\n", "h2")
+        t.insert("end", r["description_en"] + "\n")
+        t.insert("end", "\nที่มา: Arduino Language Reference (CC BY-SA 3.0) จาก Arduino IDE 1.5.3\n", "muted")
+        self.lbl_img.configure(image="", text="")
+
     def _kb_add_image(self):
         sel = self.lst_kb.curselection()
         if not sel:
             messagebox.showinfo("เพิ่มรูป", "เลือกบอร์ดหรืออุปกรณ์ในรายการด้านซ้ายก่อน")
             return
         kind, it = self._kb_items[sel[0]]
+        if kind == "ref":
+            messagebox.showinfo("เพิ่มรูป", "รายการนี้เป็นคำสั่งภาษา Arduino ใส่รูปได้เฉพาะบอร์ดและอุปกรณ์")
+            return
         src = filedialog.askopenfilename(filetypes=[("รูปภาพ", "*.png *.jpg *.jpeg *.gif *.webp"), ("ทุกไฟล์", "*.*")])
         if not src:
             return
@@ -881,6 +1015,9 @@ class App:
         if kind == "board":
             messagebox.showinfo("แก้ไขอุปกรณ์", "ข้อมูลบอร์ดแก้ได้ที่ไฟล์ knowledge/boards.json\nปุ่มนี้ใช้กับอุปกรณ์และเซนเซอร์")
             return
+        if kind == "ref":
+            messagebox.showinfo("แก้ไขอุปกรณ์", "คู่มือคำสั่งแก้ได้ที่ไฟล์ knowledge/arduino_reference.json\nปุ่มนี้ใช้กับอุปกรณ์และเซนเซอร์")
+            return
         NewComponentDialog(self, it)
 
     def _kb_use(self):
@@ -888,6 +1025,12 @@ class App:
         if not sel:
             return
         kind, it = self._kb_items[sel[0]]
+        if kind == "ref":
+            if it.get("micropython"):
+                self.root.clipboard_clear()
+                self.root.clipboard_append(it["micropython"])
+                self.status("คัดลอกโค้ด MicroPython ของ %s แล้ว วางในช่องโค้ดได้เลย (Ctrl+V)" % it["name"])
+            return
         if kind == "board":
             self.cmb_board.current(self.kb.boards.index(it))
             self._board_changed()

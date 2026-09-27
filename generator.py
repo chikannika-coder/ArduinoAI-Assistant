@@ -36,6 +36,7 @@ class Result:
     assigned: dict = field(default_factory=dict)    # comp_id -> {role: pin}
     keys: list = field(default_factory=list)        # ชื่อค่าที่บอร์ดจะ print ออกมา
     rule: dict = None                                # เงื่อนไขสำหรับโหมดจำลอง
+    refs: list = field(default_factory=list)         # คำสั่ง Arduino ที่พบในโค้ด C++ + วิธีเขียนใน MicroPython
 
 
 # ------------------------------------------------------------------ ตัวช่วยอ่านตัวเลข
@@ -131,13 +132,18 @@ class CodeGenerator:
             for role, num in re.findall(r"\b(trig|echo|in1|in2|ena|sda|scl|x|y)\s*(?:ขา|pin|gpio|gp)?\s*=?\s*(\d+)", seg):
                 ex[role.upper()] = int(num)
             generic = re.findall(r"(?:ขา|pin|gpio|พิน|gp)\s*(\d+)", seg)
-            analog = re.findall(r"\b(a[0-5])\b", seg)
+            analog = re.findall(r"\b(a1[0-5]|a[0-9])\b", seg)   # Mega มีถึง A15, Nano มี A6 A7
             sig_roles = [p["role"] for p in c["pins"] if p["kind"] == "signal" and p["role"] not in ex]
             nums = [int(n) for n in generic] + [a.upper() for a in analog]
             for role, n in zip(sig_roles, nums):
                 ex[role] = n
             explicit[c["id"]] = ex
             used.update(v for v in ex.values())
+
+        # ถ้ามีอุปกรณ์ I2C ห้ามแจกขา SDA/SCL ให้อุปกรณ์อื่น (เช่น Leonardo ที่ SDA/SCL คือ D2/D3)
+        if board.get("i2c") and any(p["need"] in ("i2c_sda", "i2c_scl")
+                                    for c in res.components for p in c["pins"] if p["kind"] == "signal"):
+            used.update((board["i2c"]["sda"], board["i2c"]["scl"]))
 
         onboard = "บนบอร์ด" in text
         for c in res.components:
@@ -196,7 +202,7 @@ class CodeGenerator:
     # ---------- ตรวจขาตามกฎของบอร์ด
     def validate_plan(self, board, res):
         if board["family"] == "avr":
-            return
+            return self._validate_avr(board, res)
         adc_count = 0
         for c in res.components:
             for p in c["pins"]:
@@ -227,6 +233,40 @@ class CodeGenerator:
                     res.warnings.append("%s ใช้สื่อสารกับคอมพิวเตอร์ อาจทำให้อัปโหลดโค้ดไม่ได้" % lbl)
         if board["family"] == "esp8266" and adc_count > 1:
             res.errors.append("ESP8266 มีขาแอนะล็อก (A0) เพียงขาเดียว ต่อเซนเซอร์แอนะล็อกได้ครั้งละ 1 ตัว")
+
+    def _validate_avr(self, board, res):
+        """ตรวจขาของ Arduino รุ่น AVR ตามผังขาจริงใน pins_arduino.h (Arduino IDE 1.6.0)"""
+        valid = board.get("valid") or []
+        analog_only = board.get("analog_only", [])
+        i2c = board.get("i2c") or {}
+        i2c_pins = {i2c.get("sda"), i2c.get("scl")} - {None}
+        uses_i2c = any(p["need"] in ("i2c_sda", "i2c_scl") for c in res.components
+                       for p in c["pins"] if p["kind"] == "signal")
+        for c in res.components:
+            for p in c["pins"]:
+                if p["kind"] != "signal":
+                    continue
+                pin = res.assigned.get(c["id"], {}).get(p["role"])
+                if pin is None:
+                    continue
+                name = "%s ขา %s" % (c["name_en"], p["label"])
+                lbl = board_pin_label(board, pin)
+                need = p["need"]
+                if valid and pin not in valid:
+                    res.errors.append("%s: บอร์ด %s ไม่มีขา %s" % (name, board["name"], lbl))
+                    continue
+                if need == "adc" and pin not in board["pools"].get("adc", []):
+                    res.errors.append("%s อ่านค่าแอนะล็อกไม่ได้ %s ต้องใช้ขา %s" %
+                                      (lbl, name, ", ".join(board["pools"]["adc"][:4]) + " ..."))
+                if need in ("out", "inp", "pwm") and pin in analog_only:
+                    res.errors.append("%s อ่านค่าแอนะล็อกได้อย่างเดียว ใช้กับ %s ไม่ได้ (ต้องเป็นขาดิจิทัล)" % (lbl, name))
+                if need == "pwm" and c["id"] == "motor_l298n" and pin not in board["pools"].get("pwm", []):
+                    res.warnings.append("%s ไม่ใช่ขา PWM ปรับความเร็วมอเตอร์ไม่ได้ ขา PWM ของบอร์ดนี้คือ %s" %
+                                        (lbl, ", ".join("D%s" % x for x in sorted(board["pools"]["pwm"]))))
+                if uses_i2c and need not in ("i2c_sda", "i2c_scl") and pin in i2c_pins:
+                    res.errors.append("%s เป็นสาย I2C ของจอ/เซนเซอร์ I2C อยู่แล้ว ย้าย %s ไปขาอื่น" % (lbl, name))
+                if pin in board.get("serial_pins", []):
+                    res.warnings.append("%s ใช้สื่อสารกับคอมพิวเตอร์ ถอดสายขานี้ก่อนอัปโหลดโค้ด" % lbl)
 
     # ---------- สร้างโค้ด
     def generate(self, command, board_id, app_name="Arduino AI"):
@@ -312,7 +352,10 @@ class CodeGenerator:
             off = self._onoff(comp, roles, board, "off", 90)
             t += ["for i in range(3):"] + ["    " + l for l in on.split("\n")] + ["    time.sleep(0.5)"] + \
                  ["    " + l for l in off.split("\n")] + ["    time.sleep(0.5)"]
-            t.append("print('TEST_ASK %s ทำงานเป็นจังหวะ 3 ครั้งหรือไม่')" % comp["name_th"])
+            hint = ""
+            if comp["id"].startswith("buzzer") or "เสียง" in comp.get("category", ""):
+                hint = " (ถ้าไม่ได้ยินเสียง ให้เอานิ้วแตะบัซเซอร์เบา ๆ จะรู้สึกสั่นเป็นจังหวะ)"
+            t.append("print('TEST_ASK %s ทำงานเป็นจังหวะ 3 ครั้งหรือไม่%s')" % (comp["name_th"], hint))
         elif comp["type"] == "display":
             t.append("oled.fill(0)\noled.text('TEST OK', 0, 0)\noled.show()")
             t.append("print('TEST_ASK จอแสดงข้อความ TEST OK หรือไม่')")

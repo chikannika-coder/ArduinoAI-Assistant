@@ -489,5 +489,172 @@
    "neopixel"
   ],
   "inspired_by": ""
+ },
+ {
+  "id": "bite_force",
+  "emoji": "🦷",
+  "name_th": "เครื่องวัดแรงกัด",
+  "desc_th": "กัดเซนเซอร์แรงกด แล้วดูแรงบนจอ ถ้าแรงเกินให้เตือน",
+  "level": "กลาง",
+  "category": "สุขภาพและทันตกรรม",
+  "command": "วัดแรงกัดด้วย FSR402 ถ้ามากกว่า 70 ให้ Buzzer ดัง",
+  "components": [
+   "fsr402",
+   "buzzer"
+  ],
+  "inspired_by": "Dental bite force sensor"
+ },
+ {
+  "id": "bite_scale",
+  "emoji": "🦷",
+  "name_th": "วัดแรงกัดเป็นกรัม",
+  "desc_th": "ใช้ Load Cell วัดแรงกัดแบบแม่นยำ แสดงบนจอ",
+  "level": "ยาก",
+  "category": "สุขภาพและทันตกรรม",
+  "command": "ชั่งน้ำหนักด้วย HX711 แล้วแสดงบนจอ OLED",
+  "components": [
+   "hx711",
+   "oled"
+  ],
+  "inspired_by": "Load cell bite force meter"
+ },
+ {
+  "id": "saliva_ph",
+  "emoji": "🧪",
+  "name_th": "ตรวจความเป็นกรดของน้ำลาย",
+  "desc_th": "pH ต่ำกว่า 5.5 ฟันเสี่ยงผุ ให้ไฟเตือนติด",
+  "level": "กลาง",
+  "category": "สุขภาพและทันตกรรม",
+  "command": "วัดค่า pH น้ำลายด้วย PH-4502C ถ้าน้อยกว่า 5.5 ให้ LED ติด",
+  "components": [
+   "ph_sensor",
+   "led"
+  ],
+  "inspired_by": "Saliva pH monitor"
+ },
+ {
+  "id": "gum_temp",
+  "emoji": "🌡",
+  "name_th": "วัดอุณหภูมิแบบไม่สัมผัส",
+  "desc_th": "วัดอุณหภูมิผิวหรือเหงือก แสดงบนจอ",
+  "level": "กลาง",
+  "category": "สุขภาพและทันตกรรม",
+  "command": "วัดอุณหภูมิแบบไม่สัมผัสด้วย MLX90614 แล้วแสดงบนจอ OLED",
+  "components": [
+   "mlx90614",
+   "oled"
+  ],
+  "inspired_by": "Non-contact thermometer"
+ },
+ {
+  "id": "fever_alarm",
+  "emoji": "🤒",
+  "name_th": "เตือนไข้สูง",
+  "desc_th": "อุณหภูมิเกิน 37.5 องศาให้บัซเซอร์ดัง",
+  "level": "กลาง",
+  "category": "สุขภาพและทันตกรรม",
+  "command": "วัดไข้ด้วย MLX90614 ถ้ามากกว่า 37.5 ให้ Buzzer ดัง",
+  "components": [
+   "mlx90614",
+   "buzzer"
+  ],
+  "inspired_by": "IR fever screening"
+ },
+ {
+  "id": "smart_brush",
+  "emoji": "🪥",
+  "name_th": "แปรงสีฟันอัจฉริยะ",
+  "desc_th": "ติดเซนเซอร์เอียงที่ด้ามแปรง ถ้าแปรงแรง/เร็วเกินให้เตือน",
+  "level": "ยาก",
+  "category": "สุขภาพและทันตกรรม",
+  "command": "แปรงสีฟันใช้ MPU6050 ถ้าความเร่งมากกว่า 1.5 ให้ Buzzer ดัง",
+  "components": [
+   "mpu6050",
+   "buzzer"
+  ],
+  "inspired_by": "Smart toothbrush"
+ },
+ {
+  "id": "pulse_meter",
+  "emoji": "❤",
+  "name_th": "เครื่องวัดชีพจร",
+  "desc_th": "วางนิ้วบนเซนเซอร์ แสดงชีพจรบนจอ",
+  "level": "ยาก",
+  "category": "สุขภาพและทันตกรรม",
+  "command": "วัดชีพจรด้วย MAX30102 แล้วแสดงบนจอ OLED",
+  "components": [
+   "max30102",
+   "oled"
+  ],
+  "inspired_by": "Heart rate monitor"
+ },
+ {
+  "id": "ecg_view",
+  "emoji": "📈",
+  "name_th": "ดูคลื่นไฟฟ้าหัวใจ",
+  "desc_th": "ดูกราฟคลื่นหัวใจในแท็บข้อมูลเรียลไทม์",
+  "level": "ยาก",
+  "category": "สุขภาพและทันตกรรม",
+  "command": "อ่านคลื่นไฟฟ้าหัวใจด้วย AD8232 ทุก 20 ms",
+  "components": [
+   "ad8232"
+  ],
+  "inspired_by": "ECG monitoring system"
+ },
+ {
+  "id": "eeg_led",
+  "emoji": "🧠",
+  "name_th": "คลื่นสมองควบคุมไฟ",
+  "desc_th": "ถ้าคลื่น Alpha สูง (ผ่อนคลาย/หลับตา) ให้ LED ติด",
+  "level": "ยาก",
+  "category": "สุขภาพและทันตกรรม",
+  "command": "อ่านคลื่นสมองด้วย EEG ถ้ามากกว่า 2 ให้ LED ติด",
+  "components": [
+   "eeg",
+   "led"
+  ],
+  "inspired_by": "EEG controlled LED"
+ },
+ {
+  "id": "tof_ruler",
+  "emoji": "📏",
+  "name_th": "ไม้บรรทัดเลเซอร์",
+  "desc_th": "วัดระยะเป็นมิลลิเมตร แสดงบนจอ",
+  "level": "กลาง",
+  "category": "สุขภาพและทันตกรรม",
+  "command": "วัดระยะด้วยเลเซอร์ VL53L0X แล้วแสดงบนจอ OLED",
+  "components": [
+   "vl53l0x",
+   "oled"
+  ],
+  "inspired_by": "Laser distance meter"
+ },
+ {
+  "id": "tooth_color",
+  "emoji": "🎨",
+  "name_th": "ตรวจสีฟัน/สีวัตถุ",
+  "desc_th": "อ่านค่าสีแดง เขียว น้ำเงิน ถ้าสีเหลืองมากให้เตือน",
+  "level": "กลาง",
+  "category": "สุขภาพและทันตกรรม",
+  "command": "อ่านค่าสีด้วยเซนเซอร์สี TCS34725 แล้วแสดงบนจอ OLED",
+  "components": [
+   "tcs34725",
+   "oled"
+  ],
+  "inspired_by": "Color detection"
+ },
+ {
+  "id": "ir_parking",
+  "emoji": "🚗",
+  "name_th": "เตือนระยะด้วยอินฟราเรด",
+  "desc_th": "ใกล้กว่า 20 ซม. ให้ไฟเตือนติด",
+  "level": "ง่าย",
+  "category": "สุขภาพและทันตกรรม",
+  "command": "ถ้า Sharp IR ใกล้กว่า 20 ให้ LED ติด",
+  "components": [
+   "sharp_ir",
+   "led"
+  ],
+  "inspired_by": "IR proximity alarm"
  }
 ]

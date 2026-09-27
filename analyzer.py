@@ -131,6 +131,10 @@ def build_prompt(user_text, kb, board, form_json=None, image_count=0, fix_errors
     if form_json:
         parts.append("ข้อมูลที่ครูกรอกไว้แล้วในฟอร์ม (ใช้เป็นฐาน แก้ส่วนที่ผิด):\n" + form_json)
     parts.append("ข้อมูลจากครู:\n" + (user_text.strip()[:MAX_TEXT] if user_text.strip() else "(ไม่มีข้อความ ดูจากรูป)"))
+    if hasattr(kb, "ref_context_for_ai"):
+        ref = kb.ref_context_for_ai(user_text[:MAX_TEXT], limit=10)
+        if ref:
+            parts.append(ref + "\n(ใช้ตารางนี้แปลงคำสั่ง Arduino ในข้อมูลของครูเป็น MicroPython)")
     if fix_errors:
         parts.append("ข้อมูลที่คุณตอบรอบก่อนนำไปสร้างโค้ดแล้วมีปัญหาดังนี้ แก้ให้ถูกแล้วตอบใหม่ทั้งหมด:\n- " + "\n- ".join(fix_errors))
     parts.append("ตอบเป็นภาษาไทยตามลำดับนี้:\n"
@@ -198,14 +202,15 @@ def offline_analyze(text, kb):
     def role_name(expr, idx, total, default):
         return default if total == 1 else "CH%d" % (idx + 1)
 
-    adc = list(dict.fromkeys(re.findall(r"analogRead\(\s*(\w+)\s*\)", text)))
+    idx = r"(?:\[[^\]]*\])?"      # ขาที่เก็บในอาร์เรย์ เช่น ledPins[i]
+    adc = list(dict.fromkeys(re.findall(r"analogRead\(\s*(\w+)%s\s*\)" % idx, text)))
     adc += [m for m in re.findall(r"ADC\(\s*(?:Pin\()?\s*(\w+)", text) if m not in adc]
-    dig_in = list(dict.fromkeys(re.findall(r"digitalRead\(\s*(\w+)\s*\)", text) +
+    dig_in = list(dict.fromkeys(re.findall(r"digitalRead\(\s*(\w+)%s\s*\)" % idx, text) +
                                 re.findall(r"pulseIn\(\s*(\w+)", text) +
                                 re.findall(r"Pin\(\s*(\w+)\s*,\s*Pin\.IN", text)))
-    dig_out = list(dict.fromkeys(re.findall(r"digitalWrite\(\s*(\w+)\s*,", text) +
+    dig_out = list(dict.fromkeys(re.findall(r"digitalWrite\(\s*(\w+)%s\s*," % idx, text) +
                                  re.findall(r"Pin\(\s*(\w+)\s*,\s*Pin\.OUT", text)))
-    pwm = list(dict.fromkeys(re.findall(r"analogWrite\(\s*(\w+)", text) + re.findall(r"\.attach\(\s*(\w+)", text) +
+    pwm = list(dict.fromkeys(re.findall(r"analogWrite\(\s*(\w+)", text) + re.findall(r"\btone\(\s*(\w+)", text) + re.findall(r"\.attach\(\s*(\w+)", text) +
                              re.findall(r"PWM\(\s*Pin\(\s*(\w+)", text)))
     is_i2c = bool(re.search(r"Wire\.h|Wire\.begin|I2C\(|SoftI2C\(", text))
     onewire = re.search(r"OneWire\s*\w*\s*\(\s*(\w+)\s*\)", text)
@@ -214,6 +219,12 @@ def offline_analyze(text, kb):
     # แยก LED/บัซเซอร์ที่อยู่ในโค้ดออก เพราะคลังมีอยู่แล้ว
     extra_out = [p for p in dig_out if any(w in p.upper() for w in _LED_WORDS)]
     dig_out = [p for p in dig_out if p not in extra_out]
+    tones = list(dict.fromkeys(re.findall(r"\btone\(\s*(\w+)", text)))
+    if tones:
+        pwm = [p for p in pwm if p not in tones]
+        if "buzzer_passive" in kb.comp_by_id and "buzzer_passive" not in [c["id"] for c in known]:
+            report.append("โค้ดใช้ tone() ส่งเสียง (ขา %s) = บัซเซอร์แบบ passive หรือลำโพง ซึ่งมีในคลังแล้ว "
+                          "ใช้คำสั่งเช่น \"เล่นโน้ต passive buzzer\" ได้เลย" % ", ".join(tones))
     if extra_out:
         report.append("โค้ดมีอุปกรณ์สั่งงานร่วมด้วย (%s) ซึ่งมีในคลังแล้ว จึงไม่รวมไว้ในอุปกรณ์ใหม่ ใช้คำสั่งร่วมกันได้ เช่น \"... ให้ LED ติด\""
                       % ", ".join(extra_out))
@@ -322,7 +333,7 @@ def offline_analyze(text, kb):
         comp["read"] = "\n".join(read)
         comp["keys"] = keys
         comp["sim"] = [0, 100, "float"]
-    if ctype == "info" and not known:
+    if ctype == "info" and not known and not tones and not extra_out:
         report.append("ไม่พบโค้ดที่บอกการต่อขาได้ ลองวางโค้ดตัวอย่าง Arduino ของอุปกรณ์ หรือใช้ปุ่ม \"ให้ AI วิเคราะห์\" (อ่านรูปและข้อความได้)")
     if ctype != "info":
         report.append("กรอกฟอร์มให้แล้ว: รหัส %s, ชนิด %s, ขาสัญญาณ %d ขา, ค่าที่อ่านได้: %s"
