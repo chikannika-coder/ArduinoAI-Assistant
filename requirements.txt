@@ -1,3 +1,4 @@
 mpremote
 pyserial
 pillow
+esptool

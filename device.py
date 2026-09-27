@@ -278,7 +278,9 @@ FRIENDLY = [
     (r"ETIMEDOUT|Errno 116|Errno 110", "อุปกรณ์ไม่ตอบกลับ ตรวจสายสัญญาณและไฟเลี้ยง"),
     (r"ENODEV|Errno 19", "ไม่พบอุปกรณ์บนสาย I2C ตรวจสาย SDA SCL"),
     (r"invalid pin", "บอร์ดนี้ไม่มีขาที่เลือก เปลี่ยนรุ่นบอร์ดให้ตรงกับของจริง"),
-    (r"could not (open|enter raw repl)|failed to access|Access is denied|PermissionError",
+    (r"could not enter raw repl",
+     "บอร์ดไม่ตอบกลับ อาจยังไม่มี MicroPython (กดปุ่ม ลง MicroPython ในผู้ช่วยนำทาง) หรือมีโปรแกรมรันค้างอยู่ กดปุ่ม EN/RST แล้วลองใหม่"),
+    (r"could not open|failed to access|Access is denied|PermissionError",
      "เปิดพอร์ต USB ไม่ได้ ปิดโปรแกรมอื่นที่ใช้พอร์ตอยู่ (Thonny, Arduino IDE) แล้วลองใหม่"),
 ]
 

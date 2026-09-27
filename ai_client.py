@@ -14,6 +14,7 @@ SYSTEM_TEMPLATE = """คุณคือ "{app_name}" ผู้ช่วยสอ
 - ตอบเป็นภาษาไทยที่เข้าใจง่าย ประโยคสั้น
 - ใช้ข้อมูลบอร์ดและอุปกรณ์ในส่วน "คลังความรู้" เป็นหลัก ถ้าข้อมูลไม่พอหรือไม่แน่ใจ ให้บอกตรง ๆ ว่าไม่แน่ใจ ห้ามเดาเลขขา
 - ถ้าบอร์ดรองรับ MicroPython ให้เขียนโค้ด MicroPython ถ้าเป็น Arduino Uno/Nano/Mega ให้เขียน C++ สำหรับ Arduino IDE
+- ถ้านักเรียนวางโค้ด Arduino (C++) มา ให้แปลงเป็น MicroPython โดยใช้ "คู่มือคำสั่ง Arduino → MicroPython" ที่แนบมา และอธิบายว่าคำสั่งไหนเปลี่ยนเป็นอะไร
 - ถ้ามี "แผนการต่อขา" ให้ใช้ขาตามแผนนั้นทุกขา
 - ให้โปรแกรม print ค่าที่อ่านได้ทีละบรรทัดในรูปแบบ ชื่อค่า: ตัวเลข เช่น distance_cm: 12.5 เพื่อให้แสดงกราฟเรียลไทม์ได้
 - เตือนเรื่องความปลอดภัยเสมอ เช่น แรงดัน 5V กับ 3.3V ตัวต้านทานของ LED และห้ามต่อไฟบ้าน 220V โดยไม่มีครูดูแล
@@ -114,7 +115,8 @@ class AIClient:
 
     def ask(self, question, kb, board, history=None):
         comps = [c for c, _ in kb.detect(question)]
-        prompt = "คลังความรู้:\n%s\n\nคำถาม: %s" % (kb.context_for_ai(board, comps), question)
+        ref = kb.ref_context_for_ai(question) if hasattr(kb, "ref_context_for_ai") else ""
+        prompt = "คลังความรู้:\n%s\n\n%s%sคำถาม: %s" % (kb.context_for_ai(board, comps), ref, "\n\n" if ref else "", question)
         return self.chat(prompt, history)
 
 

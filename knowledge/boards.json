@@ -421,6 +421,141 @@
   "image": "images/esp32-c3.jpg"
  },
  {
+  "id": "esp32-cam",
+  "name": "ESP32-CAM (AI-Thinker)",
+  "family": "esp32",
+  "micropython": true,
+  "logic_v": 3.3,
+  "has_5v_pin": true,
+  "keywords": [
+   "esp32-cam",
+   "esp32 cam",
+   "ai-thinker",
+   "กล้อง esp32"
+  ],
+  "led": 33,
+  "led_inverted": true,
+  "pools": {
+   "out": [
+    13,
+    14,
+    15,
+    2,
+    12,
+    4
+   ],
+   "inp": [
+    13,
+    14,
+    15,
+    2,
+    12,
+    4
+   ],
+   "adc": [
+    2,
+    4,
+    12,
+    13,
+    14,
+    15
+   ],
+   "pwm": [
+    13,
+    14,
+    15,
+    2,
+    12,
+    4
+   ],
+   "touch": [
+    2,
+    4,
+    12,
+    13,
+    14,
+    15
+   ]
+  },
+  "i2c": {
+   "sda": 15,
+   "scl": 14
+  },
+  "valid": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   12,
+   13,
+   14,
+   15,
+   16,
+   33
+  ],
+  "forbidden": {
+   "5, 18, 19, 21-23, 25-27, 32, 34-36, 39": "ต่อกับกล้อง OV2640 ห้ามใช้",
+   "6-11": "ต่อกับหน่วยความจำแฟลชภายใน ห้ามใช้",
+   "16": "ต่อกับ PSRAM ห้ามใช้"
+  },
+  "forbidden_list": [
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   16,
+   18,
+   19,
+   21,
+   22,
+   23,
+   25,
+   26,
+   27,
+   32,
+   34,
+   35,
+   36,
+   39
+  ],
+  "input_only": [],
+  "strapping": [
+   0,
+   2,
+   12,
+   15
+  ],
+  "serial_pins": [
+   1,
+   3
+  ],
+  "adc2": [
+   2,
+   4,
+   12,
+   13,
+   14,
+   15
+  ],
+  "pin_labels": {
+   "4": "ไฟแฟลช",
+   "33": "LED แดงบนบอร์ด"
+  },
+  "onboard": {
+   "LED แดง": "GPIO33 (กลับขั้ว)",
+   "ไฟแฟลช": "GPIO4",
+   "กล้อง": "OV2640",
+   "ช่องการ์ด": "microSD (ใช้ขา 2, 4, 12-15)"
+  },
+  "flash_tool": "ไม่มีช่อง USB ต้องใช้บอร์ดเสริม ESP32-CAM-MB หรือ USB-TTL (ต่อ GPIO0 ลง GND ตอนอัปโหลด) / Arduino IDE",
+  "notes_th": "บอร์ด ESP32 ที่มีกล้อง OV2640 ในตัว ใช้ทำกล้องวงจรปิด สตรีมภาพผ่าน Wi-Fi หรือถ่ายภาพฟันเพื่อบันทึก โค้ดกล้องต้องใช้ Arduino IDE (ดูตัวอย่าง esp32_cam_stream.ino ในคลังโค้ดของฉัน) หรือเฟิร์มแวร์ MicroPython ที่มีไดรเวอร์กล้อง ขาว่างมีน้อย (2, 4, 12-15) และเป็น ADC2 ทั้งหมด อ่านค่าแอนะล็อกไม่ได้ขณะเปิด Wi-Fi ต้องจ่ายไฟ 5V อย่างน้อย 1A ไม่อย่างนั้นบอร์ดจะรีเซ็ตเอง",
+  "image": "images/esp32-cam.jpg"
+ },
+ {
   "id": "kidbright32",
   "name": "KidBright32 (บอร์ดการศึกษาไทย ใช้ชิป ESP32)",
   "family": "esp32",
@@ -1024,7 +1159,28 @@
    "sda": "A4",
    "scl": "A5"
   },
-  "valid": [],
+  "valid": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   "A0",
+   "A1",
+   "A2",
+   "A3",
+   "A4",
+   "A5"
+  ],
   "forbidden_list": [],
   "input_only": [],
   "strapping": [],
@@ -1034,8 +1190,19 @@
   ],
   "adc2": [],
   "flash_tool": "Arduino IDE (ภาษา C/C++)",
-  "notes_th": "ชิปมีหน่วยความจำน้อย (Uno มี RAM 2 KB) จึงรัน MicroPython ไม่ได้ ใช้ภาษา C/C++ ผ่าน Arduino IDE หรือให้ Python บนคอมพิวเตอร์สั่งงานผ่าน Firmata",
-  "image": "images/arduino-uno.jpg"
+  "notes_th": "ชิป ATmega328P มีหน่วยความจำน้อย (RAM 2 KB, Flash 32 KB) จึงรัน MicroPython ไม่ได้ ใช้ภาษา C/C++ ผ่าน Arduino IDE หรือให้ Python บนคอมพิวเตอร์สั่งงานผ่าน Firmata ขา PWM (มีเครื่องหมาย ~) คือ D3 D5 D6 D9 D10 D11",
+  "image": "images/arduino-uno.jpg",
+  "spi": {
+   "ss": 10,
+   "mosi": 11,
+   "miso": 12,
+   "sck": 13
+  },
+  "memory": {
+   "flash_kb": 32,
+   "ram_kb": 2
+  },
+  "pin_source": "ตรวจกับ Arduino IDE 1.6.0: hardware/arduino/avr/variants/standard/pins_arduino.h"
  },
  {
   "id": "arduino-nano",
@@ -1082,6 +1249,8 @@
     "A1",
     "A2",
     "A3",
+    "A6",
+    "A7",
     "A4",
     "A5"
    ],
@@ -1098,7 +1267,30 @@
    "sda": "A4",
    "scl": "A5"
   },
-  "valid": [],
+  "valid": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   "A0",
+   "A1",
+   "A2",
+   "A3",
+   "A4",
+   "A5",
+   "A6",
+   "A7"
+  ],
   "forbidden_list": [],
   "input_only": [],
   "strapping": [],
@@ -1108,8 +1300,23 @@
   ],
   "adc2": [],
   "flash_tool": "Arduino IDE (ภาษา C/C++)",
-  "notes_th": "ชิปมีหน่วยความจำน้อย (Uno มี RAM 2 KB) จึงรัน MicroPython ไม่ได้ ใช้ภาษา C/C++ ผ่าน Arduino IDE หรือให้ Python บนคอมพิวเตอร์สั่งงานผ่าน Firmata",
-  "image": "images/arduino-nano.jpg"
+  "notes_th": "ชิป ATmega328P เหมือน Uno (RAM 2 KB) จึงรัน MicroPython ไม่ได้ ใช้ภาษา C/C++ ผ่าน Arduino IDE มีขาแอนะล็อก 8 ขา (A0-A7) มากกว่า Uno 2 ขา แต่ A6 และ A7 อ่านค่าแอนะล็อกได้อย่างเดียว ใช้ digitalRead/digitalWrite ไม่ได้ Nano รุ่นจีนราคาถูกมักใช้ชิป CH340 ต้องลงไดรเวอร์ก่อน และถ้าอัปโหลดไม่ผ่านให้เลือก Processor: ATmega328P (Old Bootloader)",
+  "image": "images/arduino-nano.jpg",
+  "analog_only": [
+   "A6",
+   "A7"
+  ],
+  "spi": {
+   "ss": 10,
+   "mosi": 11,
+   "miso": 12,
+   "sck": 13
+  },
+  "memory": {
+   "flash_kb": 32,
+   "ram_kb": 2
+  },
+  "pin_source": "ตรวจกับ Arduino IDE 1.6.0: hardware/arduino/avr/variants/eightanaloginputs/pins_arduino.h"
  },
  {
   "id": "arduino-mega",
@@ -1136,7 +1343,39 @@
     10,
     11,
     12,
-    13
+    13,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53
    ],
    "inp": [
     2,
@@ -1149,7 +1388,39 @@
     9,
     10,
     11,
-    12
+    12,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53
    ],
    "adc": [
     "A0",
@@ -1157,7 +1428,17 @@
     "A2",
     "A3",
     "A4",
-    "A5"
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "A9",
+    "A10",
+    "A11",
+    "A12",
+    "A13",
+    "A14",
+    "A15"
    ],
    "pwm": [
     3,
@@ -1165,14 +1446,94 @@
     6,
     9,
     10,
-    11
+    11,
+    2,
+    4,
+    7,
+    8,
+    12,
+    13,
+    44,
+    45,
+    46
    ]
   },
   "i2c": {
    "sda": 20,
    "scl": 21
   },
-  "valid": [],
+  "valid": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21,
+   22,
+   23,
+   24,
+   25,
+   26,
+   27,
+   28,
+   29,
+   30,
+   31,
+   32,
+   33,
+   34,
+   35,
+   36,
+   37,
+   38,
+   39,
+   40,
+   41,
+   42,
+   43,
+   44,
+   45,
+   46,
+   47,
+   48,
+   49,
+   50,
+   51,
+   52,
+   53,
+   "A0",
+   "A1",
+   "A2",
+   "A3",
+   "A4",
+   "A5",
+   "A6",
+   "A7",
+   "A8",
+   "A9",
+   "A10",
+   "A11",
+   "A12",
+   "A13",
+   "A14",
+   "A15"
+  ],
   "forbidden_list": [],
   "input_only": [],
   "strapping": [],
@@ -1182,8 +1543,19 @@
   ],
   "adc2": [],
   "flash_tool": "Arduino IDE (ภาษา C/C++)",
-  "notes_th": "ชิปมีหน่วยความจำน้อย (Uno มี RAM 2 KB) จึงรัน MicroPython ไม่ได้ ใช้ภาษา C/C++ ผ่าน Arduino IDE หรือให้ Python บนคอมพิวเตอร์สั่งงานผ่าน Firmata",
-  "image": "images/arduino-mega.jpg"
+  "notes_th": "ชิป ATmega2560 (RAM 8 KB, Flash 256 KB) ยังเล็กเกินกว่าจะรัน MicroPython ใช้ภาษา C/C++ ผ่าน Arduino IDE มีขาดิจิทัล 54 ขา ขาแอนะล็อก 16 ขา (A0-A15) ขา PWM D2-D13 และ D44-D46 สาย I2C อยู่ที่ D20 (SDA) และ D21 (SCL) ไม่ใช่ A4/A5 เหมือน Uno สาย SPI อยู่ที่ D50-D53 และมีพอร์ตอนุกรมเพิ่ม 3 ชุด (D14-D19)",
+  "image": "images/arduino-mega.jpg",
+  "spi": {
+   "ss": 53,
+   "mosi": 51,
+   "miso": 50,
+   "sck": 52
+  },
+  "memory": {
+   "flash_kb": 256,
+   "ram_kb": 8
+  },
+  "pin_source": "ตรวจกับ Arduino IDE 1.6.0: hardware/arduino/avr/variants/mega/pins_arduino.h"
  },
  {
   "id": "arduino-leonardo",
@@ -1199,8 +1571,6 @@
   "led": 13,
   "pools": {
    "out": [
-    2,
-    3,
     4,
     5,
     6,
@@ -1210,11 +1580,11 @@
     10,
     11,
     12,
-    13
+    13,
+    2,
+    3
    ],
    "inp": [
-    2,
-    3,
     4,
     5,
     6,
@@ -1223,7 +1593,9 @@
     9,
     10,
     11,
-    12
+    12,
+    2,
+    3
    ],
    "adc": [
     "A0",
@@ -1234,30 +1606,57 @@
     "A5"
    ],
    "pwm": [
-    3,
     5,
     6,
     9,
     10,
-    11
+    11,
+    13,
+    3
    ]
   },
   "i2c": {
-   "sda": "A4",
-   "scl": "A5"
+   "sda": 2,
+   "scl": 3
   },
-  "valid": [],
+  "valid": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   "A0",
+   "A1",
+   "A2",
+   "A3",
+   "A4",
+   "A5"
+  ],
   "forbidden_list": [],
   "input_only": [],
   "strapping": [],
-  "serial_pins": [
-   0,
-   1
-  ],
+  "serial_pins": [],
   "adc2": [],
   "flash_tool": "Arduino IDE (ภาษา C/C++)",
-  "notes_th": "ชิปมีหน่วยความจำน้อย (Uno มี RAM 2 KB) จึงรัน MicroPython ไม่ได้ ใช้ภาษา C/C++ ผ่าน Arduino IDE หรือให้ Python บนคอมพิวเตอร์สั่งงานผ่าน Firmata",
-  "image": "images/arduino-leonardo.jpg"
+  "notes_th": "ชิป ATmega32U4 (RAM 2.5 KB) รัน MicroPython ไม่ได้ ใช้ภาษา C/C++ ผ่าน Arduino IDE สาย I2C อยู่ที่ D2 (SDA) และ D3 (SCL) ไม่ใช่ A4/A5 เหมือน Uno ขา PWM คือ D3 D5 D6 D9 D10 D11 D13 ชิปมี USB ในตัว จึงจำลองเป็นคีย์บอร์ดหรือเมาส์ได้ (ดูตัวอย่าง 09.USB) ขา D0/D1 เป็น Serial1 ใช้ต่ออุปกรณ์ได้โดยไม่กระทบการอัปโหลด ถ้าอัปโหลดไม่ผ่าน ให้กดปุ่ม Reset หนึ่งครั้งตอน IDE ขึ้นว่า Uploading",
+  "image": "images/arduino-leonardo.jpg",
+  "spi": {
+   "note": "ขา SPI อยู่ที่หัว ICSP 6 ขากลางบอร์ด ไม่ใช่ D10-D13"
+  },
+  "memory": {
+   "flash_kb": 32,
+   "ram_kb": 2.5
+  },
+  "pin_source": "ตรวจกับ Arduino IDE 1.6.0: hardware/arduino/avr/variants/leonardo/pins_arduino.h"
  },
  {
   "id": "arduino-uno-r4",

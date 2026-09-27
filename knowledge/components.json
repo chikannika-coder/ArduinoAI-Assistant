@@ -396,7 +396,11 @@
   "setup": "i2c = I2C(0, sda=Pin({SDA}), scl=Pin({SCL}))\noled = ssd1306.SSD1306_I2C(128, 64, i2c)",
   "explain_th": "จอขนาดเล็กใช้สายเพียง 4 เส้น แสดงตัวหนังสือและกราฟิกได้",
   "library": "ssd1306",
-  "image": "images/oled.jpg"
+  "image": "images/oled.jpg",
+  "i2c_addr": [
+   60,
+   61
+  ]
  },
  {
   "id": "button",
@@ -808,7 +812,8 @@
   "keywords": [
    "ds18b20",
    "อุณหภูมิน้ำ",
-   "กันน้ำ"
+   "กันน้ำ",
+   "อุณหภูมิในช่องปาก"
   ],
   "voltage": "3.3V-5V",
   "pins": [
@@ -1306,7 +1311,9 @@
    "ความเร่ง",
    "เอียง",
    "gyro",
-   "accelerometer"
+   "accelerometer",
+   "แปรงสีฟัน",
+   "การเคลื่อนไหวของมือ"
   ],
   "voltage": "3.3V",
   "pins": [
@@ -1350,7 +1357,11 @@
    "float"
   ],
   "explain_th": "วัดความเร่งสามแกน ใช้ตรวจการเอียงหรือการตก สื่อสารผ่าน I2C",
-  "image": "images/mpu6050.jpg"
+  "image": "images/mpu6050.jpg",
+  "i2c_addr": [
+   104,
+   105
+  ]
  },
  {
   "id": "bmp280",
@@ -1394,7 +1405,11 @@
    "ต้องติดตั้งไลบรารี BMP280 สำหรับ MicroPython เพิ่ม"
   ],
   "explain_th": "วัดความกดอากาศและอุณหภูมิ ใช้คำนวณความสูงได้",
-  "image": "images/bmp280.jpg"
+  "image": "images/bmp280.jpg",
+  "i2c_addr": [
+   118,
+   119
+  ]
  },
  {
   "id": "lcd1602",
@@ -1439,7 +1454,11 @@
    "ปรับความคมชัดด้วยสกรูด้านหลังถ้ามองไม่เห็นตัวหนังสือ"
   ],
   "explain_th": "จอแสดงตัวอักษร 2 บรรทัด บรรทัดละ 16 ตัว",
-  "image": "images/lcd1602.jpg"
+  "image": "images/lcd1602.jpg",
+  "i2c_addr": [
+   39,
+   63
+  ]
  },
  {
   "id": "rc522",
@@ -1520,7 +1539,9 @@
    "เซนเซอร์แรง",
    "เซ็นเซอร์วัดแรงกด",
    "เซนเซอร์วัดแรงกด",
-   "force sensor"
+   "force sensor",
+   "แรงกัด",
+   "กัดฟัน"
   ],
   "voltage": "3.3V-5V",
   "pins": [
@@ -1625,5 +1646,505 @@
   ],
   "explain_th": "Load Cell โค้งงอเล็กน้อยเมื่อรับน้ำหนัก HX711 ขยายสัญญาณที่เล็กมากแล้วแปลงเป็นตัวเลข นำมาคำนวณเป็นกรัม",
   "image": "images/hx711.jpg"
+ },
+ {
+  "id": "ph_sensor",
+  "name_th": "เซนเซอร์วัดค่า pH (กรด-ด่าง) PH-4502C",
+  "name_en": "pH Sensor PH-4502C",
+  "category": "สุขภาพช่องปาก",
+  "type": "sensor",
+  "keywords": [
+   "ph-4502c",
+   "ph sensor",
+   "เซนเซอร์ ph",
+   "เซ็นเซอร์ ph",
+   "ค่า ph",
+   "วัด ph",
+   "ความเป็นกรด",
+   "กรด-ด่าง",
+   "กรดด่าง",
+   "น้ำลาย"
+  ],
+  "voltage": "5V (สัญญาณออก 0-5V)",
+  "pins": [
+   {
+    "label": "V+",
+    "kind": "power5",
+    "need": null,
+    "role": "V+"
+   },
+   {
+    "label": "G",
+    "kind": "gnd",
+    "need": null,
+    "role": "G"
+   },
+   {
+    "label": "Po",
+    "kind": "signal",
+    "need": "adc",
+    "role": "SIG"
+   }
+  ],
+  "warnings": [
+   "ขา Po ให้แรงดันได้ถึง 5V บอร์ด ESP32/Pico รับได้แค่ 3.3V ต้องต่อตัวแบ่งแรงดัน (ตัวต้านทาน 10kΩ สองตัว) ก่อนเข้าขา ADC",
+   "ต้องปรับเทียบด้วยน้ำยามาตรฐาน pH 7 และ pH 4 ก่อนใช้ แก้ค่า PH_MID_V และ PH_SLOPE ในโค้ด",
+   "ห้ามนำหัววัดเข้าปาก ให้บ้วนน้ำลายใส่ถ้วยสะอาดแล้วจุ่มหัววัด ล้างหัววัดด้วยน้ำกลั่นทุกครั้ง",
+   "ใช้เพื่อการเรียนรู้เท่านั้น ไม่ใช่การวินิจฉัยทางการแพทย์"
+  ],
+  "setup": "{ADC_SETUP_SIG}\nPH_DIV = 2.0      # ต่อตัวแบ่งแรงดัน 10k+10k ให้ใช้ 2.0 ถ้าไม่ได้ต่อ (บอร์ด 5V) ให้ใช้ 1.0\nPH_MID_V = 2.5    # แรงดันเมื่อจุ่มน้ำยา pH 7 (ปรับตอน calibrate)\nPH_SLOPE = 0.18   # แรงดันที่เปลี่ยนต่อ 1 pH",
+  "read": "ph_v = adc_SIG.read_u16() * 3.3 / 65535 * PH_DIV\nph = round(7 + (PH_MID_V - ph_v) / PH_SLOPE, 2)",
+  "keys": [
+   "ph"
+  ],
+  "sim": [
+   4,
+   9,
+   "float"
+  ],
+  "explain_th": "วัดความเป็นกรด-ด่าง (pH 0-14) ของของเหลว เช่น น้ำลาย ค่าต่ำกว่า 5.5 แปลว่าเป็นกรดมาก เคลือบฟันเริ่มสึกกร่อนได้",
+  "image": "images/ph_sensor.jpg"
+ },
+ {
+  "id": "vl53l0x",
+  "name_th": "เซนเซอร์วัดระยะด้วยเลเซอร์ VL53L0X (Time-of-Flight)",
+  "name_en": "VL53L0X ToF",
+  "category": "ระยะทาง",
+  "type": "sensor",
+  "keywords": [
+   "vl53l0x",
+   "time of flight",
+   "tof",
+   "เลเซอร์วัดระยะ",
+   "วัดระยะด้วยเลเซอร์",
+   "ระยะเลเซอร์"
+  ],
+  "voltage": "3.3V-5V (โมดูลมีตัวแปลงแรงดัน)",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "SDA",
+    "kind": "signal",
+    "need": "i2c_sda",
+    "role": "SDA"
+   },
+   {
+    "label": "SCL",
+    "kind": "signal",
+    "need": "i2c_scl",
+    "role": "SCL"
+   }
+  ],
+  "i2c_addr": [
+   41
+  ],
+  "warnings": [
+   "ที่อยู่ I2C 0x29 ซ้ำกับเซนเซอร์สี TCS34725 ใช้สองตัวบนสายเดียวกันไม่ได้",
+   "โค้ดนี้เป็นแบบย่อ ค่าอาจคลาดเคลื่อนประมาณ ±1-3 ซม. ถ้าต้องการแม่นยำให้ใช้ไลบรารี vl53l0x เต็มรูปแบบ",
+   "ลอกฟิล์มใสสีเหลืองที่ปิดหน้าเซนเซอร์ออกก่อนใช้"
+  ],
+  "setup": "i2c = I2C(0, sda=Pin({SDA}), scl=Pin({SCL}))",
+  "helpers": "def tof_read():\n    i2c.writeto_mem(0x29, 0x00, b'\\x01')      # สั่งวัด 1 ครั้ง\n    t = time.ticks_ms()\n    while (i2c.readfrom_mem(0x29, 0x13, 1)[0] & 0x07) == 0:\n        if time.ticks_diff(time.ticks_ms(), t) > 300:\n            return -1\n        time.sleep_ms(5)\n    d = i2c.readfrom_mem(0x29, 0x1E, 2)\n    i2c.writeto_mem(0x29, 0x0B, b'\\x01')      # ล้างสถานะ\n    return d[0] << 8 | d[1]",
+  "read": "distance_mm = tof_read()",
+  "keys": [
+   "distance_mm"
+  ],
+  "sim": [
+   30,
+   1200,
+   "float"
+  ],
+  "explain_th": "ยิงแสงเลเซอร์อินฟราเรดแล้วจับเวลาที่แสงสะท้อนกลับ วัดระยะ 3-120 ซม. เป็นมิลลิเมตร แม่นกว่าอัลตราโซนิกในระยะใกล้",
+  "image": "images/vl53l0x.jpg"
+ },
+ {
+  "id": "sharp_ir",
+  "name_th": "เซนเซอร์วัดระยะอินฟราเรด Sharp GP2Y0A21",
+  "name_en": "Sharp IR GP2Y0A21",
+  "category": "ระยะทาง",
+  "type": "sensor",
+  "keywords": [
+   "gp2y0a21",
+   "sharp ir",
+   "sharp",
+   "อินฟราเรดวัดระยะ",
+   "ir วัดระยะ"
+  ],
+  "voltage": "5V",
+  "pins": [
+   {
+    "label": "VCC (แดง)",
+    "kind": "power5",
+    "need": null,
+    "role": "VCC (แดง)"
+   },
+   {
+    "label": "GND (ดำ)",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND (ดำ)"
+   },
+   {
+    "label": "Vo (เหลือง)",
+    "kind": "signal",
+    "need": "adc",
+    "role": "SIG"
+   }
+  ],
+  "warnings": [
+   "วัดได้ช่วง 10-80 ซม. ใกล้กว่า 10 ซม. ค่าจะผิด",
+   "ควรต่อตัวเก็บประจุ 10µF คร่อมขา VCC-GND ใกล้ตัวเซนเซอร์ เพื่อให้ค่านิ่ง"
+  ],
+  "setup": "{ADC_SETUP_SIG}",
+  "read": "ir_v = adc_SIG.read_u16() * 3.3 / 65535\nir_distance_cm = round(27.86 * max(ir_v, 0.3) ** -1.15, 1)",
+  "keys": [
+   "ir_distance_cm"
+  ],
+  "sim": [
+   10,
+   80,
+   "float"
+  ],
+  "explain_th": "ส่งแสงอินฟราเรดแล้ววัดมุมของแสงสะท้อน ให้แรงดันออกมาตามระยะ ยิ่งใกล้แรงดันยิ่งสูง",
+  "image": "images/sharp_ir.jpg"
+ },
+ {
+  "id": "mlx90614",
+  "name_th": "เซนเซอร์วัดอุณหภูมิแบบไม่สัมผัส MLX90614",
+  "name_en": "MLX90614 IR Thermometer",
+  "category": "สุขภาพ",
+  "type": "sensor",
+  "keywords": [
+   "mlx90614",
+   "อุณหภูมิแบบไม่สัมผัส",
+   "วัดอุณหภูมิไม่สัมผัส",
+   "อินฟราเรดวัดอุณหภูมิ",
+   "ไม่สัมผัส",
+   "วัดไข้",
+   "ปรอทอินฟราเรด"
+  ],
+  "voltage": "3.3V (รุ่น GY-906 ใช้ 3.3-5V)",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "SDA",
+    "kind": "signal",
+    "need": "i2c_sda",
+    "role": "SDA"
+   },
+   {
+    "label": "SCL",
+    "kind": "signal",
+    "need": "i2c_scl",
+    "role": "SCL"
+   }
+  ],
+  "i2c_addr": [
+   90
+  ],
+  "warnings": [
+   "ค่าที่วัดขึ้นกับระยะ ให้วัดห่างประมาณ 2-5 ซม. เซนเซอร์มีมุมมองกว้าง ถ้าห่างมากจะวัดพื้นที่รอบ ๆ ด้วย",
+   "ใช้เพื่อการเรียนรู้เท่านั้น ไม่ใช่เครื่องวัดไข้ทางการแพทย์"
+  ],
+  "setup": "i2c = I2C(0, sda=Pin({SDA}), scl=Pin({SCL}), freq=100000)",
+  "helpers": "def mlx_temp(reg):\n    d = i2c.readfrom_mem(0x5A, reg, 3)\n    return round((d[0] | d[1] << 8) * 0.02 - 273.15, 1)",
+  "read": "obj_temp_c = mlx_temp(0x07)\namb_temp_c = mlx_temp(0x06)",
+  "keys": [
+   "obj_temp_c",
+   "amb_temp_c"
+  ],
+  "sim": [
+   25,
+   40,
+   "float"
+  ],
+  "explain_th": "วัดรังสีอินฟราเรดที่วัตถุแผ่ออกมา จึงรู้อุณหภูมิโดยไม่ต้องสัมผัส ใช้วัดอุณหภูมิผิว เหงือก หรือวัตถุร้อน",
+  "image": "images/mlx90614.jpg"
+ },
+ {
+  "id": "max30102",
+  "name_th": "เซนเซอร์วัดชีพจรและออกซิเจนในเลือด MAX30102",
+  "name_en": "MAX30102 Pulse Sensor",
+  "category": "สุขภาพ",
+  "type": "sensor",
+  "keywords": [
+   "max30102",
+   "max30100",
+   "วัดชีพจร",
+   "ชีพจร",
+   "หัวใจเต้น",
+   "อัตราการเต้นของหัวใจ",
+   "ออกซิเจนในเลือด",
+   "spo2",
+   "heart rate"
+  ],
+  "voltage": "3.3V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "SDA",
+    "kind": "signal",
+    "need": "i2c_sda",
+    "role": "SDA"
+   },
+   {
+    "label": "SCL",
+    "kind": "signal",
+    "need": "i2c_scl",
+    "role": "SCL"
+   }
+  ],
+  "i2c_addr": [
+   87
+  ],
+  "warnings": [
+   "วางปลายนิ้วนิ่ง ๆ บนเซนเซอร์ กดเบา ๆ ถ้ากดแรงหรือขยับ ค่าจะผิด",
+   "ค่าชีพจรเป็นค่าโดยประมาณจากการนับยอดคลื่น ใช้เพื่อการเรียนรู้ ไม่ใช่เครื่องมือแพทย์",
+   "โมดูลสีม่วงบางรุ่นมีปัญหาแรงดันขา SDA/SCL ถ้าสแกนไม่เจอให้ลองจ่ายไฟ 5V ที่ VIN"
+  ],
+  "setup": "i2c = I2C(0, sda=Pin({SDA}), scl=Pin({SCL}))\ni2c.writeto_mem(0x57, 0x09, b'\\x40')   # รีเซ็ต\ntime.sleep_ms(100)\ni2c.writeto_mem(0x57, 0x08, b'\\x10')   # FIFO วนรอบ\ni2c.writeto_mem(0x57, 0x0A, b'\\x27')   # 100 ครั้ง/วินาที 18 บิต\ni2c.writeto_mem(0x57, 0x0C, b'\\x24')   # ความสว่าง LED แดง\ni2c.writeto_mem(0x57, 0x0D, b'\\x24')   # ความสว่าง LED อินฟราเรด\ni2c.writeto_mem(0x57, 0x09, b'\\x03')   # โหมด SpO2 (แดง+อินฟราเรด)",
+  "helpers": "def pulse_read(sec=3):\n    vals = []\n    t0 = time.ticks_ms()\n    while time.ticks_diff(time.ticks_ms(), t0) < sec * 1000:\n        wr = i2c.readfrom_mem(0x57, 0x04, 1)[0]\n        rd = i2c.readfrom_mem(0x57, 0x06, 1)[0]\n        for _ in range((wr - rd) & 0x1F):\n            d = i2c.readfrom_mem(0x57, 0x07, 6)\n            vals.append((d[3] << 16 | d[4] << 8 | d[5]) & 0x3FFFF)\n        time.sleep_ms(20)\n    if len(vals) < 20:\n        return 0, 0\n    ir = sum(vals) // len(vals)\n    if ir < 50000:                     # ไม่มีนิ้ววางอยู่\n        return ir, 0\n    sm = [sum(vals[i:i + 8]) / 8 for i in range(len(vals) - 7)]\n    avg = sum(sm) / len(sm)\n    gap = (max(sm) - min(sm)) * 0.1\n    beats, up = [], sm[0] > avg\n    for i, v in enumerate(sm):\n        if not up and v > avg + gap:\n            beats.append(i)              # จุดที่คลื่นขึ้น = หัวใจเต้น 1 ครั้ง\n            up = True\n        elif up and v < avg - gap:\n            up = False\n    if len(beats) < 2:\n        return ir, 0\n    fs = len(vals) / sec                 # จำนวนจุดต่อวินาทีที่อ่านได้จริง\n    return ir, int((len(beats) - 1) * 60 * fs / (beats[-1] - beats[0]))",
+  "read": "ir, bpm = pulse_read(3)",
+  "keys": [
+   "bpm",
+   "ir"
+  ],
+  "sim": [
+   60,
+   110,
+   "float"
+  ],
+  "explain_th": "ส่องแสงแดงและอินฟราเรดผ่านปลายนิ้ว เลือดที่ไหลตามจังหวะหัวใจทำให้แสงสะท้อนกลับเปลี่ยนไป นับจังหวะได้เป็นครั้งต่อนาที (bpm)",
+  "image": "images/max30102.jpg"
+ },
+ {
+  "id": "ad8232",
+  "name_th": "โมดูลวัดคลื่นไฟฟ้าหัวใจ AD8232 (ECG)",
+  "name_en": "AD8232 ECG",
+  "category": "สุขภาพ",
+  "type": "sensor",
+  "keywords": [
+   "ad8232",
+   "ecg",
+   "คลื่นไฟฟ้าหัวใจ",
+   "คลื่นหัวใจ",
+   "คลื่นไฟฟ้า"
+  ],
+  "voltage": "3.3V",
+  "pins": [
+   {
+    "label": "3.3V",
+    "kind": "power3",
+    "need": null,
+    "role": "3.3V"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "OUTPUT",
+    "kind": "signal",
+    "need": "adc",
+    "role": "SIG"
+   },
+   {
+    "label": "LO+",
+    "kind": "signal",
+    "need": "inp",
+    "role": "LOP"
+   },
+   {
+    "label": "LO-",
+    "kind": "signal",
+    "need": "inp",
+    "role": "LOM"
+   }
+  ],
+  "warnings": [
+   "ใช้ไฟจากแบตเตอรี่หรือโน้ตบุ๊กที่ถอดสายชาร์จเท่านั้น ห้ามต่อกับคอมพิวเตอร์ที่เสียบไฟบ้านขณะติดขั้วไฟฟ้าบนร่างกาย",
+   "ค่าที่ได้ใช้เพื่อการเรียนรู้เท่านั้น ไม่ใช่การวินิจฉัยโรคหัวใจ",
+   "ถ้าต้องการเห็นรูปคลื่นหัวใจ ให้พิมพ์คำสั่งว่า \"ทุก 20 ms\" เพื่ออ่านค่าเร็วขึ้น"
+  ],
+  "setup": "{ADC_SETUP_SIG}\necg_lo_p = Pin({LOP}, Pin.IN)\necg_lo_m = Pin({LOM}, Pin.IN)",
+  "read": "ecg = 0 if (ecg_lo_p.value() or ecg_lo_m.value()) else adc_SIG.read_u16() * 100 // 65535",
+  "keys": [
+   "ecg"
+  ],
+  "sim": [
+   20,
+   80,
+   "float"
+  ],
+  "explain_th": "ขยายสัญญาณไฟฟ้าเล็ก ๆ จากหัวใจที่วัดผ่านแผ่นขั้วไฟฟ้า 3 จุดบนร่างกาย ขา LO+/LO- บอกว่าขั้วไฟฟ้าหลุดหรือไม่ (ค่า ecg เป็น 0)",
+  "image": "images/ad8232.jpg"
+ },
+ {
+  "id": "eeg",
+  "name_th": "เซนเซอร์คลื่นสมอง EEG 2 ช่อง (BioAmp EXG / วงจรขยายสัญญาณชีวภาพ)",
+  "name_en": "EEG 2-Channel",
+  "category": "สุขภาพ",
+  "type": "sensor",
+  "keywords": [
+   "eeg",
+   "คลื่นสมอง",
+   "bioamp",
+   "exg",
+   "สมอง"
+  ],
+  "voltage": "3.3V (ใช้แบตเตอรี่)",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "OUT ช่อง 1",
+    "kind": "signal",
+    "need": "adc",
+    "role": "CH1"
+   },
+   {
+    "label": "OUT ช่อง 2",
+    "kind": "signal",
+    "need": "adc",
+    "role": "CH2"
+   }
+  ],
+  "warnings": [
+   "ใช้ไฟจากแบตเตอรี่หรือโน้ตบุ๊กที่ถอดสายชาร์จเท่านั้น ห้ามต่อกับคอมพิวเตอร์ที่เสียบไฟบ้านขณะติดขั้วไฟฟ้าบนศีรษะ",
+   "ESP32: ใช้ขา ADC1 (GPIO 32-39) เท่านั้น ขา ADC2 อ่านค่าไม่ได้ขณะเปิด Wi-Fi",
+   "การอ่านค่า 1 ครั้งใช้เวลาประมาณ 1.5 วินาที (เก็บ 128 จุดที่ 100 Hz แล้วคำนวณ DFT)",
+   "ค่า alpha/beta เป็นค่าเปรียบเทียบ ใช้เพื่อการเรียนรู้ ไม่ใช่การวินิจฉัยทางการแพทย์"
+  ],
+  "imports": [
+   "import math"
+  ],
+  "setup": "{ADC_SETUP_CH1}\n{ADC_SETUP_CH2}\neeg_a1, eeg_a2 = adc_CH1, adc_CH2\nEEG_N = 128        # จำนวนจุดต่อรอบ\nEEG_FS = 100       # อัตราสุ่ม (ครั้ง/วินาที)\nEEG_COS = [math.cos(2 * math.pi * i / EEG_N) for i in range(EEG_N)]\nEEG_SIN = [math.sin(2 * math.pi * i / EEG_N) for i in range(EEG_N)]",
+  "helpers": "def eeg_band(buf, lo, hi):\n    p = 0.0\n    for k in range(1, EEG_N // 2):\n        f = k * EEG_FS / EEG_N\n        if lo <= f <= hi:\n            re_ = im = 0.0\n            for n in range(EEG_N):\n                j = (k * n) % EEG_N\n                re_ += buf[n] * EEG_COS[j]\n                im += buf[n] * EEG_SIN[j]\n            p += math.sqrt(re_ * re_ + im * im)\n    return round(p, 2)\n\ndef eeg_read():\n    b1, b2 = [], []\n    step = 1000000 // EEG_FS\n    for i in range(EEG_N):\n        t = time.ticks_us()\n        b1.append(eeg_a1.read_u16() * 3.3 / 65535 - 1.65)   # ลบค่ากลาง (DC offset)\n        b2.append(eeg_a2.read_u16() * 3.3 / 65535 - 1.65)\n        while time.ticks_diff(time.ticks_us(), t) < step:\n            pass\n    return eeg_band(b1, 8, 13), eeg_band(b1, 13, 30), eeg_band(b2, 8, 13), eeg_band(b2, 13, 30)",
+  "read": "alpha1, beta1, alpha2, beta2 = eeg_read()",
+  "keys": [
+   "alpha1",
+   "beta1",
+   "alpha2",
+   "beta2"
+  ],
+  "sim": [
+   0,
+   5,
+   "float"
+  ],
+  "explain_th": "วัดสัญญาณไฟฟ้าจากสมองผ่านขั้วไฟฟ้าบนศีรษะ แล้วแยกย่านความถี่ด้วย DFT: Alpha (8-13 Hz) สูงตอนผ่อนคลาย/หลับตา Beta (13-30 Hz) สูงตอนตั้งใจคิด",
+  "image": "images/eeg.jpg"
+ },
+ {
+  "id": "tcs34725",
+  "name_th": "เซนเซอร์วัดสี TCS34725",
+  "name_en": "TCS34725 Color Sensor",
+  "category": "แสง",
+  "type": "sensor",
+  "keywords": [
+   "tcs34725",
+   "เซนเซอร์สี",
+   "เซ็นเซอร์สี",
+   "ตรวจสี",
+   "วัดสี",
+   "สีของฟัน",
+   "rgb sensor",
+   "color sensor"
+  ],
+  "voltage": "3.3V-5V",
+  "pins": [
+   {
+    "label": "VCC",
+    "kind": "power3",
+    "need": null,
+    "role": "VCC"
+   },
+   {
+    "label": "GND",
+    "kind": "gnd",
+    "need": null,
+    "role": "GND"
+   },
+   {
+    "label": "SDA",
+    "kind": "signal",
+    "need": "i2c_sda",
+    "role": "SDA"
+   },
+   {
+    "label": "SCL",
+    "kind": "signal",
+    "need": "i2c_scl",
+    "role": "SCL"
+   }
+  ],
+  "i2c_addr": [
+   41
+  ],
+  "warnings": [
+   "ที่อยู่ I2C 0x29 ซ้ำกับ VL53L0X ใช้สองตัวบนสายเดียวกันไม่ได้",
+   "วางวัตถุห่างเซนเซอร์ 3-10 มม. และบังแสงรอบข้าง ค่าสีจะนิ่งขึ้น"
+  ],
+  "setup": "i2c = I2C(0, sda=Pin({SDA}), scl=Pin({SCL}))\ni2c.writeto_mem(0x29, 0x80, b'\\x03')   # เปิดเซนเซอร์\ni2c.writeto_mem(0x29, 0x81, b'\\xD5')   # เวลาเก็บแสง ~100 ms\ni2c.writeto_mem(0x29, 0x8F, b'\\x01')   # ขยาย 4 เท่า",
+  "helpers": "def tcs_read():\n    d = i2c.readfrom_mem(0x29, 0xB4, 8)\n    c, r, g, b = [d[i] | d[i + 1] << 8 for i in (0, 2, 4, 6)]\n    if c == 0:\n        return 0, 0, 0, 0\n    return min(255, r * 255 // c), min(255, g * 255 // c), min(255, b * 255 // c), c",
+  "read": "red, green, blue, clear = tcs_read()",
+  "keys": [
+   "red",
+   "green",
+   "blue",
+   "clear"
+  ],
+  "sim": [
+   0,
+   255,
+   "float"
+  ],
+  "explain_th": "มีตัวรับแสงที่กรองสีแดง เขียว น้ำเงิน อ่านสัดส่วนสีของวัตถุได้ ใช้แยกสีของ ตรวจสีฟัน หรือสีของน้ำยา",
+  "image": "images/tcs34725.jpg"
  }
 ]

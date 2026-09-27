@@ -6,6 +6,7 @@ components.json หรือ boards.json โดยไม่ต้องแก้
 """
 import json
 import os
+import re
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 
@@ -48,6 +49,85 @@ class KnowledgeBase:
             return []
         with open(path, encoding="utf-8") as f:
             return json.load(f)
+
+    # ---------- คู่มือคำสั่ง Arduino → MicroPython (knowledge/arduino_reference.json)
+    def reference(self):
+        """รายการคำสั่งภาษา Arduino พร้อมคำอธิบายไทยและโค้ด MicroPython ที่ใช้แทน (โหลดครั้งแรกที่เรียก)"""
+        if getattr(self, "_ref", None) is None:
+            path = os.path.join(BASE, "knowledge", "arduino_reference.json")
+            self._ref = []
+            if os.path.exists(path):
+                with open(path, encoding="utf-8") as f:
+                    self._ref = json.load(f).get("items", [])
+            self._ref_by_id = {r["id"]: r for r in self._ref}
+            # ชื่อฟังก์ชันที่พบในโค้ด C++ -> รายการคู่มือ เช่น "digitalwrite" -> DigitalWrite
+            self._ref_by_call = {}
+            for r in self._ref:
+                head = r["name"].split("(")[0].strip()
+                if re.fullmatch(r"[A-Za-z_][\w.]*", head):
+                    self._ref_by_call.setdefault(head.lower(), r)
+                    self._ref_by_call.setdefault(head.split(".")[-1].lower(), r)
+        return self._ref
+
+    def ref_search(self, query, translated_only=False):
+        """ค้นคู่มือด้วยชื่อคำสั่ง (อังกฤษ) หรือคำอธิบายไทย"""
+        items = self.reference()
+        if translated_only:
+            items = [r for r in items if r.get("micropython")]
+        q = query.lower().strip().rstrip("()")
+        if not q:
+            return items
+        exact, starts, other = [], [], []
+        for r in items:
+            head = r["name"].split("(")[0].lower()
+            if q in (head, r["id"].lower(), head.split(".")[-1]):
+                exact.append(r)
+            elif head.startswith(q) or head.split(".")[-1].startswith(q):
+                starts.append(r)
+            elif q in " ".join([r["name"], r.get("th", ""), r.get("category_th", ""), r["category"],
+                                " ".join(r.get("keywords", []))]).lower():
+                other.append(r)
+        return exact + starts + other
+
+    def ref_for_code(self, code, limit=20):
+        """หาคำสั่ง Arduino ที่ใช้ในโค้ด C++ แล้วคืนรายการคู่มือที่มีโค้ด MicroPython แทน"""
+        self.reference()
+        code = re.sub(r"//[^\n]*|/\*.*?\*/", " ", code, flags=re.S)
+        seen, out = set(), []
+        for m in re.finditer(r"\b([A-Za-z_][\w]*(?:\.[A-Za-z_]\w*)?)\s*\(", code):
+            name = m.group(1).lower()
+            r = self._ref_by_call.get(name)
+            if r is None and "." in name:
+                obj, meth = name.split(".", 1)
+                r = self._ref_by_call.get(("serial." if obj.startswith("serial") else "") + meth)
+            if r and r.get("micropython") and r["id"] not in seen:
+                seen.add(r["id"])
+                out.append(r)
+        for word, rid in (("#include", "Include"), ("#define", "Define"), ("void setup", "Setup"),
+                          ("void loop", "Loop"), ("switch", "SwitchCase"), ("++", "Increment")):
+            if word in code and rid not in seen and rid in self._ref_by_id:
+                seen.add(rid)
+                out.append(self._ref_by_id[rid])
+        return out[:limit]
+
+    def ref_context_for_ai(self, text, limit=8):
+        """ข้อความคู่มือแบบย่อ ส่งไปกับคำถามให้ AI (RAG)"""
+        items = self.ref_for_code(text, limit)
+        if not items:
+            words = re.findall(r"[A-Za-z_][\w.]{2,}", text)
+            for w in words:
+                for r in self.ref_search(w, translated_only=True)[:1]:
+                    if r not in items:
+                        items.append(r)
+            items = items[:limit]
+        if not items:
+            return ""
+        lines = []
+        for r in items:
+            lines.append("- %s: %s\n  MicroPython:\n    %s\n  หมายเหตุ: %s" % (
+                r["name"], r.get("th", r["description_en"][:150]),
+                r.get("micropython", "").replace("\n", "\n    "), r.get("note_th", "")))
+        return "คู่มือคำสั่ง Arduino → MicroPython:\n" + "\n".join(lines)
 
     # ---------- เพิ่มอุปกรณ์ใหม่ลงไฟล์ components.json
     def save_component(self, comp):
