@@ -2,6 +2,17 @@
 
 ![คลังโปรเจกต์ในผู้ช่วยนำทาง](docs/images/w2_gallery.png)
 
+## ดาวน์โหลด (ฟรี)
+
+**[⬇ ดาวน์โหลด ArduinoAI เวอร์ชันล่าสุด (ไฟล์ zip)](https://github.com/chikannika-coder/ArduinoAI-Assistant/releases/latest/download/ArduinoAI.zip)**  ·  [คู่มือภาพ PDF](https://github.com/chikannika-coder/ArduinoAI-Assistant/releases/latest/download/visual-guide-v2.3-th.pdf)  ·  [ทุกเวอร์ชัน](https://github.com/chikannika-coder/ArduinoAI-Assistant/releases)
+
+1. ติดตั้ง **Python 3.10 ขึ้นไป** จาก [python.org](https://www.python.org/downloads/) — ตอนติดตั้งติ๊ก **Add Python to PATH**
+2. แตกไฟล์ `ArduinoAI.zip` ไว้ที่ไหนก็ได้ (เช่น Documents)
+3. ดับเบิลคลิก **`install.bat`** (ทำครั้งเดียว ต้องต่ออินเทอร์เน็ต)
+4. ดับเบิลคลิก **`run.bat`** เพื่อเปิดโปรแกรม
+
+ใช้ได้กับ Windows 10/11 · ใช้ได้ฟรีตามสัญญาอนุญาต [MIT](LICENSE) (โรงเรียนนำไปใช้ ดัดแปลง และแจกต่อได้ ขอให้ระบุที่มา)
+
 ## เอกสารฉบับภาพ (สำหรับนักเรียนที่มีความบกพร่องทางการได้ยิน)
 
 | เอกสาร | เนื้อหา |
