@@ -6,6 +6,8 @@
 """
 import tkinter as tk
 
+import icons
+
 WIRE_COLORS = {"power5": "#E24B4A", "power3": "#EF9F27", "gnd": "#5F5E5A"}
 SIGNAL_COLORS = ["#378ADD", "#1D9E75", "#7F77DD", "#D4537E", "#639922", "#185FA5", "#BA7517"]
 KIND_TH = {"power5": "ไฟเลี้ยง 5V", "power3": "ไฟเลี้ยง 3.3V", "gnd": "กราวด์ (GND)", "signal": "สายสัญญาณ"}
@@ -13,7 +15,7 @@ KIND_TH = {"power5": "ไฟเลี้ยง 5V", "power3": "ไฟเลี�
 
 class WiringCanvas(tk.Canvas):
     BX, BW = 40, 230          # กล่องบอร์ด
-    CX, CW = 610, 250         # กล่องอุปกรณ์
+    CX, CW = 590, 320         # กล่องอุปกรณ์ (2.6: กว้างขึ้นเพื่อวาดรูปอุปกรณ์ด้านขวา)
     PAD = 34
 
     def __init__(self, master, font_family="Tahoma", on_caption=None, **kw):
@@ -45,9 +47,11 @@ class WiringCanvas(tk.Canvas):
         self.comp_boxes, self.onboard_led = {}, None
         wiring = result.wiring if result else []
         if not result or not result.components:
-            self.create_text(450, 200, text="สร้างโค้ดก่อน แล้วภาพการต่อวงจรจะแสดงที่นี่",
-                             font=(self.ff, 16), fill="#5A6478")
-            self.on_caption("ยังไม่มีวงจร", 0, 0)
+            has_code = bool(result and result.code)
+            self.create_text(450, 200, text=("โค้ดนี้ไม่มีภาพการต่อสาย\nดูว่าต่อขาไหนได้ในช่อง \"การต่อสาย / คำเตือน\" แท็บ ① สร้างโค้ด"
+                                             if has_code else "สร้างโค้ดก่อน แล้วภาพการต่อวงจรจะแสดงที่นี่"),
+                             font=(self.ff, 16), fill="#5A6478", justify="center")
+            self.on_caption("ดูรายการขาในแท็บ ① สร้างโค้ด" if has_code else "ยังไม่มีวงจร", 0, 0)
             return
 
         # ขาบอร์ดที่ใช้ (ไม่ซ้ำ)
@@ -83,7 +87,7 @@ class WiringCanvas(tk.Canvas):
         y = top
         for c in result.components:
             pins = [w for w in wiring if w["comp"] == c["id"]]
-            h = 62 + max(1, len(pins)) * 28 + 24
+            h = max(150, 62 + max(1, len(pins)) * 28 + 24)
             fill = "#EEF1F6" if c["type"] != "actuator" else "#FCE9DA"
             box = self.create_rectangle(self.CX, y, self.CX + self.CW, y + h, fill=fill, outline="#98A2B5", width=2)
             self.create_text(self.CX + self.CW / 2, y + 16, text=c["name_en"], font=(self.ff, 11, "bold"), fill="#1D2433")
@@ -93,8 +97,9 @@ class WiringCanvas(tk.Canvas):
                 self.create_rectangle(self.CX - 6, py - 6, self.CX + 8, py + 6, fill="#D3D1C7", outline="#5F5E5A")
                 self.create_text(self.CX + 16, py, text=w["comp_pin"], anchor="w", font=(self.ff, 10), fill="#1D2433")
                 cpad[(c["id"], w["comp_pin"])] = (self.CX - 6, py)
+            dev = icons.draw(self, c["id"], self.CX + self.CW - 58, y + 58 + (h - 80) / 2, 88, tag="ic_" + c["id"], comp=c)
             val = self.create_text(self.CX + self.CW / 2, y + h - 16, text="", font=(self.ff, 12, "bold"), fill="#0F6E56")
-            self.comp_boxes[c["id"]] = dict(box=box, val=val, fill=fill, type=c["type"])
+            self.comp_boxes[c["id"]] = dict(box=box, val=val, fill=fill, type=c["type"], dev=dev)
             if not pins:
                 self.create_text(self.CX + self.CW / 2, y + 70, text="ไฟบนบอร์ด ไม่ต้องต่อสาย", font=(self.ff, 10), fill="#5A6478")
             y += h + 18
@@ -252,6 +257,9 @@ class WiringCanvas(tk.Canvas):
             if c["type"] == "sensor":
                 txt = "   ".join("%s = %s" % (k, _fmt(self.values[k])) for k in c.get("keys", []) if k in self.values)
                 self.itemconfigure(box["val"], text=txt)
+                keys = [k for k in c.get("keys", []) if k in self.values]
+                if keys and c.get("bool"):
+                    box["dev"].update(on=bool(self.values[keys[0]]), value=self.values[keys[0]])
             elif c["type"] == "actuator":
                 on = states.get(c["id"])
                 if on is None:
@@ -260,12 +268,17 @@ class WiringCanvas(tk.Canvas):
                 label = {"led": "ติด", "buzzer": "ดัง ♪", "buzzer_passive": "ดัง ♪", "relay": "ทำงาน", "servo": "หมุน",
                          "motor_l298n": "หมุน", "neopixel": "ติด", "stepper": "หมุน"}.get(c["id"], "ทำงาน")
                 self.itemconfigure(box["val"], text=label if on else "หยุด", fill="#854F0B" if on else "#5F5E5A")
+                box["on"] = on
                 if c["id"] == "led" and self.onboard_led and not any(w["comp"] == "led" for w in self.result.wiring):
                     self.itemconfigure(self.onboard_led, fill="#FFD84D" if on else "#444441")
 
     def _tick(self):
         if not self.live_on:
             return
+        self._t = getattr(self, "_t", 0) + 1
+        for cid, box in self.comp_boxes.items():            # 2.6: รูปอุปกรณ์ขยับตามสถานะ
+            if box["type"] == "actuator" and "on" in box:
+                box["dev"].update(on=box["on"], t=self._t // 4)
         for p in self.pulses:
             show = True
             if not p["rev"]:

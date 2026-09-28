@@ -37,6 +37,7 @@ class Result:
     keys: list = field(default_factory=list)        # ชื่อค่าที่บอร์ดจะ print ออกมา
     rule: dict = None                                # เงื่อนไขสำหรับโหมดจำลอง
     refs: list = field(default_factory=list)         # คำสั่ง Arduino ที่พบในโค้ด C++ + วิธีเขียนใน MicroPython
+    passive: list = field(default_factory=list)      # ชิ้นส่วนวงจรที่ไม่ต้องเขียนโค้ด เช่น ทรานซิสเตอร์ ไดโอด (2.4)
 
 
 # ------------------------------------------------------------------ ตัวช่วยอ่านตัวเลข
@@ -55,6 +56,29 @@ def extract_angle(text, default=90):
     if m:
         return max(0, min(180, int(m.group(1))))
     return default
+
+
+KEY_HINTS = {          # 2.5: เซนเซอร์ที่อ่านได้หลายค่า เลือกค่าที่พูดถึงหลังคำว่า "ถ้า"
+    "humidity": ["ความชื้น", "humidity", "ชื้น"],
+    "temp_c": ["อุณหภูมิ", "temp", "ร้อน", "หนาว", "องศาเซลเซียส"],
+    "amb_temp_c": ["อุณหภูมิห้อง", "รอบข้าง"],
+}
+
+
+def pick_key(sensor, text):
+    """เลือกชื่อค่าที่ใช้ในเงื่อนไข เช่น DHT22 มีทั้ง temp_c และ humidity"""
+    keys = sensor["keys"]
+    if len(keys) < 2:
+        return keys[0]
+    i = text.find("ถ้า")
+    seg = (text[i:] if i >= 0 else text).replace("ความชื้นในดิน", "")
+    best = None
+    for k in keys:
+        for h in KEY_HINTS.get(k, []):
+            j = seg.find(h)
+            if j >= 0 and (best is None or j < best[0]):
+                best = (j, k)
+    return best[1] if best else keys[0]
 
 
 def extract_rule_number(text):
@@ -113,6 +137,18 @@ class CodeGenerator:
             found = [(c, i) for c, i in found if c["id"] != "hx711"]
             res.warnings.append("FSR402 วัดได้แค่แรงกดโดยประมาณ ไม่ใช่น้ำหนักเป็นกรัม ถ้าต้องการชั่งจริงให้พิมพ์ \"ชั่งน้ำหนักด้วย HX711\"")
         res.components = [c for c, _ in found]
+        # 2.5: "DHT22 ถ้าความชื้น..." -> คำว่า ความชื้น/อุณหภูมิ ไม่ต้องเพิ่ม DHT11 อีกตัว ถ้ามีเซนเซอร์อื่นวัดค่านี้อยู่แล้ว
+        if "dht11" in ids and "dht11" not in text and any(
+                k in ("temp_c", "humidity", "obj_temp_c") for c in res.components if c["id"] != "dht11"
+                for k in c.get("keys", [])):
+            res.components = [c for c in res.components if c["id"] != "dht11"]
+        # ชิ้นส่วนวงจร (ทรานซิสเตอร์ ไดโอด ตัวต้านทาน ...) ไม่มีขาต่อกับบอร์ด ไม่ต้องสร้างโค้ด แต่บอกนักเรียนว่าดูได้ที่ไหน
+        res.passive = [c for c in res.components if c.get("passive")]
+        if res.passive:
+            res.components = [c for c in res.components if not c.get("passive")]
+            if res.components:
+                res.warnings.append("%s ไม่ต้องเขียนโค้ด (เป็นชิ้นส่วนหรือวงจรอิเล็กทรอนิกส์) ดูวิธีต่อในแท็บ ⑤ คลังความรู้"
+                                    % ", ".join(c["name_th"] for c in res.passive))
         if board["family"] == "microbit":
             res.errors.append("micro:bit ใช้ MicroPython แบบเฉพาะ แนะนำให้เขียนที่ python.microbit.org")
             return board, text, res
@@ -162,6 +198,8 @@ class CodeGenerator:
                     pin = board["led"]
                 else:
                     pool = board["pools"].get(need) or board["pools"].get("out" if need == "pwm" else "inp", [])
+                    if p.get("pull_up"):        # 2.5: ขาที่ต้องใช้ตัวต้านทานดึงขึ้นในชิป (ESP32 ขา 34-39 ไม่มี)
+                        pool = [x for x in pool if x not in board.get("input_only", [])]
                     pin = next((x for x in pool if x not in used), None)
                     if pin is None:
                         res.errors.append("ขาของบอร์ด %s ไม่พอสำหรับ %s" % (board["name"], c["name_th"]))
@@ -276,6 +314,12 @@ class CodeGenerator:
             return res
         if board["family"] == "microbit":
             res.code = "# " + res.errors[0]
+            return res
+        if not res.components and res.passive:
+            res.code = passive_text(res.passive)
+            for c in res.passive:
+                res.explanation.append("%s: %s" % (c["name_th"], c["explain_th"]))
+                res.explanation += c.get("legs_th", [])
             return res
         if not res.components:
             res.code = HELP_TEXT
@@ -443,7 +487,7 @@ class CodeGenerator:
                 add('oled.fill(0)\noled.text("Hello!", 0, 0)\noled.show()')
             if sensors and actuators:
                 s = sensors[0]
-                key = s["keys"][0]
+                key = pick_key(s, text)
                 if s.get("bool"):
                     op, thr = "==", 1
                 else:
@@ -606,6 +650,7 @@ CPP = {
     "buzzer": dict(setup=["pinMode({SIG}, OUTPUT);"], on="digitalWrite({SIG}, HIGH);", off="digitalWrite({SIG}, LOW);"),
     "buzzer_passive": dict(setup=["pinMode({SIG}, OUTPUT);"], on="tone({SIG}, 1000);", off="noTone({SIG});"),
     "relay": dict(setup=["pinMode({SIG}, OUTPUT);", "digitalWrite({SIG}, HIGH);"], on="digitalWrite({SIG}, LOW);", off="digitalWrite({SIG}, HIGH);"),
+    "beam_motor": dict(setup=["pinMode({SIG}, OUTPUT);"], on="analogWrite({SIG}, 180);", off="analogWrite({SIG}, 0);"),
     "servo": dict(inc=["Servo.h"], glob=["Servo servo;"], setup=["servo.attach({SIG});"], on="servo.write({ANGLE});", off="servo.write(0);"),
     "hc_sr04": dict(setup=["pinMode({TRIG}, OUTPUT);", "pinMode({ECHO}, INPUT);"],
                     read=["digitalWrite({TRIG}, LOW); delayMicroseconds(2);", "digitalWrite({TRIG}, HIGH); delayMicroseconds(10);",
@@ -645,9 +690,24 @@ CPP = {
 }
 for _id, _key, _inv in [("ldr", "light", False), ("potentiometer", "pot", False), ("soil", "soil", True), ("rain", "rain", True),
                         ("mq2", "gas", False), ("sound", "sound", False), ("water_level", "water", False),
-                        ("fsr402", "force", False)]:
+                        ("fsr402", "force", False), ("beam_ir", "reflect", False)]:
     expr = "100 - analogRead({SIG}) * 100L / 1023" if _inv else "analogRead({SIG}) * 100L / 1023"
     CPP[_id] = dict(read=["long %s = %s;" % (_key, expr)], key=_key)
+
+
+def passive_text(parts):
+    """ข้อความแทนโค้ด เมื่อคำสั่งพูดถึงแต่ชิ้นส่วนวงจรที่ไม่ต้องเขียนโปรแกรม"""
+    lines = ["# %s" % ", ".join(c["name_th"] for c in parts),
+             "# เป็นชิ้นส่วนหรือวงจรอิเล็กทรอนิกส์ที่ไม่ต้องเขียนโปรแกรมสั่งงาน",
+             "# ดูวิธีวางขาในแท็บ ⑤ คลังความรู้"]
+    if any(c.get("lesson") == "beam_robot" for c in parts):
+        lines += ["# และดูภาพเคลื่อนไหวการประกอบ: แท็บ ⑤ → ปุ่ม 🎬 เปิดบทเรียนภาพเคลื่อนไหว",
+                  "#",
+                  "# อยากให้หุ่นยนต์บีมเขียนโปรแกรมได้ ลองพิมพ์คำสั่ง:",
+                  "#   อ่านค่าเซนเซอร์หุ่นบีม",
+                  "#   ถ้าเซนเซอร์หุ่นบีมมากกว่า 50 ให้มอเตอร์หุ่นบีมหมุน",
+                  "# หรือกด 📚 ตัวอย่าง Arduino → หมวด 15 หุ่นยนต์ (ต่อยอดหุ่นยนต์บีม)"]
+    return "\n".join(lines) + "\n"
 
 
 HELP_TEXT = """# ยังไม่พบชื่ออุปกรณ์ในคำสั่ง

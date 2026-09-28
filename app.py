@@ -24,12 +24,16 @@ from generator import CodeGenerator, check_code
 from ai_client import AIClient, extract_code
 from device import BoardLink, Simulator, list_ports, parse_line, evaluate_rule, has_mpremote
 from wiring import WiringCanvas, SIGNAL_COLORS
+from scene import SceneCanvas
+import icons
 from wizard import WizardTab
 from component_dialog import NewComponentDialog
 from examples_dialog import ExamplesDialog
 import examples_lib
+import lessons
+import lint
 
-VERSION = "2.3"
+VERSION = "2.7.1"
 CONFIG_PATH = os.path.join(BASE, "config.json")
 MY_CODE = os.path.join(BASE, "my_code")
 IMAGES = os.path.join(BASE, "images")
@@ -99,7 +103,8 @@ class App:
         self.f = (self.ff, fs)
         self.fb = (self.ff, fs, "bold")
         self.fbig = (self.ff, fs + 4, "bold")
-        self.fmono = ("Consolas" if "Consolas" in tkfont.families(root) else "Courier", fs)
+        fams = set(tkfont.families(root))
+        self.fmono = (next((m for m in ("Consolas", "Tlwg Typewriter", "Tlwg Mono", "DejaVu Sans Mono") if m in fams), "Courier"), fs)
         root.geometry("1280x820")
         root.minsize(1050, 700)
         root.configure(bg=PALETTE["bg"])
@@ -283,7 +288,7 @@ class App:
             threading.Thread(target=work, daemon=True).start()
         else:
             self._show_result(res)
-        self.wc.load(res, board)
+        self._load_visuals(res, board)
         self._reset_live_ui()
 
     def _set_code(self, code):
@@ -316,7 +321,7 @@ class App:
         if res.keys:
             t.insert("end", "\nค่าที่บอร์ดจะส่งกลับมา: " + ", ".join(res.keys) + "\n", "ok")
         if res.refs:
-            t.insert("end", "\nคำสั่ง Arduino ในโค้ดนี้ → เขียนใน MicroPython ว่า\n", "h")
+            t.insert("end", "\nคำสั่งในโค้ดนี้ → เขียนใน MicroPython ว่า\n", "h")
             for r in res.refs:
                 t.insert("end", "• %s — %s\n" % (r["name"], r.get("th", "")))
                 t.insert("end", "    " + r["micropython"].replace("\n", "\n    ") + "\n", "code")
@@ -333,11 +338,16 @@ class App:
         return sorted(f for f in os.listdir(MY_CODE) if f.endswith((".py", ".ino")))
 
     def open_code(self, path=None):
-        path = path or filedialog.askopenfilename(filetypes=[("โค้ด", "*.py *.ino *.txt"), ("ทุกไฟล์", "*.*")])
+        path = path or filedialog.askopenfilename(
+            filetypes=[("โค้ด", "*.py *.ino *.c *.C *.cpp *.txt"), ("ทุกไฟล์", "*.*")])
         if not path or not os.path.isfile(path):
             return
-        with open(path, encoding="utf-8", errors="replace") as f:
-            code = f.read()
+        with open(path, "rb") as f:
+            raw = f.read()
+        try:
+            code = raw.decode("utf-8")
+        except UnicodeDecodeError:          # ไฟล์ Turbo C / DOS เก่าเก็บภาษาไทยแบบ TIS-620
+            code = raw.decode("cp874", errors="replace")
         from generator import Result
         m = re.search(r"^(?:#|//) คำสั่ง:\s*(.+)$", code, re.M)
         if examples_lib.header(code, "แผนขา") and self.board()["micropython"]:
@@ -353,12 +363,16 @@ class App:
             res.keys = list(dict.fromkeys(re.findall(r"print\(\s*[\"']([A-Za-z_]\w*)\s*[:=]", code)))
             res.explanation.append("โค้ดนี้ไม่ได้สร้างจากโปรแกรม จึงไม่มีภาพการต่อสาย ตรวจการต่อสายจากคอมเมนต์ในโค้ดเอง")
         res.code = code
-        res.language = "cpp" if ("void setup" in code or path.lower().endswith(".ino")) else "micropython"
+        is_c = path.lower().endswith((".ino", ".c", ".cpp")) or "void setup" in code or re.search(r"^\s*(int\s+|void\s+)?main\s*\(", code, re.M)
+        res.language = "cpp" if is_c else "micropython"
         if res.language == "cpp" and self.board()["micropython"]:
             res.warnings.append("ไฟล์นี้เป็นโค้ด C++ ของ Arduino บอร์ด MicroPython รันไม่ได้ ให้เปิดด้วย Arduino IDE "
                                 "หรือดูวิธีเขียนแต่ละคำสั่งใน MicroPython ด้านล่าง")
         if res.language == "cpp":
             res.refs = self.kb.ref_for_code(code)
+            lint_errs, lint_warns = lint.check(code)          # 2.5: ตรวจจุดที่มักเขียนผิด
+            res.errors += lint_errs
+            res.warnings += lint_warns
         errs, warns = check_code(code, self.board()) if res.language == "micropython" else ([], [])
         res.errors += errs
         res.warnings += warns
@@ -367,7 +381,7 @@ class App:
             res.explanation.append("ค่าที่พบในคำสั่ง print: " + ", ".join(res.keys) + " (แสดงเป็นกราฟในแท็บข้อมูลเรียลไทม์ได้)")
         self.result = res
         self._show_result(res)
-        self.wc.load(res, self.board())
+        self._load_visuals(res, self.board())
         self._reset_live_ui()
         self.nb.select(self.tab_index["code"])
         self.status("เปิดไฟล์แล้ว: " + os.path.basename(path))
@@ -388,7 +402,7 @@ class App:
         with open(os.path.join(examples_lib.FOLDER, e["py"]), encoding="utf-8") as f:
             src = f.read()
         code, res, notes = examples_lib.adapt(src, self.gen, board)
-        res.warnings = notes + res.warnings
+        res.warnings = notes + ([e["note_th"]] if e.get("note_th") else []) + res.warnings
         if examples_lib.header(src, "แผนขา"):
             self.txt_cmd.insert("1.0", examples_lib.header(src, "แผนขา"))
         res.explanation.insert(0, "ตัวอย่าง: %s (%s) — %s" % (e["title_th"], e["name"], e.get("desc_th", "")))
@@ -400,7 +414,7 @@ class App:
         res.warnings += warns
         self.result = res
         self._show_result(res)
-        self.wc.load(res, board)
+        self._load_visuals(res, board)
         self._reset_live_ui()
         self.nb.select(self.tab_index["code"])
         self.status("เปิดตัวอย่าง: " + e["name"])
@@ -524,32 +538,99 @@ class App:
     # ================================================================ แท็บ 2 ต่อวงจร
     def _tab_wiring(self):
         tab = ttk.Frame(self.nb, padding=10)
-        self.nb.add(tab, text="② ภาพการต่อวงจร")
+        self.nb.add(tab, text="② ภาพวงจร / การทำงาน")
         self.lbl_cap = tk.Label(tab, text="", font=self.fbig, bg="#E4ECFB", fg=PALETTE["ink"], anchor="w",
                                 justify="left", padx=14, pady=10, wraplength=1150)
         self.lbl_cap.pack(fill="x")
+        mode = ttk.Frame(tab)
+        mode.pack(fill="x", pady=(8, 0))
+        self.var_view = tk.StringVar(value="wire")
+        for val, txt in (("wire", "🔌 ภาพการต่อสาย"), ("scene", "🎞 ภาพการทำงานของโครงงาน")):
+            tk.Radiobutton(mode, text=txt, value=val, variable=self.var_view, indicatoron=False, font=self.fb,
+                           padx=16, pady=6, selectcolor="#DCE6FA", relief="ridge", command=self._switch_view).pack(side="left", padx=(0, 6))
         ctl = ttk.Frame(tab)
         ctl.pack(fill="x", pady=8)
+        self.wire_ctl = ttk.Frame(ctl)
+        self.wire_ctl.pack(side="left")
+        ctl_main, ctl = ctl, self.wire_ctl
         ttk.Button(ctl, text="↺ เริ่มใหม่", command=lambda: self.wc.reset()).pack(side="left")
         ttk.Button(ctl, text="◀ ย้อน", command=lambda: self.wc.prev_step()).pack(side="left", padx=6)
         ttk.Button(ctl, text="ถัดไป ▶", command=lambda: self.wc.next_step()).pack(side="left")
         ttk.Button(ctl, text="⏯ เล่นทั้งหมด", style="Accent.TButton", command=lambda: self.wc.play()).pack(side="left", padx=6)
         ttk.Button(ctl, text="แสดงทุกเส้น", command=lambda: self.wc.show_all()).pack(side="left")
+        ctl = ctl_main
         ttk.Button(ctl, text="⚡ ดูการทำงาน (จำลอง)", command=self.start_sim).pack(side="left", padx=(24, 6))
         ttk.Button(ctl, text="■ หยุด", command=self.stop_live).pack(side="left")
-        leg = ttk.Frame(ctl)
+        self.btn_release = ttk.Button(ctl, text="↺ ให้ค่าเปลี่ยนเอง", command=self._scene_release)
+        leg = ttk.Frame(mode)
         leg.pack(side="right")
+        self.wire_legend = leg
         for color, name in (("#E24B4A", "5V"), ("#EF9F27", "3.3V"), ("#5F5E5A", "GND"), ("#378ADD", "สัญญาณ")):
             tk.Label(leg, text="━━", fg=color, font=self.fb, bg=PALETTE["bg"]).pack(side="left")
             ttk.Label(leg, text=name + "  ").pack(side="left")
         frame = ttk.Frame(tab)
         frame.pack(fill="both", expand=True)
         self.wc = WiringCanvas(frame, font_family=self.ff, on_caption=self._caption, width=900, height=560)
-        sb = ttk.Scrollbar(frame, command=self.wc.yview)
-        self.wc.configure(yscrollcommand=sb.set)
-        sb.pack(side="right", fill="y")
+        self.wire_sb = ttk.Scrollbar(frame, command=self.wc.yview)
+        self.wc.configure(yscrollcommand=self.wire_sb.set)
+        self.wire_sb.pack(side="right", fill="y")
         self.wc.pack(side="left", fill="both", expand=True)
         self.wc.load(None, self.board())
+        self.scene_frame = ttk.Frame(tab)
+        self.scene = SceneCanvas(self.scene_frame, font_family=self.ff, on_caption=self._caption, on_set=self._scene_set,
+                                 width=1120, height=560)
+        ssb = ttk.Scrollbar(self.scene_frame, command=self.scene.yview)
+        self.scene.configure(yscrollcommand=ssb.set)
+        ssb.pack(side="right", fill="y")
+        self.scene.pack(side="left", fill="both", expand=True)
+        self.wire_frame = frame
+        self.scene.load(None, self.board())
+
+    def _switch_view(self):
+        """สลับระหว่างภาพการต่อสาย กับ ภาพการทำงานของโครงงาน (2.6)"""
+        if self.var_view.get() == "scene":
+            self.wire_frame.pack_forget()
+            self.wire_ctl.pack_forget()
+            self.wire_legend.pack_forget()
+            self.btn_release.pack(side="left", padx=6)
+            self.scene_frame.pack(fill="both", expand=True)
+            self.scene.show(True)
+        else:
+            self.scene.show(False)
+            self.scene_frame.pack_forget()
+            self.btn_release.pack_forget()
+            self.wire_legend.pack(side="right")
+            self.wire_ctl.pack(side="left", before=self.wire_ctl.master.winfo_children()[1])
+            self.wire_frame.pack(fill="both", expand=True)
+            self.wc._caption()
+
+    def _scene_set(self, key, value):
+        """ลากแถบค่าในภาพการทำงาน: ตั้งค่าเซนเซอร์จำลองเอง (ถ้ายังไม่เริ่มจำลอง จะเริ่มให้)"""
+        if self.live_source == "board":
+            self.status("กำลังอ่านค่าจากบอร์ดจริง ลากตั้งค่าไม่ได้ กด \"หยุด\" แล้วใช้โหมดจำลอง")
+            return
+        if self.live_source != "sim" or not self.sim:
+            self.start_sim()
+        self.sim.hold[key] = value
+        self.status("ตั้ง %s = %s เอง (กด \"↺ ให้ค่าเปลี่ยนเอง\" เพื่อกลับไปใช้ค่าจำลองอัตโนมัติ)" % (key, value))
+        self._on_line("%s: %s" % (key, value))
+
+    def _scene_release(self):
+        if self.sim:
+            self.sim.hold.clear()
+            self.status("ค่าจำลองเปลี่ยนเองอัตโนมัติแล้ว")
+
+    def show_scene_sim(self):
+        """2.6: เปิดภาพการทำงานของโครงงานพร้อมค่าจำลอง (ใช้จากผู้ช่วยนำทางขั้นที่ 6)"""
+        self.nb.select(self.tab_index["wiring"])
+        self.var_view.set("scene")
+        self._switch_view()
+        self.start_sim()
+
+    def _load_visuals(self, res, board):
+        self.wc.load(res, board)
+        cmd = self.txt_cmd.get("1.0", "end").strip() if hasattr(self, "txt_cmd") else ""
+        self.scene.load(res, board, cmd)
 
     def _caption(self, text, step, total):
         prefix = "👀 " + ("[%d/%d] " % (step, total) if total and step else "")
@@ -644,6 +725,7 @@ class App:
         self.live_source = None
         self.sim = None
         self.wc.stop_live()
+        self.scene.stop()
         self.lbl_src.configure(text="")
 
     def _on_line(self, line):
@@ -675,6 +757,7 @@ class App:
                 w[1].configure(text="ทำงาน" if on else "หยุด", fg="#BA7517" if on else "#888780")
         if self.wc.live_on:
             self.wc.set_live(vals or {}, states)
+        self.scene.set_live(vals or {}, states)
 
     def _draw_chart(self):
         c = self.chart
@@ -687,8 +770,8 @@ class App:
         for i, k in enumerate(keys):
             data = self.history[k]
             lo, hi = min(data), max(data)
-            if self.sim and k in self.sim.ranges:
-                lo, hi = self.sim.ranges[k][0], self.sim.ranges[k][1]
+            if self.sim and k in self.sim.ranges:       # 2.7.1: รวมค่าที่ลากตั้งเองนอกช่วง ไม่ให้เส้นหลุดกรอบกราฟ
+                lo, hi = min(lo, self.sim.ranges[k][0]), max(hi, self.sim.ranges[k][1])
             if hi - lo < 1e-6:
                 hi = lo + 1
             color = SIGNAL_COLORS[i % len(SIGNAL_COLORS)]
@@ -705,7 +788,9 @@ class App:
         rule = self.result.rule if self.result else None
         if rule and rule["key"] in self.history and rule["op"] != "==":
             data = self.history[rule["key"]]
-            lo, hi = (self.sim.ranges[rule["key"]][:2] if self.sim and rule["key"] in self.sim.ranges else (min(data), max(data)))
+            lo, hi = min(data), max(data)
+            if self.sim and rule["key"] in self.sim.ranges:
+                lo, hi = min(lo, self.sim.ranges[rule["key"]][0]), max(hi, self.sim.ranges[rule["key"]][1])
             if hi > lo:
                 y = (H - B) - (H - B - T) * (rule["thr"] - lo) / (hi - lo)
                 if T <= y <= H - B:
@@ -797,8 +882,12 @@ class App:
             for w in res.wiring:
                 if w["comp"] == c["id"]:
                     out.append("• ขา %s → %s" % (w["comp_pin"], w["board_pin"]))
+            for line in c.get("legs_th", []):
+                out.append("• " + line)
             for w in c.get("warnings", []):
                 out.append("⚠ " + w)
+            if c.get("lesson") and lessons.by_id(c["lesson"]):
+                out.append("🎬 ดูภาพเคลื่อนไหวได้ที่แท็บ ⑤ คลังความรู้ → ปุ่ม \"เปิดบทเรียนภาพเคลื่อนไหว\"")
         return "\n".join(out + refs)
 
     # ================================================================ แท็บ 5 คลังความรู้
@@ -811,12 +900,14 @@ class App:
         self.ent_search.pack(fill="x")
         self.ent_search.bind("<KeyRelease>", lambda e: self._kb_fill())
         self.cmb_kb_kind = ttk.Combobox(left, state="readonly", values=[
-            "แสดงทั้งหมด", "บอร์ด", "อุปกรณ์ / เซนเซอร์", "คำสั่ง Arduino → MicroPython"])
+            "แสดงทั้งหมด", "บอร์ด", "อุปกรณ์ / เซนเซอร์", "คำสั่ง Arduino → MicroPython", "🎬 บทเรียนภาพเคลื่อนไหว",
+            "🧮 คณิตศาสตร์และตรรกะสำหรับโปรแกรม", "⚡ พื้นฐานไฟฟ้า"])
         self.cmb_kb_kind.current(0)
         self.cmb_kb_kind.pack(fill="x", pady=(6, 0))
         self.cmb_kb_kind.bind("<<ComboboxSelected>>", lambda e: self._kb_fill())
         btns = ttk.Frame(left)
         btns.pack(side="bottom", fill="x")      # ปุ่มอยู่ล่างสุดเสมอ ไม่ถูกรายการดันตกขอบจอ
+        ttk.Button(btns, text="🎬 เปิดบทเรียนภาพเคลื่อนไหว", command=self._kb_lesson).pack(fill="x", pady=(0, 4))
         ttk.Button(btns, text="ใช้อุปกรณ์นี้ในคำสั่ง / คัดลอกโค้ดคำสั่ง", command=self._kb_use).pack(fill="x")
         ttk.Button(btns, text="🖼 เพิ่ม / เปลี่ยนรูป", command=self._kb_add_image).pack(fill="x", pady=4)
         ttk.Button(btns, text="✏ แก้ไข / ให้ AI วิเคราะห์อุปกรณ์นี้", command=self._kb_edit).pack(fill="x")
@@ -830,7 +921,9 @@ class App:
         self.img_row.pack(anchor="w", fill="x")
         self.lbl_img = tk.Label(self.img_row, bg=PALETTE["bg"], text="")
         self.lbl_img.pack(side="left")
-        self._gallery = []
+        self.kb_draw = tk.Canvas(self.img_row, width=200, height=170, bg="#FFFFFF", highlightthickness=1,
+                                 highlightbackground="#D9DFEA")     # 2.6: รูปวาดเมื่อยังไม่มีรูปถ่าย
+        self._gallery, self._gallery_labels = [], []
         fr, self.txt_kb = self._text(right)
         fr.pack(fill="both", expand=True)
         self.txt_kb.tag_configure("h", font=self.fbig, foreground=PALETTE["blue"])
@@ -845,20 +938,33 @@ class App:
         q = self.ent_search.get()
         what = self.cmb_kb_kind.current() if hasattr(self, "cmb_kb_kind") else 0
         items = []
+        if what in (0, 4):
+            items += [("lesson", x) for x in lessons.search(q)]
         if what in (0, 1):
             items += [x for x in self.kb.search(q) if x[0] == "board"]
         if what in (0, 2):
             items += [x for x in self.kb.search(q) if x[0] == "comp"]
-        if what in (0, 3):
+        if what in (0, 3, 5, 6):
             # ไม่ได้ค้นหา: แสดงเฉพาะคำสั่งที่มีคำอธิบายไทย ค้นหาแล้ว: แสดงทุกหน้าในคู่มือที่ตรง
-            items += [("ref", r) for r in self.kb.ref_search(q, translated_only=not q.strip())]
+            refs = self.kb.ref_search(q, translated_only=not q.strip())
+            if what == 3:
+                refs = [r for r in refs if r["category"] not in ("Math for CS", "Electricity Basics")]
+            elif what == 5:
+                refs = [r for r in refs if r["category"] == "Math for CS"]
+            elif what == 6:
+                refs = [r for r in refs if r["category"] == "Electricity Basics"]
+            items += [("ref", r) for r in refs]
         self._kb_items = items
         self.lst_kb.delete(0, "end")
         for kind, it in self._kb_items:
-            if kind == "board":
+            if kind == "lesson":
+                self.lst_kb.insert("end", "🎬 " + it["title_th"])
+            elif kind == "board":
                 self.lst_kb.insert("end", "🟦 " + it["name"])
             elif kind == "ref":
-                self.lst_kb.insert("end", "%s %s  (%s)" % ("📘" if it.get("micropython") else "📄", it["name"][:34], it["category_th"]))
+                icon = {"Math for CS": "🧮", "Electricity Basics": "⚡"}.get(
+                    it["category"], "📘" if it.get("micropython") else "📄")
+                self.lst_kb.insert("end", "%s %s  (%s)" % (icon, it["name"][:34], it["category_th"]))
             else:
                 self.lst_kb.insert("end", "🔹 %s  (%s)" % (it["name_en"], it["category"]))
 
@@ -871,17 +977,31 @@ class App:
         t.delete("1.0", "end")
         self._img = self.load_thumb(it, 320)
         self.lbl_img.configure(image=self._img or "",
-                               text="" if self._img else "(ยังไม่มีรูป กดปุ่ม \"เพิ่ม / เปลี่ยนรูป\" ด้านซ้าย)")
-        for w in self.img_row.winfo_children()[1:]:
+                               text="" if self._img else "(ยังไม่มีรูปถ่าย กดปุ่ม \"เพิ่ม / เปลี่ยนรูป\" ด้านซ้าย)\nระหว่างนี้แสดงรูปวาดแทน")
+        if not self.kb_draw.winfo_exists():         # 2.7.1 กันพัง: ถ้าช่องรูปวาดหายไป สร้างใหม่
+            self.kb_draw = tk.Canvas(self.img_row, width=200, height=170, bg="#FFFFFF", highlightthickness=1,
+                                     highlightbackground="#D9DFEA")
+        self.kb_draw.pack_forget()
+        self.kb_draw.delete("all")
+        if not self._img and kind == "comp":
+            icons.draw(self.kb_draw, it["id"], 100, 78, 130, tag="kbicon", comp=it)
+            self.kb_draw.create_text(100, 158, text="รูปวาด", font=(self.ff, 9), fill=PALETTE["muted"])
+            self.kb_draw.pack(side="left", padx=(8, 0), before=self.lbl_img)
+        for w in self._gallery_labels:           # ลบเฉพาะรูปแกลเลอรีเดิม (ห้ามลบ lbl_img / kb_draw)
             w.destroy()
-        self._gallery = []
+        self._gallery, self._gallery_labels = [], []
         for g in it.get("gallery", [])[:4]:          # รูปเพิ่มเติมที่แนบตอนเพิ่มอุปกรณ์
             im = self.load_thumb({"image": g}, 150)
             if im:
                 self._gallery.append(im)
-                tk.Label(self.img_row, image=im, bg=PALETTE["bg"]).pack(side="left", padx=(8, 0), anchor="s")
+                lb = tk.Label(self.img_row, image=im, bg=PALETTE["bg"])
+                lb.pack(side="left", padx=(8, 0), anchor="s")
+                self._gallery_labels.append(lb)
         if kind == "ref":
             self._kb_show_ref(it)
+            return
+        if kind == "lesson":
+            self._kb_show_lesson(it)
             return
         if kind == "board":
             t.insert("end", it["name"] + "\n", "h")
@@ -913,9 +1033,23 @@ class App:
         else:
             t.insert("end", "%s\n" % it["name_th"], "h")
             t.insert("end", "%s | หมวด: %s | แรงดัน: %s\n\n%s\n\n" % (it["name_en"], it["category"], it["voltage"], it["explain_th"]))
-            t.insert("end", "ขาของอุปกรณ์:\n")
+            if it["pins"]:
+                t.insert("end", "ขาของอุปกรณ์:\n")
             for p in it["pins"]:
                 t.insert("end", "• %s (%s)\n" % (p["label"], {"power5": "ไฟ 5V", "power3": "ไฟ 3.3V", "gnd": "GND"}.get(p["kind"], "สัญญาณ")))
+            if it.get("legs_th"):
+                t.insert("end", "\nขาและการวางชิ้นส่วน\n", "h2")
+                for line in it["legs_th"]:
+                    t.insert("end", "• " + line + "\n")
+            if it.get("passive"):
+                t.insert("end", "\n(ไม่ต้องเขียนโปรแกรมสั่งงาน)\n", "muted")
+            if it.get("details_th"):
+                t.insert("end", "\n")
+                for para in it["details_th"].split("\n"):      # บรรทัดที่ขึ้นต้นด้วย ## คือหัวข้อ
+                    if para.startswith("## "):
+                        t.insert("end", para[3:] + "\n", "h2")
+                    else:
+                        t.insert("end", para + "\n")
             for w in it.get("warnings", []):
                 t.insert("end", "⚠ " + w + "\n", "warn")
             if it.get("library"):
@@ -927,6 +1061,56 @@ class App:
             if it.get("notes_th"):
                 t.insert("end", "\nข้อมูลประกอบที่ครูแนบไว้\n", "h")
                 t.insert("end", it["notes_th"][:3000] + ("\n..." if len(it["notes_th"]) > 3000 else "") + "\n")
+            if it.get("lesson") and lessons.by_id(it["lesson"]):
+                t.insert("end", "\n🎬 มีบทเรียนภาพเคลื่อนไหว: %s (กดปุ่ม \"เปิดบทเรียนภาพเคลื่อนไหว\" ด้านซ้าย)\n"
+                         % lessons.by_id(it["lesson"])["title_th"], "warn")
+            if it.get("source_th"):
+                t.insert("end", "\nที่มา: %s\n" % it["source_th"], "muted")
+
+    def _kb_show_lesson(self, x):
+        t = self.txt_kb
+        self.lbl_img.configure(image="", text="")
+        t.insert("end", "🎬 " + x["title_th"] + "\n", "h")
+        t.insert("end", "ระดับ: %s\n\n" % x.get("level", "-"), "muted")
+        t.insert("end", x.get("desc_th", "") + "\n\n")
+        if x.get("how_th"):
+            t.insert("end", "วิธีใช้\n", "h2")
+            t.insert("end", x["how_th"] + "\n\n")
+        parts = [self.kb.comp_by_id[c]["name_th"] for c in x.get("components", []) if c in self.kb.comp_by_id]
+        if parts:
+            t.insert("end", "อุปกรณ์ที่เกี่ยวข้อง (ค้นดูรายละเอียดได้ในรายการด้านซ้าย)\n", "h2")
+            t.insert("end", "\n".join("• " + n for n in parts) + "\n\n")
+        if x.get("next_th"):
+            t.insert("end", "💡 " + x["next_th"] + "\n", "warn")
+        t.insert("end", "\n▶ กดปุ่ม \"🎬 เปิดบทเรียนภาพเคลื่อนไหว\" ด้านซ้ายเพื่อเปิดในเว็บเบราว์เซอร์\n", "h2")
+        if x.get("source_th"):
+            t.insert("end", "\nที่มา: %s\n" % x["source_th"], "muted")
+
+    def _kb_lesson(self):
+        sel = self.lst_kb.curselection()
+        lesson = None
+        if sel:
+            kind, it = self._kb_items[sel[0]]
+            if kind == "lesson":
+                lesson = it
+            elif kind == "comp" and it.get("lesson"):
+                lesson = lessons.by_id(it["lesson"])
+        if lesson is None:
+            all_l = lessons.load()
+            if len(all_l) == 1:
+                lesson = all_l[0]
+            else:
+                self.cmb_kb_kind.current(4)
+                self._kb_fill()
+                messagebox.showinfo("บทเรียนภาพเคลื่อนไหว", "เลือกบทเรียนในรายการด้านซ้าย แล้วกดปุ่มนี้อีกครั้ง")
+                return
+        try:
+            path = lessons.open_lesson(lesson)
+        except Exception as e:  # noqa: BLE001
+            messagebox.showerror("บทเรียนภาพเคลื่อนไหว", "เปิดไม่ได้: %s\nลองดับเบิลคลิกไฟล์ในโฟลเดอร์ lessons เอง" % e)
+            return
+        if path:
+            self.status("เปิดบทเรียนในเว็บเบราว์เซอร์แล้ว: lessons/" + os.path.basename(path))
 
     def _kb_show_ref(self, r):
         t = self.txt_kb
@@ -941,7 +1125,7 @@ class App:
         else:
             t.insert("end", "(คำสั่งนี้ยังไม่มีคำอธิบายภาษาไทย ถาม AI ในแท็บ ④ ได้ว่าใช้ใน MicroPython อย่างไร)\n\n")
         if r.get("syntax"):
-            t.insert("end", "\nวิธีเขียนใน Arduino (C++)\n", "h2")
+            t.insert("end", "\n%s\n" % ("วิธีเขียนเดิมใน Turbo C" if r["category"].startswith("Turbo C") else "วิธีเขียนใน Arduino (C++)"), "h2")
             t.insert("end", r["syntax"] + "\n", "code")
         if r.get("parameters"):
             t.insert("end", "\nพารามิเตอร์:\n" + r["parameters"] + "\n")
@@ -950,9 +1134,10 @@ class App:
         if r.get("example_cpp"):
             t.insert("end", "\nตัวอย่าง C++\n", "h2")
             t.insert("end", r["example_cpp"] + "\n", "code")
-        t.insert("end", "\nคำอธิบายต้นฉบับ (Arduino Reference)\n", "h2")
-        t.insert("end", r["description_en"] + "\n")
-        t.insert("end", "\nที่มา: Arduino Language Reference (CC BY-SA 3.0) จาก Arduino IDE 1.5.3\n", "muted")
+        if r.get("description_en"):
+            t.insert("end", "\nคำอธิบายต้นฉบับ (Arduino Reference)\n", "h2")
+            t.insert("end", r["description_en"] + "\n")
+        t.insert("end", "\nที่มา: %s\n" % r.get("source_th", "Arduino Language Reference (CC BY-SA 3.0) จาก Arduino IDE 1.5.3"), "muted")
         self.lbl_img.configure(image="", text="")
 
     def _kb_add_image(self):
@@ -961,8 +1146,8 @@ class App:
             messagebox.showinfo("เพิ่มรูป", "เลือกบอร์ดหรืออุปกรณ์ในรายการด้านซ้ายก่อน")
             return
         kind, it = self._kb_items[sel[0]]
-        if kind == "ref":
-            messagebox.showinfo("เพิ่มรูป", "รายการนี้เป็นคำสั่งภาษา Arduino ใส่รูปได้เฉพาะบอร์ดและอุปกรณ์")
+        if kind in ("ref", "lesson"):
+            messagebox.showinfo("เพิ่มรูป", "ใส่รูปได้เฉพาะบอร์ดและอุปกรณ์")
             return
         src = filedialog.askopenfilename(filetypes=[("รูปภาพ", "*.png *.jpg *.jpeg *.gif *.webp"), ("ทุกไฟล์", "*.*")])
         if not src:
@@ -1018,6 +1203,12 @@ class App:
         if kind == "ref":
             messagebox.showinfo("แก้ไขอุปกรณ์", "คู่มือคำสั่งแก้ได้ที่ไฟล์ knowledge/arduino_reference.json\nปุ่มนี้ใช้กับอุปกรณ์และเซนเซอร์")
             return
+        if kind == "lesson":
+            messagebox.showinfo("แก้ไขอุปกรณ์", "บทเรียนแก้ได้ที่โฟลเดอร์ lessons (ไฟล์ index.json และไฟล์ .html)")
+            return
+        if it.get("passive"):
+            messagebox.showinfo("แก้ไขอุปกรณ์", "%s ไม่มีโค้ด แก้ข้อมูลได้ที่ไฟล์ knowledge/components.json" % it["name_th"])
+            return
         NewComponentDialog(self, it)
 
     def _kb_use(self):
@@ -1025,6 +1216,9 @@ class App:
         if not sel:
             return
         kind, it = self._kb_items[sel[0]]
+        if kind == "lesson" or (kind == "comp" and it.get("passive")):
+            self._kb_lesson()
+            return
         if kind == "ref":
             if it.get("micropython"):
                 self.root.clipboard_clear()

@@ -1,7 +1,7 @@
 {
- "source": "ตัวอย่างจาก Arduino IDE 1.6.0 (โฟลเดอร์ examples) และไลบรารี Servo, LiquidCrystal, Stepper, EEPROM จาก Arduino IDE 1.5.3 โค้ดตัวอย่างเป็นสาธารณสมบัติ (public domain) ตามที่ระบุในไฟล์ต้นฉบับ",
- "count": 98,
- "with_micropython": 28,
+ "source": "ตัวอย่างจาก Arduino IDE 1.6.0 (โฟลเดอร์ examples) และไลบรารี Servo, LiquidCrystal, Stepper, EEPROM จาก Arduino IDE 1.5.3 โค้ดตัวอย่างเป็นสาธารณสมบัติ (public domain) ตามที่ระบุในไฟล์ต้นฉบับ หมวด 15 หุ่นยนต์ เขียนเพิ่มในเวอร์ชัน 2.4 (ต่อยอดจากใบงานหุ่นยนต์บีม) หมวด 18-19 เขียนเพิ่มในเวอร์ชัน 2.7 (หมวด 19 เป็นเนื้อหาเขียนใหม่ อิงหัวข้อกิจกรรมไฟฟ้าระดับประถม-มัธยมต้น ไม่ได้คัดลอกจากเอกสารต้นฉบับ)",
+ "count": 127,
+ "with_micropython": 57,
  "categories": {
   "01.Basics": "พื้นฐาน",
   "02.Digital": "ขาดิจิทัล",
@@ -16,7 +16,12 @@
   "11.Servo": "เซอร์โว",
   "12.LiquidCrystal": "จอ LCD",
   "13.Stepper": "สเต็ปเปอร์มอเตอร์",
-  "14.EEPROM": "เก็บค่าถาวร (EEPROM)"
+  "14.EEPROM": "เก็บค่าถาวร (EEPROM)",
+  "15.Robot": "หุ่นยนต์ (ต่อยอดหุ่นยนต์บีม)",
+  "16.Farm": "เกษตรอัจฉริยะ (โครงงาน ทสรช.)",
+  "17.ParallelPort": "จาก Turbo C พอร์ตขนาน สู่ MicroPython",
+  "18.RobotHand": "มือหุ่นยนต์ AI (ควบคุมด้วยกล้อง / Wi-Fi)",
+  "19.Electricity": "พื้นฐานไฟฟ้า (กิจกรรมทดลองกับบอร์ด)"
  },
  "examples": [
   {
@@ -1126,6 +1131,436 @@
    "ino": "14.EEPROM/eeprom_write/eeprom_write.ino",
    "py": "14.EEPROM/eeprom_write/eeprom_write.py",
    "components": []
+  },
+  {
+   "category": "15.Robot",
+   "category_th": "หุ่นยนต์ (ต่อยอดหุ่นยนต์บีม)",
+   "id": "15.Robot/BeamSensorRead",
+   "name": "BeamSensorRead",
+   "title_th": "อ่านเซนเซอร์หุ่นยนต์บีม",
+   "level": "ง่าย",
+   "desc_th": "อ่านค่าแผงเซนเซอร์อินฟราเรดซ้าย/ขวาของหุ่นยนต์บีมแล้วดูเป็นกราฟ ใช้หาค่าพื้นขาวกับเส้นดำ (ขั้นแรกของการเปลี่ยนหุ่นบีมเป็นหุ่นเขียนโปรแกรม)",
+   "note_th": "ต่อสาย + (สีเขียว) ของแผงเซนเซอร์เข้าขา 3V3 ห้ามใช้ไฟถ่าน 4.5V และคงตัวต้านทานปรับค่าได้ไว้ระหว่างสายขาวกับ GND",
+   "ino": "15.Robot/BeamSensorRead/BeamSensorRead.ino",
+   "py": "15.Robot/BeamSensorRead/BeamSensorRead.py",
+   "components": [
+    "beam_ir"
+   ]
+  },
+  {
+   "category": "15.Robot",
+   "category_th": "หุ่นยนต์ (ต่อยอดหุ่นยนต์บีม)",
+   "id": "15.Robot/BeamLineFollower",
+   "name": "BeamLineFollower",
+   "title_th": "หุ่นยนต์บีมเขียนโปรแกรมได้",
+   "level": "กลาง",
+   "desc_th": "ใช้วงจรขับมอเตอร์เดิมของหุ่นยนต์บีม (BC337 + BD679) แต่ให้บอร์ดอ่านเซนเซอร์และตัดสินใจแทน กฎเดียวกับหุ่นบีม: เห็นพื้นขาวล้อหมุน เห็นเส้นดำล้อหยุด แล้วลองปรับให้เก่งขึ้น",
+   "note_th": "ถอดถ่านก่อนแก้วงจร ต่อ GND ของบอร์ดเข้ารางไฟลบของบอร์ดทดลอง และห้ามต่อมอเตอร์เข้าขาบอร์ดโดยตรง",
+   "ino": "15.Robot/BeamLineFollower/BeamLineFollower.ino",
+   "py": "15.Robot/BeamLineFollower/BeamLineFollower.py",
+   "components": [
+    "beam_ir",
+    "beam_motor"
+   ]
+  },
+  {
+   "category": "15.Robot",
+   "category_th": "หุ่นยนต์ (ต่อยอดหุ่นยนต์บีม)",
+   "id": "15.Robot/LineFollowerL298N",
+   "name": "LineFollowerL298N",
+   "title_th": "หุ่นยนต์เดินตามเส้น TCRT5000 + L298N",
+   "level": "ยาก",
+   "desc_th": "ทางเลือกของหุ่นบีมสำหรับโรงเรียนที่มีโมดูล TCRT5000 และไดรเวอร์ L298N: วิ่งตรง เลี้ยวซ้าย เลี้ยวขวา และหยุดเมื่อเจอเส้นดำทั้งสองข้าง",
+   "note_th": "ถอดจัมเปอร์ ENA/ENB ของ L298N ใช้ถ่าน 6-9V ต่อขา 12V ของ L298N และต่อ GND ร่วมกับบอร์ด",
+   "ino": "15.Robot/LineFollowerL298N/LineFollowerL298N.ino",
+   "py": "15.Robot/LineFollowerL298N/LineFollowerL298N.py",
+   "components": [
+    "line_tcrt5000",
+    "motor_l298n"
+   ]
+  },
+  {
+   "id": "16.Farm/SmartFarm",
+   "category": "16.Farm",
+   "category_th": "เกษตรอัจฉริยะ (โครงงาน ทสรช.)",
+   "name": "SmartFarm",
+   "title_th": "สมาร์ทฟาร์มรดน้ำอัตโนมัติ",
+   "level": "ง่าย",
+   "desc_th": "อ่านอุณหภูมิ ความชื้นอากาศ และความชื้นดิน ดินแห้งแล้วรดน้ำช่วงสั้น ๆ จับเวลาแทนการหยุดรอ 1 นาที",
+   "ino": "16.Farm/SmartFarm/SmartFarm.ino",
+   "py": "16.Farm/SmartFarm/SmartFarm.py",
+   "components": [
+    "dht22",
+    "soil",
+    "relay"
+   ]
+  },
+  {
+   "id": "16.Farm/MushroomHouse",
+   "category": "16.Farm",
+   "category_th": "เกษตรอัจฉริยะ (โครงงาน ทสรช.)",
+   "name": "MushroomHouse",
+   "title_th": "โรงเรือนเพาะเห็ดอัจฉริยะ",
+   "level": "กลาง",
+   "desc_th": "คุมฮีตเตอร์ พ่นหมอก ปั๊มน้ำ พัดลม 4 ตัว แบบมีช่วงกันสั่นไม่ให้รีเลย์ติด-ดับถี่ ใช้แทนโรงเรือนสับปะรดและโรงเพาะเห็ดแยกชนิดได้",
+   "ino": "16.Farm/MushroomHouse/MushroomHouse.ino",
+   "py": "16.Farm/MushroomHouse/MushroomHouse.py",
+   "components": [
+    "dht22",
+    "soil",
+    "relay"
+   ]
+  },
+  {
+   "id": "16.Farm/CowFarm",
+   "category": "16.Farm",
+   "category_th": "เกษตรอัจฉริยะ (โครงงาน ทสรช.)",
+   "name": "CowFarm",
+   "title_th": "ฟาร์มวัว: รางน้ำและพัดลม",
+   "level": "กลาง",
+   "desc_th": "เติมน้ำในรางอัตโนมัติจนเต็ม หยุดเองถ้าน้ำไม่ขึ้น และเปิดพัดลมเมื่ออากาศร้อนชื้น",
+   "ino": "16.Farm/CowFarm/CowFarm.ino",
+   "py": "16.Farm/CowFarm/CowFarm.py",
+   "components": [
+    "dht22",
+    "water_level",
+    "relay"
+   ]
+  },
+  {
+   "id": "16.Farm/WaterControl",
+   "category": "16.Farm",
+   "category_th": "เกษตรอัจฉริยะ (โครงงาน ทสรช.)",
+   "name": "WaterControl",
+   "title_th": "ระบบควบคุมน้ำ ดินแห้ง + น้ำในถังพอ",
+   "level": "กลาง",
+   "desc_th": "ใช้อัลตราโซนิกวัดน้ำในถัง (แก้การคิดระยะกลับด้านของต้นฉบับ) และรดน้ำเฉพาะเมื่อดินแห้งและมีน้ำพอ",
+   "ino": "16.Farm/WaterControl/WaterControl.ino",
+   "py": "16.Farm/WaterControl/WaterControl.py",
+   "components": [
+    "soil",
+    "hc_sr04",
+    "relay"
+   ]
+  },
+  {
+   "id": "16.Farm/ChickenFarm",
+   "category": "16.Farm",
+   "category_th": "เกษตรอัจฉริยะ (โครงงาน ทสรช.)",
+   "name": "ChickenFarm",
+   "title_th": "ฟาร์มไก่: ให้อาหารตามเวลา",
+   "level": "กลาง",
+   "desc_th": "ให้อาหารด้วยเซอร์โวตามเวลามื้อละครั้ง (แก้ปัญหาให้อาหารซ้ำตลอดชั่วโมง) คุมไฟกกและพ่นหมอก",
+   "ino": "16.Farm/ChickenFarm/ChickenFarm.ino",
+   "py": "16.Farm/ChickenFarm/ChickenFarm.py",
+   "components": [
+    "dht22",
+    "servo",
+    "relay"
+   ]
+  },
+  {
+   "id": "16.Farm/CricketHouse",
+   "category": "16.Farm",
+   "category_th": "เกษตรอัจฉริยะ (โครงงาน ทสรช.)",
+   "name": "CricketHouse",
+   "title_th": "ตู้เลี้ยงจิ้งหรีดอัตโนมัติ",
+   "level": "กลาง",
+   "desc_th": "รีเลย์ 5 ตัว: ไฟกก พัดลม ไฟกลางวัน ให้อาหาร ให้น้ำ ตามเวลาและอุณหภูมิ/ความชื้น",
+   "ino": "16.Farm/CricketHouse/CricketHouse.ino",
+   "py": "16.Farm/CricketHouse/CricketHouse.py",
+   "components": [
+    "dht22",
+    "relay"
+   ]
+  },
+  {
+   "id": "16.Farm/ShrimpPond",
+   "category": "16.Farm",
+   "category_th": "เกษตรอัจฉริยะ (โครงงาน ทสรช.)",
+   "name": "ShrimpPond",
+   "title_th": "บ่อกุ้งอัจฉริยะ",
+   "level": "ยาก",
+   "desc_th": "วัดอุณหภูมิน้ำ pH และออกซิเจนละลายน้ำเป็น mg/L เปิดเครื่องตีน้ำเมื่อออกซิเจนต่ำ ให้อาหารทุก 6 ชั่วโมง",
+   "ino": "16.Farm/ShrimpPond/ShrimpPond.ino",
+   "py": "16.Farm/ShrimpPond/ShrimpPond.py",
+   "components": [
+    "ds18b20",
+    "ph_sensor",
+    "do_sensor",
+    "relay"
+   ],
+   "note_th": "หัววัด pH และ DO ให้แรงดันถึง 5V ต้องต่อตัวแบ่งแรงดันก่อนเข้า ESP32/Pico"
+  },
+  {
+   "id": "16.Farm/Scarecrow",
+   "category": "16.Farm",
+   "category_th": "เกษตรอัจฉริยะ (โครงงาน ทสรช.)",
+   "name": "Scarecrow",
+   "title_th": "หุ่นไล่กาอัจฉริยะ",
+   "level": "ง่าย",
+   "desc_th": "เจอสิ่งมีชีวิตเข้าใกล้ (PIR + อัลตราโซนิก) แล้วโบกแขน ส่งเสียง และกะพริบไฟ",
+   "ino": "16.Farm/Scarecrow/Scarecrow.ino",
+   "py": "16.Farm/Scarecrow/Scarecrow.py",
+   "components": [
+    "pir",
+    "hc_sr04",
+    "buzzer",
+    "led",
+    "servo"
+   ]
+  },
+  {
+   "id": "16.Farm/FruitColor",
+   "category": "16.Farm",
+   "category_th": "เกษตรอัจฉริยะ (โครงงาน ทสรช.)",
+   "name": "FruitColor",
+   "title_th": "วัดความสุกของผลไม้ด้วยสี",
+   "level": "กลาง",
+   "desc_th": "อ่านสีแดง เขียว น้ำเงินจากเซนเซอร์ TCS3200 แล้วบอกว่าผลไม้สุกหรือยัง",
+   "ino": "16.Farm/FruitColor/FruitColor.ino",
+   "py": "16.Farm/FruitColor/FruitColor.py",
+   "components": [],
+   "note_th": "TCS3200 ใช้ 5 ขา ต่อ OE กับ GND ด้วย"
+  },
+  {
+   "id": "16.Farm/FertilizerMixer",
+   "category": "16.Farm",
+   "category_th": "เกษตรอัจฉริยะ (โครงงาน ทสรช.)",
+   "name": "FertilizerMixer",
+   "title_th": "เครื่องผสมปุ๋ยน้ำอัตโนมัติ",
+   "level": "ยาก",
+   "desc_th": "ชั่งน้ำหนักด้วย HX711 ปั๊มปุ๋ย A แล้วปุ๋ย B ตามน้ำหนักที่ตั้ง เขียนแบบเครื่องสถานะ (แก้ขาซ้ำของต้นฉบับ)",
+   "ino": "16.Farm/FertilizerMixer/FertilizerMixer.ino",
+   "py": "16.Farm/FertilizerMixer/FertilizerMixer.py",
+   "components": [
+    "hx711",
+    "relay"
+   ],
+   "note_th": "ปั๊มรีดท่อใช้ไฟแยก สั่งผ่านรีเลย์ กดปุ่ม START เพื่อเริ่มผสม"
+  },
+  {
+   "id": "16.Farm/WeatherStation",
+   "category": "16.Farm",
+   "category_th": "เกษตรอัจฉริยะ (โครงงาน ทสรช.)",
+   "name": "WeatherStation",
+   "title_th": "สถานีวัดอากาศโรงเรียน",
+   "level": "กลาง",
+   "desc_th": "อุณหภูมิ ความชื้น แสง และปริมาณน้ำฝนแบบถังกระดก นับน้ำฝนรายวันด้วยอินเทอร์รัปต์",
+   "ino": "16.Farm/WeatherStation/WeatherStation.ino",
+   "py": "16.Farm/WeatherStation/WeatherStation.py",
+   "components": [
+    "dht22",
+    "rain_gauge",
+    "ldr"
+   ],
+   "note_th": "ติดตั้ง DHT22 ในโล่กันแดด สูงจากพื้นราว 1.5 เมตร และตั้งเครื่องวัดน้ำฝนให้ได้ระดับน้ำ"
+  },
+  {
+   "id": "17.ParallelPort/LptLedMotor",
+   "category": "17.ParallelPort",
+   "category_th": "จาก Turbo C พอร์ตขนาน สู่ MicroPython",
+   "name": "LptLedMotor",
+   "title_th": "เปิด LED / มอเตอร์ (outport)",
+   "level": "ง่าย",
+   "desc_th": "outport(0x378, 1) กลายเป็น d0.value(1) และ kbhit() กลายเป็นปุ่มกด (จาก testoutportLed.c / testoutportMotor.c)",
+   "ino": "17.ParallelPort/LptLedMotor/LptLedMotor.c",
+   "py": "17.ParallelPort/LptLedMotor/LptLedMotor.py",
+   "components": [],
+   "note_th": "ถ้าต่อมอเตอร์ ต้องผ่านทรานซิสเตอร์หรือรีเลย์ ห้ามต่อเข้าขาบอร์ดตรง ๆ"
+  },
+  {
+   "id": "17.ParallelPort/LptDuty",
+   "category": "17.ParallelPort",
+   "category_th": "จาก Turbo C พอร์ตขนาน สู่ MicroPython",
+   "name": "LptDuty",
+   "title_th": "ปรับความสว่างด้วย duty",
+   "level": "ง่าย",
+   "desc_th": "ของเดิมทำ PWM ด้วยมือด้วย delay กด + / - ปรับ ตัวอย่างนี้ใช้ PWM ในชิปและปุ่ม 2 ปุ่ม (จาก testoutport2_duty.c)",
+   "ino": "17.ParallelPort/LptDuty/LptDuty.c",
+   "py": "17.ParallelPort/LptDuty/LptDuty.py",
+   "components": []
+  },
+  {
+   "id": "17.ParallelPort/LptSensorMotor",
+   "category": "17.ParallelPort",
+   "category_th": "จาก Turbo C พอร์ตขนาน สู่ MicroPython",
+   "name": "LptSensorMotor",
+   "title_th": "เซนเซอร์สั่งมอเตอร์ (inportb & 0x10)",
+   "level": "ง่าย",
+   "desc_th": "อ่านขา S4 ด้วยมาสก์ 0x10 แล้วสั่งขา D0 เทียบกับการอ่านขาเดียวใน MicroPython (จาก IR_M.C / LDR_M.C)",
+   "ino": "17.ParallelPort/LptSensorMotor/LptSensorMotor.c",
+   "py": "17.ParallelPort/LptSensorMotor/LptSensorMotor.py",
+   "components": []
+  },
+  {
+   "id": "17.ParallelPort/WaterTurbidity",
+   "category": "17.ParallelPort",
+   "category_th": "จาก Turbo C พอร์ตขนาน สู่ MicroPython",
+   "name": "WaterTurbidity",
+   "title_th": "น้ำใส / น้ำขุ่น",
+   "level": "ง่าย",
+   "desc_th": "ของเดิมอ่านได้แค่ใส/ขุ่นจากขา S5 ตัวอย่างนี้อ่านความขุ่นเป็นตัวเลขด้วย ADC แล้วเปิดปั๊ม (โครงงาน Water-Fail)",
+   "ino": "17.ParallelPort/WaterTurbidity/WaterTurbidity.c",
+   "py": "17.ParallelPort/WaterTurbidity/WaterTurbidity.py",
+   "components": []
+  },
+  {
+   "id": "17.ParallelPort/RoofCurtain",
+   "category": "17.ParallelPort",
+   "category_th": "จาก Turbo C พอร์ตขนาน สู่ MicroPython",
+   "name": "RoofCurtain",
+   "title_th": "หลังคาและม่านอัตโนมัติ",
+   "level": "ยาก",
+   "desc_th": "ฝนตกปิดหลังคา แดดจ้าปิดม่าน สเต็ปมอเตอร์ 2 ตัวบนพอร์ตเดียว เก็บตรรกะเดิมไว้ด้วยฟังก์ชัน outport()/inportb() จำลอง (โครงงาน Roof)",
+   "ino": "17.ParallelPort/RoofCurtain/RoofCurtain.c",
+   "py": "17.ParallelPort/RoofCurtain/RoofCurtain.py",
+   "components": [],
+   "note_th": "ใช้ 8 ขาออก + 4 ขาเข้า สเต็ปมอเตอร์ต่อผ่าน ULN2003 และใช้ไฟ 5V แยก"
+  },
+  {
+   "id": "17.ParallelPort/ClothLine",
+   "category": "17.ParallelPort",
+   "category_th": "จาก Turbo C พอร์ตขนาน สู่ MicroPython",
+   "name": "ClothLine",
+   "title_th": "ราวตากผ้าอัตโนมัติ",
+   "level": "ยาก",
+   "desc_th": "ฝนตกหรือไม่มีแดดเก็บราวและเปิดพัดลม แก้บั๊กดัชนีเกินขอบและเงื่อนไขหยุดมอเตอร์ของเดิม (โครงงาน ClothLine)",
+   "ino": "17.ParallelPort/ClothLine/ClothLine.c",
+   "py": "17.ParallelPort/ClothLine/ClothLine.py",
+   "components": [],
+   "note_th": "สเต็ปมอเตอร์ต่อผ่าน ULN2003 ใช้ไฟแยก ติดสวิตช์ปลายทางที่สุดราวทั้งสองด้าน"
+  },
+  {
+   "id": "18.RobotHand/RobotHandSerial",
+   "category": "18.RobotHand",
+   "category_th": "มือหุ่นยนต์ AI (ควบคุมด้วยกล้อง / Wi-Fi)",
+   "name": "RobotHandSerial",
+   "title_th": "มือหุ่นยนต์ 5 นิ้ว รับคำสั่งทางสาย USB",
+   "level": "กลาง",
+   "desc_th": "เซอร์โว 5 ตัวรับคำสั่ง T:45 / ALL:T45,I30,... / A:0-180 จากหน้าเว็บกล้องหรือ Thonny มี E-Stop และกางมือเองเมื่อคำสั่งหาย (แก้จาก pan_robot_hand2.ino ที่หน้าเว็บคุยด้วยไม่รู้เรื่อง)",
+   "note_th": "เซอร์โว 5 ตัวต้องใช้ไฟ 5V แยก 2-3A และต่อ GND ร่วมกับบอร์ด ห้ามเลี้ยงจากขาบอร์ด",
+   "ino": "18.RobotHand/RobotHandSerial/RobotHandSerial.ino",
+   "py": "18.RobotHand/RobotHandSerial/RobotHandSerial.py",
+   "components": [
+    "servo"
+   ]
+  },
+  {
+   "id": "18.RobotHand/RobotHandWiFi",
+   "category": "18.RobotHand",
+   "category_th": "มือหุ่นยนต์ AI (ควบคุมด้วยกล้อง / Wi-Fi)",
+   "name": "RobotHandWiFi",
+   "title_th": "มือหุ่นยนต์รับคำสั่งผ่าน Wi-Fi (UDP) + Fail-safe",
+   "level": "ยาก",
+   "desc_th": "ESP32 ต่อ Wi-Fi รับคำสั่ง UDP พอร์ต 4210 ตอบกลับ OK/ERR ถ้าสัญญาณหายเกิน 1 วินาที มือกางเอง ใช้คู่กับ tools/hand_camera_udp.py (หลักสูตรควบคุมแขนกลระยะไกล โมดูล 1-2)",
+   "note_th": "ใส่ชื่อ/รหัส Wi-Fi 2.4 GHz ก่อนรัน และห้ามเปิดพอร์ตนี้ออกอินเทอร์เน็ต ควบคุมข้ามเครือข่ายให้ผ่าน Raspberry Pi + Tailscale",
+   "ino": "18.RobotHand/RobotHandWiFi/RobotHandWiFi.ino",
+   "py": "18.RobotHand/RobotHandWiFi/RobotHandWiFi.py",
+   "components": [
+    "servo"
+   ]
+  },
+  {
+   "id": "19.Electricity/ConductivityTester",
+   "category": "19.Electricity",
+   "category_th": "พื้นฐานไฟฟ้า (กิจกรรมทดลองกับบอร์ด)",
+   "name": "ConductivityTester",
+   "title_th": "เครื่องทดสอบตัวนำ-ฉนวน",
+   "level": "ง่าย",
+   "desc_th": "แตะวัตถุระหว่างสายวัด 2 เส้น บอร์ดวัดว่ากระแสไหลผ่านได้มากแค่ไหน LED ยิ่งสว่างแสดงว่านำไฟฟ้าดี ใช้แยกโลหะ ดินสอ ยางลบ พลาสติก น้ำเกลือ",
+   "note_th": "ใช้ไฟจากบอร์ดเท่านั้น ห้ามแตะปลั๊กไฟบ้าน ใส่ตัวต้านทาน 10k ต่อลงกราวด์ที่ขาวัด",
+   "ino": "19.Electricity/ConductivityTester/ConductivityTester.ino",
+   "py": "19.Electricity/ConductivityTester/ConductivityTester.py",
+   "components": [
+    "potentiometer",
+    "led"
+   ]
+  },
+  {
+   "id": "19.Electricity/MorseCode",
+   "category": "19.Electricity",
+   "category_th": "พื้นฐานไฟฟ้า (กิจกรรมทดลองกับบอร์ด)",
+   "name": "MorseCode",
+   "title_th": "ส่งรหัสมอร์สด้วยแสงและเสียง",
+   "level": "ง่าย",
+   "desc_th": "พิมพ์ข้อความทาง Serial แล้วบอร์ดส่งออกเป็นจุด-ขีดด้วย LED และ buzzer ฝึกเรื่องวงจรสวิตช์และการสื่อสารด้วยสัญญาณไฟฟ้า",
+   "ino": "19.Electricity/MorseCode/MorseCode.ino",
+   "py": "19.Electricity/MorseCode/MorseCode.py",
+   "components": [
+    "led",
+    "buzzer"
+   ]
+  },
+  {
+   "id": "19.Electricity/CellVoltmeter",
+   "category": "19.Electricity",
+   "category_th": "พื้นฐานไฟฟ้า (กิจกรรมทดลองกับบอร์ด)",
+   "name": "CellVoltmeter",
+   "title_th": "วัดแรงดันถ่านไฟฉาย",
+   "level": "ง่าย",
+   "desc_th": "วัดแรงดันถ่าน 1.5 V ด้วยขาแอนะล็อก บอกว่าถ่านใหม่ อ่อน หรือหมด เปรียบเทียบถ่านต่ออนุกรม",
+   "note_th": "วัดได้ไม่เกินแรงดันของบอร์ด (3.3 V ESP32 / 5 V Uno) ถ้าต่อถ่านหลายก้อนต้องใช้ตัวต้านทานแบ่งแรงดัน",
+   "ino": "19.Electricity/CellVoltmeter/CellVoltmeter.ino",
+   "py": "19.Electricity/CellVoltmeter/CellVoltmeter.py"
+  },
+  {
+   "id": "19.Electricity/SteadyHand",
+   "category": "19.Electricity",
+   "category_th": "พื้นฐานไฟฟ้า (กิจกรรมทดลองกับบอร์ด)",
+   "name": "SteadyHand",
+   "title_th": "เกมมือนิ่ง (ลวดห้ามแตะ)",
+   "level": "ง่าย",
+   "desc_th": "ลากห่วงลวดไปตามเส้นลวดคด ถ้าแตะกันวงจรครบ buzzer ดังและนับครั้ง แตะปลายทางเพื่อจบเกม บอกเวลาที่ใช้",
+   "ino": "19.Electricity/SteadyHand/SteadyHand.ino",
+   "py": "19.Electricity/SteadyHand/SteadyHand.py",
+   "components": [
+    "button",
+    "buzzer"
+   ]
+  },
+  {
+   "id": "19.Electricity/AlarmSwitch",
+   "category": "19.Electricity",
+   "category_th": "พื้นฐานไฟฟ้า (กิจกรรมทดลองกับบอร์ด)",
+   "name": "AlarmSwitch",
+   "title_th": "สัญญาณกันขโมย / เตือนฝนตก",
+   "level": "กลาง",
+   "desc_th": "สวิตช์กับดัก (ประตูเปิด) และแผ่นตรวจน้ำฝน ทำให้เสียงเตือนดังค้างจนกว่าจะกดปุ่มรีเซ็ต",
+   "ino": "19.Electricity/AlarmSwitch/AlarmSwitch.ino",
+   "py": "19.Electricity/AlarmSwitch/AlarmSwitch.py",
+   "components": [
+    "button",
+    "buzzer",
+    "led"
+   ]
+  },
+  {
+   "id": "19.Electricity/ResistanceMeter",
+   "category": "19.Electricity",
+   "category_th": "พื้นฐานไฟฟ้า (กิจกรรมทดลองกับบอร์ด)",
+   "name": "ResistanceMeter",
+   "title_th": "วัดความต้านทานด้วยวงจรแบ่งแรงดัน",
+   "level": "กลาง",
+   "desc_th": "ต่อตัวต้านทานอ้างอิง 10k อนุกรมกับตัวที่ไม่รู้ค่า คำนวณความต้านทาน ทดลองกับไส้ดินสอยาวต่างกัน",
+   "ino": "19.Electricity/ResistanceMeter/ResistanceMeter.ino",
+   "py": "19.Electricity/ResistanceMeter/ResistanceMeter.py"
+  },
+  {
+   "id": "19.Electricity/Electromagnet",
+   "category": "19.Electricity",
+   "category_th": "พื้นฐานไฟฟ้า (กิจกรรมทดลองกับบอร์ด)",
+   "name": "Electromagnet",
+   "title_th": "แม่เหล็กไฟฟ้าควบคุมด้วยรีเลย์",
+   "level": "กลาง",
+   "desc_th": "กดปุ่มเปิด-ปิดแม่เหล็กไฟฟ้า (ตะปูพันลวด) ผ่านรีเลย์ นับจำนวนคลิปที่ดูดได้เมื่อเปลี่ยนจำนวนรอบลวด",
+   "note_th": "ขดลวดกินกระแสมาก ต้องใช้แหล่งจ่ายแยก ห้ามต่อตรงกับขาบอร์ด และอย่าเปิดค้างนานเพราะร้อน",
+   "ino": "19.Electricity/Electromagnet/Electromagnet.ino",
+   "py": "19.Electricity/Electromagnet/Electromagnet.py",
+   "components": [
+    "button",
+    "relay"
+   ]
   }
  ]
 }

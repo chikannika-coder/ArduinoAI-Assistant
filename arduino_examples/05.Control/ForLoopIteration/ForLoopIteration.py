@@ -1,7 +1,7 @@
 # ตัวอย่าง Arduino -> MicroPython: ไฟวิ่งด้วย for (ForLoopIteration)
 # ต้นฉบับ C++: arduino_examples/05.Control/ForLoopIteration/ForLoopIteration.ino  (Arduino IDE 1.6.0)
 # เลขขาด้านล่างโปรแกรมเลือกให้ตามบอร์ดที่เลือกตอนเปิดไฟล์
-# ขาเพิ่ม: LED_PINS=out*6
+# ขาเพิ่ม: LED_PINS=out*6@led
 from machine import Pin
 import time
 
