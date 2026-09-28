@@ -150,6 +150,7 @@ class Simulator:
         self.result = result
         self.values = {}
         self.ranges = {}
+        self.hold = {}          # 2.6: ค่าที่ครู/นักเรียนลากตั้งเองในภาพการทำงาน
         for c in result.components:
             if c.get("type") == "sensor":
                 lo, hi, kind = c.get("sim", [0, 100, "float"])
@@ -162,6 +163,9 @@ class Simulator:
         rule = self.result.rule
         for k, (lo, hi, kind) in self.ranges.items():
             span = hi - lo
+            if k in self.hold:
+                self.values[k] = self.hold[k]
+                continue
             if kind == "bool":
                 if rule and rule["key"] == k:
                     self.values[k] = 1 if (self.t // 7) % 2 else 0   # สลับทุก ~5 วินาที

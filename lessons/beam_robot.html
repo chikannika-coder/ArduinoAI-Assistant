@@ -1,0 +1,710 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ภาพเคลื่อนไหวขั้นตอนประกอบหุ่นยนต์บีม (Line Tracker Robot)</title>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#1e293b; --panel2:#243449; --ink:#e2e8f0; --muted:#94a3b8;
+    --accent:#38bdf8; --accent2:#fbbf24; --ok:#34d399; --warn:#f87171; --line:#334155;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Sarabun","Noto Sans Thai","Leelawadee UI","Tahoma",sans-serif;
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  header{
+    padding:10px 18px; background:linear-gradient(90deg,#0ea5e9 0%,#6366f1 100%);
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    box-shadow:0 2px 10px rgba(0,0,0,.4); z-index:5;
+  }
+  header h1{font-size:17px; font-weight:700; color:#fff; letter-spacing:.2px;}
+  header .sub{font-size:12px; color:#e0f2fe; opacity:.9;}
+  #phaseChips{display:flex; gap:6px; margin-left:auto; flex-wrap:wrap;}
+  .chip{font-size:11.5px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,.16); color:#fff; cursor:pointer; border:1px solid rgba(255,255,255,.25);}
+  .chip.active{background:#fff; color:#0369a1; font-weight:700;}
+  main{flex:1; display:flex; min-height:0;}
+  #stage{
+    flex:1; min-width:0; display:flex; align-items:center; justify-content:center;
+    padding:10px 14px; position:relative;
+    background:radial-gradient(1200px 600px at 50% 30%, #16233b 0%, #0f172a 70%);
+  }
+  #stage svg{width:100%; height:100%; max-height:100%;}
+  #panel{
+    width:370px; min-width:330px; background:var(--panel); border-left:1px solid var(--line);
+    display:flex; flex-direction:column; min-height:0;
+  }
+  #stepcard{padding:14px 16px 12px; border-bottom:1px solid var(--line); background:var(--panel2);}
+  #stepPhase{font-size:11.5px; color:var(--accent2); font-weight:700; letter-spacing:.4px;}
+  #stepTitle{font-size:16.5px; font-weight:800; margin:3px 0 6px; color:#fff;}
+  #stepDesc{font-size:13.5px; line-height:1.65; color:#dbe6f3;}
+  #stepNote{
+    display:none; margin-top:8px; font-size:12.5px; line-height:1.55;
+    background:rgba(251,191,36,.12); border:1px solid rgba(251,191,36,.45);
+    color:#fde68a; border-radius:8px; padding:7px 10px;
+  }
+  #stepNote.show{display:block;}
+  #chips{display:flex; flex-wrap:wrap; gap:5px; margin-top:9px;}
+  .hchip{font-size:11px; font-family:Consolas,monospace; background:#0b3242; color:#7dd3fc; border:1px solid #155e75; padding:2px 7px; border-radius:6px;}
+  #steplistWrap{flex:1; overflow-y:auto; min-height:0; padding:8px 8px 8px 10px;}
+  .groupHdr{font-size:11.5px; font-weight:800; color:var(--muted); margin:10px 4px 4px; letter-spacing:.3px;}
+  .stepBtn{
+    display:flex; gap:8px; align-items:flex-start; width:100%; text-align:left;
+    background:transparent; border:1px solid transparent; color:#cbd5e1; cursor:pointer;
+    font:inherit; font-size:12.3px; line-height:1.45; padding:5px 8px; border-radius:8px;
+  }
+  .stepBtn:hover{background:#2b3b52;}
+  .stepBtn .no{
+    flex:0 0 26px; height:22px; display:flex; align-items:center; justify-content:center;
+    background:#334155; border-radius:6px; font-size:11px; font-weight:700; color:#e2e8f0; margin-top:1px;
+  }
+  .stepBtn.done .no{background:#065f46; color:#a7f3d0;}
+  .stepBtn.cur{background:#0c4a6e; border-color:#38bdf8; color:#fff;}
+  .stepBtn.cur .no{background:#38bdf8; color:#082f49;}
+  #controls{border-top:1px solid var(--line); padding:10px 12px 12px; background:var(--panel2);}
+  #progressWrap{height:6px; background:#0f172a; border-radius:99px; margin-bottom:10px; cursor:pointer; position:relative;}
+  #progressBar{height:100%; width:0%; background:linear-gradient(90deg,#38bdf8,#34d399); border-radius:99px; transition:width .25s;}
+  .ctrlRow{display:flex; align-items:center; gap:8px;}
+  button.ctl{
+    font:inherit; font-size:14px; background:#334155; color:#e2e8f0; border:1px solid #475569;
+    border-radius:9px; padding:7px 12px; cursor:pointer;
+  }
+  button.ctl:hover{background:#3e5270;}
+  button.ctl.primary{background:#0284c7; border-color:#38bdf8; color:#fff; font-size:15px; min-width:52px;}
+  button.ctl.primary:hover{background:#0ea5e9;}
+  #stepPos{margin-left:auto; font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums;}
+  #speedBtn{font-size:12px; min-width:44px;}
+  /* ---------- SVG animation classes ---------- */
+  .anim-part{animation:dropIn .8s cubic-bezier(.2,.9,.3,1.2) both; transform-box:fill-box; transform-origin:center;}
+  @keyframes dropIn{0%{opacity:0; transform:translateY(-30px) scale(.85);} 60%{opacity:1;} 100%{opacity:1; transform:none;}}
+  .anim-wire{stroke-dasharray:1; stroke-dashoffset:1; animation:drawWire .9s ease-out .15s both;}
+  @keyframes drawWire{to{stroke-dashoffset:0;}}
+  .anim-fade{animation:fadeIn .8s ease both;}
+  @keyframes fadeIn{from{opacity:0;} to{opacity:1;}}
+  .pulse{animation:pulse 1.1s ease-in-out infinite; transform-box:fill-box; transform-origin:center;}
+  @keyframes pulse{0%,100%{opacity:.95; transform:scale(1);} 50%{opacity:.35; transform:scale(1.45);}}
+  .spin{animation:spin 1s linear infinite; transform-box:fill-box; transform-origin:center;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .blink{animation:blink 1s ease-in-out infinite;}
+  @keyframes blink{0%,100%{opacity:1;} 50%{opacity:.15;}}
+  .cardMove{animation:cardMove 3.2s ease-in-out infinite;}
+  @keyframes cardMove{0%{transform:translate(150px,-90px); opacity:0;} 25%{opacity:1;} 45%,60%{transform:translate(0,0); opacity:1;} 85%{opacity:1;} 100%{transform:translate(150px,-90px); opacity:0;}}
+  .roadScroll{animation:roadScroll 1.2s linear infinite;}
+  @keyframes roadScroll{to{transform:translateY(80px);}}
+  .wiggle{animation:wiggle 2.4s ease-in-out infinite; transform-box:fill-box; transform-origin:center;}
+  @keyframes wiggle{0%,100%{transform:translateX(0) rotate(0deg);} 25%{transform:translateX(-7px) rotate(-1.2deg);} 75%{transform:translateX(7px) rotate(1.2deg);}}
+  .flyIn{animation:flyIn 1s cubic-bezier(.2,.9,.3,1.15) both; transform-box:fill-box; transform-origin:center;}
+  @keyframes flyIn{from{opacity:0; transform:translateY(-70px) scale(.8);} to{opacity:1; transform:none;}}
+  .solderGlow{animation:solderGlow 1.6s ease-in-out infinite;}
+  @keyframes solderGlow{0%,100%{opacity:.25; r:6;} 50%{opacity:.9; r:9;}}
+  .beam{animation:beam 1.4s ease-in-out infinite;}
+  @keyframes beam{0%,100%{opacity:.15;} 50%{opacity:.8;}}
+  text{user-select:none;}
+  .lbl{font-family:"Sarabun","Noto Sans Thai",Tahoma,sans-serif;}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>🤖 ภาพเคลื่อนไหวขั้นตอนการประกอบหุ่นยนต์บีม (IT Line Tracker Robot)</h1>
+    <div class="sub">สื่อการสอนประกอบทีละขั้นตอน — ดูลำดับการต่อวงจรบนบอร์ดทดลองได้อย่างละเอียด</div>
+  </div>
+  <div id="phaseChips"></div>
+</header>
+<main>
+  <div id="stage"></div>
+  <aside id="panel">
+    <div id="stepcard">
+      <div id="stepPhase"></div>
+      <div id="stepTitle"></div>
+      <div id="stepDesc"></div>
+      <div id="stepNote"></div>
+      <div id="chips"></div>
+    </div>
+    <div id="steplistWrap"></div>
+    <div id="controls">
+      <div id="progressWrap"><div id="progressBar"></div></div>
+      <div class="ctrlRow">
+        <button class="ctl" id="btnPrev" title="ขั้นตอนก่อนหน้า (←)">⏮ ก่อนหน้า</button>
+        <button class="ctl primary" id="btnPlay" title="เล่น/หยุดชั่วคราว (Space)">▶</button>
+        <button class="ctl" id="btnNext" title="ขั้นตอนถัดไป (→)">ถัดไป ⏭</button>
+        <button class="ctl" id="speedBtn" title="ความเร็วการเล่น">1×</button>
+        <span id="stepPos"></span>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script>
+"use strict";
+/* ================= พิกัดบอร์ดทดลอง ================= */
+var DX = 26;
+function hx(c){ return 90 + (c-1)*DX; }
+var ROWY = {"T+":140, "T-":162, a:198, b:220, c:242, d:264, e:286, f:330, g:352, h:374, i:396, j:418, "B-":454, "B+":476};
+function hole(tok){
+  var m = tok.match(/^([a-j])(\d+)$/);
+  if(m) return {x:hx(+m[2]), y:ROWY[m[1]]};
+  m = tok.match(/^([TB])([+-])(\d+)$/);
+  if(m) return {x:hx(+m[3]), y:ROWY[m[1]+m[2]]};
+  return {x:0,y:0};
+}
+var GROOVE = 308;
+
+/* ================= สัญลักษณ์อุปกรณ์ (SVG) ================= */
+function wirePath(A,B){
+  var dx=B.x-A.x, dy=B.y-A.y, len=Math.hypot(dx,dy);
+  var mx=(A.x+B.x)/2, my=(A.y+B.y)/2, cx, cy;
+  if(len>300){ cx = Math.min(A.x,B.x)-46; cy = my; }
+  else if(Math.abs(dx)<2){ cx = mx+18; cy = my; }
+  else if(Math.abs(dy)<2){ var s = my<GROOVE?-1:1; cx = mx; cy = my + 16*s; }
+  else { cx = mx + 10; cy = my - 10; }
+  return "M"+A.x+","+A.y+" Q"+cx+","+cy+" "+B.x+","+B.y;
+}
+function wireSVG(A,B,color,anim){
+  return '<path class="'+(anim?'anim-wire':'')+'" pathLength="1" d="'+wirePath(A,B)+'" fill="none" stroke="'+color+'" stroke-width="4.5" stroke-linecap="round" opacity=".95"/>';
+}
+function holeDot(tok){ var p=hole(tok); return '<circle cx="'+p.x+'" cy="'+p.y+'" r="3.2" fill="#1f2937"/>'; }
+function labelChip(x,y,txt,color){
+  var w = txt.length*7.4+12;
+  return '<g class="lbl"><rect x="'+(x-w/2)+'" y="'+(y-11)+'" width="'+w+'" height="17" rx="8" fill="'+(color||'#0f172a')+'" opacity=".82"/>'
+       + '<text x="'+x+'" y="'+(y+2)+'" text-anchor="middle" font-size="11" fill="#fff">'+txt+'</text></g>';
+}
+function axialBody(A,B,len,h,inner){
+  var ang = Math.atan2(B.y-A.y,B.x-A.x)*180/Math.PI;
+  var mx=(A.x+B.x)/2, my=(A.y+B.y)/2;
+  var lead1 = '<line x1="'+A.x+'" y1="'+A.y+'" x2="'+(mx-Math.cos(ang*Math.PI/180)*len/2)+'" y2="'+(my-Math.sin(ang*Math.PI/180)*len/2)+'" stroke="#9ca3af" stroke-width="2.6"/>';
+  var lead2 = '<line x1="'+B.x+'" y1="'+B.y+'" x2="'+(mx+Math.cos(ang*Math.PI/180)*len/2)+'" y2="'+(my+Math.sin(ang*Math.PI/180)*len/2)+'" stroke="#9ca3af" stroke-width="2.6"/>';
+  var body = '<g transform="translate('+mx+','+my+') rotate('+ang+')">'+inner+'</g>';
+  return lead1+lead2+body;
+}
+function resInner(bands){
+  var s = '<rect x="-23" y="-8" width="46" height="16" rx="7" fill="#e7c9a1" stroke="#a16207" stroke-width="1.2"/>';
+  for(var i=0;i<bands.length;i++){ s += '<rect x="'+(-16+i*8)+'" y="-8" width="4" height="16" fill="'+bands[i]+'"/>'; }
+  return s;
+}
+var BANDS_1K = ["#7c3aed","#000000","#dc2626","#d4af37"];
+var BANDS_100 = ["#7c3aed","#000000","#7c3aed","#d4af37"];
+function drawItem(it, anim){
+  var cls = anim?'anim-part':'';
+  var s = '', A, B;
+  switch(it.k){
+    case 'wire':
+      A=hole(it.a); B=hole(it.b);
+      s = wireSVG(A,B,it.color,anim) + (anim? '':'');
+      if(anim) s += '<circle cx="'+B.x+'" cy="'+B.y+'" r="4" fill="'+it.color+'" class="anim-fade"/>';
+      return s;
+    case 'res':
+      A=hole(it.legs[0]); B=hole(it.legs[1]);
+      s = '<g class="'+cls+'">'+axialBody(A,B,46,16,resInner(it.bands||BANDS_1K))
+        + labelChip((A.x+B.x)/2,(A.y+B.y)/2-16,it.label,'#7c2d12')+'</g>';
+      return s;
+    case 'diode':
+      A=hole(it.legs[0]); B=hole(it.legs[1]);
+      s = '<g class="'+cls+'">'+axialBody(A,B,42,16,
+          '<rect x="-21" y="-8" width="42" height="16" rx="5" fill="#111827" stroke="#000" stroke-width="1"/>'
+        + '<rect x="9" y="-8" width="6" height="16" fill="#f8fafc"/>')
+        + labelChip((A.x+B.x)/2,(A.y+B.y)/2-16,'1N4001','#111827')+'</g>';
+      return s;
+    case 'cap':
+      A=hole(it.legs[0]); B=hole(it.legs[1]);
+      s = '<g class="'+cls+'">'+axialBody(A,B,26,20,
+          '<rect x="-13" y="-10" width="26" height="20" rx="4" fill="#f59e0b" stroke="#b45309" stroke-width="1.2"/>'
+        + '<text x="0" y="4" text-anchor="middle" font-size="9" fill="#78350f" font-weight="bold">104</text>')
+        + labelChip((A.x+B.x)/2+34,(A.y+B.y)/2,'0.1 µF','#92400e')+'</g>';
+      return s;
+    case 'led':
+      A=hole(it.legs[0]); B=hole(it.legs[1]);
+      var mx=(A.x+B.x)/2, my=(A.y+B.y)/2;
+      s = '<g class="'+cls+'">'
+        + '<line x1="'+A.x+'" y1="'+A.y+'" x2="'+mx+'" y2="'+my+'" stroke="#9ca3af" stroke-width="2.6"/>'
+        + '<line x1="'+B.x+'" y1="'+B.y+'" x2="'+mx+'" y2="'+my+'" stroke="#9ca3af" stroke-width="2.6" stroke-dasharray="4 3"/>'
+        + '<circle cx="'+mx+'" cy="'+my+'" r="12" fill="#ef4444" opacity=".88" stroke="#7f1d1d" stroke-width="1.5"/>'
+        + '<circle cx="'+(mx-4)+'" cy="'+(my-4)+'" r="3.4" fill="#fecaca" opacity=".9"/>'
+        + labelChip(mx,my-20,'LED (ยาว=+)',"#7f1d1d")+'</g>';
+      return s;
+    case 'bc337': case 'bd679':
+      var L=hole(it.legs[0]), M=hole(it.legs[1]), R=hole(it.legs[2]);
+      var bx=M.x, by=M.y;
+      var body = it.k==='bc337'
+        ? '<circle cx="'+bx+'" cy="'+(by-16)+'" r="15" fill="#1f2937" stroke="#000" stroke-width="1.2"/>'
+          + '<line x1="'+(bx-12)+'" y1="'+(by-8)+'" x2="'+(bx+12)+'" y2="'+(by-8)+'" stroke="#94a3b8" stroke-width="2.6"/>'
+        : '<rect x="'+(bx-22)+'" y="'+(by-27)+'" width="44" height="22" rx="3" fill="#1f2937" stroke="#000" stroke-width="1.2"/>'
+          + '<rect x="'+(bx-16)+'" y="'+(by-23)+'" width="32" height="14" rx="2" fill="#cbd5e1" stroke="#64748b" stroke-width="1"/>';
+      s = '<g class="'+cls+'">'
+        + '<line x1="'+L.x+'" y1="'+L.y+'" x2="'+(bx-10)+'" y2="'+(by-6)+'" stroke="#9ca3af" stroke-width="2.6"/>'
+        + '<line x1="'+M.x+'" y1="'+M.y+'" x2="'+bx+'" y2="'+(by-4)+'" stroke="#9ca3af" stroke-width="2.6"/>'
+        + '<line x1="'+R.x+'" y1="'+R.y+'" x2="'+(bx+10)+'" y2="'+(by-6)+'" stroke="#9ca3af" stroke-width="2.6"/>'
+        + body
+        + labelChip(bx, by-(it.k==='bc337'?38:36), it.k==='bc337'?'BC337':'BD679', '#0f172a')
+        + '<text class="lbl" x="'+L.x+'" y="'+(L.y+16)+'" text-anchor="middle" font-size="10.5" fill="#fbbf24" font-weight="bold">'+it.pins[0]+'</text>'
+        + '<text class="lbl" x="'+M.x+'" y="'+(M.y+16)+'" text-anchor="middle" font-size="10.5" fill="#fbbf24" font-weight="bold">'+it.pins[1]+'</text>'
+        + '<text class="lbl" x="'+R.x+'" y="'+(R.y+16)+'" text-anchor="middle" font-size="10.5" fill="#fbbf24" font-weight="bold">'+it.pins[2]+'</text>'
+        + '</g>';
+      return s;
+    case 'trim':
+      var bxx=it.body[0], byy=it.body[1];
+      s = '<g class="'+cls+'">';
+      [['L',it.wires.L,'#fb923c'],['M',it.wires.M,'#fde047'],['R',it.wires.R,'#a3a3a3']].forEach(function(w){
+        if(w[1]) s += wireSVG({x:bxx+(w[0]==='L'?-20:w[0]==='M'?0:20), y:byy+8}, hole(w[1]), w[2], anim);
+      });
+      s += '<rect x="'+(bxx-30)+'" y="'+(byy-14)+'" width="60" height="30" rx="5" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.5"/>'
+        +  '<circle cx="'+bxx+'" cy="'+(byy+1)+'" r="7" fill="#e2e8f0" stroke="#64748b"/>'
+        +  '<line x1="'+(bxx-4)+'" y1="'+(byy+1)+'" x2="'+(bxx+4)+'" y2="'+(byy+1)+'" stroke="#475569" stroke-width="2"/>'
+        +  labelChip(bxx, byy-24, 'ตัวปรับค่า 50 kΩ', '#1e3a8a') + '</g>';
+      return s;
+    case 'ir':
+      var ix=it.body[0], iy=it.body[1];
+      s = '<g class="'+cls+'">';
+      s += wireSVG({x:ix-24,y:iy+10}, hole(it.wires.P), '#111827', anim);
+      s += wireSVG({x:ix,  y:iy+12}, hole(it.wires.O), '#f8fafc', anim);
+      s += wireSVG({x:ix+24,y:iy+10}, hole(it.wires.N), '#38bdf8', anim);
+      s += '<rect x="'+(ix-38)+'" y="'+(iy-14)+'" width="76" height="28" rx="5" fill="#166534" stroke="#14532d" stroke-width="1.5"/>'
+        +  '<circle cx="'+(ix-16)+'" cy="'+iy+'" r="8" fill="#1e1b4b" stroke="#000"/>'
+        +  '<circle cx="'+(ix+16)+'" cy="'+iy+'" r="8" fill="#0ea5e9" stroke="#0369a1"/>'
+        +  '<circle cx="'+(ix-16)+'" cy="'+(iy-2)+'" r="2.6" fill="#6d28d9" opacity=".9"/>'
+        +  labelChip(ix, iy-24, 'อินฟราเรดเซนเซอร์', '#14532d')
+        +  '<text class="lbl" x="'+(ix-24)+'" y="'+(iy+30)+'" text-anchor="middle" font-size="9.5" fill="#cbd5e1">+</text>'
+        +  '<text class="lbl" x="'+ix+'" y="'+(iy+32)+'" text-anchor="middle" font-size="9.5" fill="#cbd5e1">out</text>'
+        +  '<text class="lbl" x="'+(ix+24)+'" y="'+(iy+30)+'" text-anchor="middle" font-size="9.5" fill="#cbd5e1">−</text>'
+        +  '</g>';
+      return s;
+    case 'motor':
+      var mxx=it.body[0], myy=it.body[1];
+      s = '<g class="'+cls+'">';
+      s += wireSVG({x:mxx-30,y:myy-8}, hole(it.wires[0]), '#fde047', anim);
+      s += wireSVG({x:mxx-30,y:myy+8}, hole(it.wires[1]), '#f8fafc', anim);
+      s += '<rect x="'+(mxx-32)+'" y="'+(myy-20)+'" width="52" height="40" rx="6" fill="#fde047" stroke="#a16207" stroke-width="1.5"/>'
+        +  '<rect x="'+(mxx+20)+'" y="'+(myy-14)+'" width="14" height="28" rx="3" fill="#cbd5e1" stroke="#64748b"/>'
+        +  '<g class="'+(it.spin?'spin':'')+'"><circle cx="'+(mxx+40)+'" cy="'+myy+'" r="9" fill="#475569"/>'
+        +  '<line x1="'+(mxx+33)+'" y1="'+myy+'" x2="'+(mxx+47)+'" y2="'+myy+'" stroke="#e2e8f0" stroke-width="2.4"/>'
+        +  '<line x1="'+(mxx+40)+'" y1="'+(myy-7)+'" x2="'+(mxx+40)+'" y2="'+(myy+7)+'" stroke="#e2e8f0" stroke-width="2.4"/></g>'
+        +  labelChip(mxx-4, myy-30, 'มอเตอร์', '#a16207') + '</g>';
+      return s;
+    case 'batt':
+      var px=it.body[0], py=it.body[1];
+      s = '<g class="'+cls+'">';
+      s += wireSVG({x:px-20,y:py-16}, hole(it.wires.R), '#dc2626', anim);
+      s += wireSVG({x:px+20,y:py-16}, hole(it.wires.K), '#111827', anim);
+      s += '<rect x="'+(px-38)+'" y="'+(py-16)+'" width="76" height="42" rx="6" fill="#1f2937" stroke="#000" stroke-width="1.5"/>';
+      for(var i=0;i<3;i++){ s += '<rect x="'+(px-30+i*22)+'" y="'+(py-10)+'" width="18" height="30" rx="4" fill="#0ea5e9" stroke="#0369a1"/>'
+                              +  '<rect x="'+(px-25+i*22)+'" y="'+(py-14)+'" width="8" height="5" rx="2" fill="#cbd5e1"/>'; }
+      s += labelChip(px, py+40, 'รังถ่าน 3 ก้อน', '#0f172a') + '</g>';
+      return s;
+  }
+  return '';
+}
+
+/* ================= ฐานบอร์ดทดลอง ================= */
+function boardBase(){
+  var s = '<rect x="64" y="118" width="812" height="380" rx="14" fill="#f3efe2" stroke="#b8b2a0" stroke-width="2"/>';
+  s += '<rect x="70" y="299" width="800" height="18" rx="6" fill="#ddd6c2"/>';
+  // rails
+  s += '<line x1="78" y1="140" x2="862" y2="140" stroke="#dc2626" stroke-width="3" opacity=".8"/>';
+  s += '<line x1="78" y1="162" x2="862" y2="162" stroke="#2563eb" stroke-width="3" opacity=".8"/>';
+  s += '<line x1="78" y1="454" x2="862" y2="454" stroke="#2563eb" stroke-width="3" opacity=".8"/>';
+  s += '<line x1="78" y1="476" x2="862" y2="476" stroke="#dc2626" stroke-width="3" opacity=".8"/>';
+  s += '<text class="lbl" x="872" y="145" font-size="16" fill="#dc2626" font-weight="bold">+</text>';
+  s += '<text class="lbl" x="872" y="167" font-size="16" fill="#2563eb" font-weight="bold">−</text>';
+  s += '<text class="lbl" x="872" y="459" font-size="16" fill="#2563eb" font-weight="bold">−</text>';
+  s += '<text class="lbl" x="872" y="481" font-size="16" fill="#dc2626" font-weight="bold">+</text>';
+  s += '<text class="lbl" x="52" y="145" font-size="16" fill="#dc2626" font-weight="bold">+</text>';
+  s += '<text class="lbl" x="52" y="167" font-size="16" fill="#2563eb" font-weight="bold">−</text>';
+  s += '<text class="lbl" x="52" y="459" font-size="16" fill="#2563eb" font-weight="bold">−</text>';
+  s += '<text class="lbl" x="52" y="481" font-size="16" fill="#dc2626" font-weight="bold">+</text>';
+  // holes
+  var rows = ["T+","T-","a","b","c","d","e","f","g","h","i","j","B-","B+"];
+  for(var r=0;r<rows.length;r++){
+    for(var c=1;c<=30;c++){
+      var p = hole(rows[r]+""+c);
+      s += '<circle cx="'+p.x+'" cy="'+p.y+'" r="3.1" fill="#c9c2ae" stroke="#8d8672" stroke-width=".8"/>';
+    }
+    var ly = ROWY[rows[r]]+4;
+    s += '<text class="lbl" x="76" y="'+ly+'" text-anchor="middle" font-size="11" fill="#6b7280">'+rows[r].replace("T","บน ").replace("B","ล่าง ")+'</text>';
+    s += '<text class="lbl" x="864" y="'+ly+'" text-anchor="middle" font-size="11" fill="#6b7280">'+rows[r].replace("T","บน ").replace("B","ล่าง ")+'</text>';
+  }
+  [5,10,15,20,25,30].forEach(function(c){
+    s += '<text class="lbl" x="'+hx(c)+'" y="188" text-anchor="middle" font-size="10.5" fill="#6b7280">'+c+'</text>';
+    s += '<text class="lbl" x="'+hx(c)+'" y="442" text-anchor="middle" font-size="10.5" fill="#6b7280">'+c+'</text>';
+  });
+  s += '<text class="lbl" x="470" y="628" text-anchor="middle" font-size="12" fill="#64748b">ภาพจำลองบอร์ดทดลอง (มุมมองด้านบน) — แถวแนวนอน a–j / คอลัมน์ 1–30 / รางไฟ + − ด้านบนและล่าง</text>';
+  return s;
+}
+
+/* ================= ข้อมูลขั้นตอนการต่อบอร์ด ================= */
+var BOARD_STEPS = [
+ {n:1, items:[{k:'wire',a:'B+14',b:'i14',color:'#dc2626'}],
+  t:'ต่อสายไฟเส้นที่ 1', d:'ต่อสายไฟเส้นที่ 1 ไปที่ไฟบวก (+) ปลายอีกข้างไปที่ช่อง i14', chips:['B+14','i14']},
+ {n:2, items:[{k:'bc337',legs:['g14','g15','g16'],pins:['C','B','E']}],
+  t:'ต่อทรานซิสเตอร์ BC337', d:'ต่อทรานซิสเตอร์ BC337 (หันฝั่งตัดครึ่งเข้าหาตัว) ขาซ้ายเป็นขา C ไปยัง g14, ขากลางเป็นขา B ไปที่ g15, ขาขวาเป็นขา E ไปที่ g16', chips:['g14 (C)','g15 (B)','g16 (E)'],
+  note:'หันฝั่งตัดครึ่ง (ด้านแบน) ของตัวทรานซิสเตอร์เข้าหาตัวผู้ต่อ'},
+ {n:3, items:[{k:'bd679',legs:['h16','h17','h18'],pins:['B','C','E']}],
+  t:'ต่อทรานซิสเตอร์ BD679', d:'ต่อทรานซิสเตอร์ BD679 (หันแผ่นเหล็กเข้าหาตัว) ขาซ้ายเป็นขา B ไปยัง h16, ขากลางเป็นขา C ไปที่ h17, ขาขวาเป็นขา E ไปที่ h18', chips:['h16 (B)','h17 (C)','h18 (E)'],
+  note:'หันแผ่นเหล็กด้านหลังตัวทรานซิสเตอร์เข้าหาตัวผู้ต่อ'},
+ {n:4, items:[{k:'res',legs:['B+20','i20'],label:'1 kΩ'}],
+  t:'ต่อตัวต้านทาน 1 kΩ (ตัวที่ 1)', d:'ตัวต้านทาน 1 กิโลโอห์ม เอาปลายขาข้างหนึ่งไปที่ไฟบวก (+) อีกข้างหนึ่งไปที่ i20', chips:['B+ (+)','i20']},
+ {n:5, items:[{k:'led',legs:['j20','j17']}],
+  t:'ต่อหลอด LED', d:'ต่อหลอด LED ขายาวที่ j20 ขาสั้นไปที่ j17', chips:['j20 (ขายาว +)','j17 (ขาสั้น −)'],
+  note:'ขายาว = ขั้วบวก (แอโนด), ขาสั้น = ขั้วลบ (แคโทด) อย่าสลับขั้ว'},
+ {n:6, items:[{k:'wire',a:'j18',b:'B-18',color:'#111827'}],
+  t:'ต่อสายไฟเส้นที่ 2', d:'สายไฟเส้นที่ 2 ปลายข้างหนึ่งไปที่ j18 อีกข้างไปที่ไฟลบ (−)', chips:['j18','B−18']},
+ {n:7, items:[{k:'wire',a:'f17',b:'f23',color:'#16a34a'}],
+  t:'ต่อสายไฟเส้นที่ 3', d:'สายไฟเส้นที่ 3 ปลายข้างหนึ่งไปที่ f17 อีกปลายข้างหนึ่งไปที่ f23', chips:['f17','f23']},
+ {n:8, items:[{k:'cap',legs:['j23','B+23']}],
+  t:'ต่อตัวเก็บประจุ 0.1 µF', d:'ตัวเก็บประจุ 0.1 ไมโครฟารัด ขาหนึ่งไปที่ช่อง j23 อีกข้างไปที่ไฟบวก (+)', chips:['j23','B+23']},
+ {n:9, items:[{k:'diode',legs:['i23','B+24']}],
+  t:'ต่อไดโอด 1N4001', d:'ไดโอด 1N4001 (ขีดสีขาวเป็นขั้วลบ, ตัวสีดำเป็นขั้วบวก) ให้ขาขั้วบวก (สีดำ) ไปที่ช่อง i23 ขาขั้วลบ (สีขาว) ไปที่ช่องไฟบวก (+)', chips:['i23 (ขั้วบวก)','B+24 (ขั้วลบ)'],
+  note:'สังเกตแถบสีขาวบนตัวไดโอด = ขั้วลบ ต้องหันถูกทิศ'},
+ {n:10, items:[{k:'motor',body:[985,374],wires:['h23','B+25']}],
+  t:'ต่อสายมอเตอร์ (ล้อขวา)', d:'ต่อสายมอเตอร์ สายข้างหนึ่งไปที่ช่อง h23 สายอีกข้างไปที่ไฟบวก (+)', chips:['h23','B+25']},
+ {n:11, items:[{k:'res',legs:['h15','h10'],label:'1 kΩ'}],
+  t:'ต่อตัวต้านทาน 1 kΩ (ตัวที่ 2)', d:'ตัวต้านทาน 1 กิโลโอห์ม ตัวที่ 2 นำขาข้างหนึ่งไปที่ช่อง h15 และขาข้างหนึ่งไปที่ h10', chips:['h15','h10']},
+ {n:12, items:[{k:'trim',body:[430,308],wires:{L:'B-12',M:'i10',R:null}}],
+  t:'ต่อตัวต้านทานปรับค่าได้', d:'ต่อสายตัวต้านทานปรับค่าได้ (หันขาที่ต่อสายเข้าหาตัว) โดยต่อสายที่เชื่อมขาซ้ายไปที่ไฟลบ (−) สายขากลางไปช่องที่ i10', chips:['ขาซ้าย → B−12','ขากลาง → i10'],
+  note:'หันด้านที่ต่อสายเข้าหาตัวผู้ต่อ: ขาซ้าย = กราวด์, ขากลาง = สัญญาณ'},
+ {n:13, items:[{k:'ir',body:[300,565],wires:{P:'B+8',N:'B-9',O:'g10'}}],
+  t:'ต่ออินฟราเรดเซนเซอร์ (ขวา)', d:'ต่ออินฟราเรดเซนเซอร์ (เซนเซอร์สีดำมีค่าเป็นบวก) ให้ต่อสายไฟฝั่งเซนเซอร์สีดำเข้าไปที่ช่องไฟบวก (+) สายไฟฝั่งเซนเซอร์สีฟ้าเข้าที่ช่องไฟลบ (−) ส่วนขากลาง (สายเอาต์พุต) ต่อเข้าที่ช่อง g10', chips:['สายดำ → B+8','สายฟ้า → B−9','สายกลาง → g10']},
+ {n:14, items:[{k:'batt',body:[600,570],wires:{R:'B+19',K:'B-21'}}],
+  t:'ต่อสายรังถ่าน', d:'ต่อสายไฟของรางถ่านเข้ากับวงจร โดยสายสีแดงไปที่ช่องไฟบวก (+) ส่วนสายสีดำไปที่ช่องไฟลบ (−)', chips:['แดง → B+19','ดำ → B−21']},
+ {n:15, items:[], test:true,
+  t:'ตรวจสอบและทดสอบวงจรล้อขวา', d:'ตรวจสอบวงจรให้เรียบร้อย แล้วทดสอบการทำงาน: ใช้มือบังที่อินฟราเรดเซนเซอร์ หรือใช้วัตถุสีขาววางใกล้เซนเซอร์ มอเตอร์จะทำงาน สามารถปรับระยะห่าง/ความไวในการตรวจจับได้จากการปรับตัวต้านทานปรับค่าได้', chips:['ทดสอบมอเตอร์ขวา'],
+  note:'กรณีมอเตอร์ไม่ทำงาน ให้ตรวจสอบวงจรโดยละเอียดอีกครั้งตั้งแต่ขั้นตอนที่ 1–14'},
+ {n:16, items:[{k:'wire',a:'T+4',b:'B+4',color:'#dc2626'}],
+  t:'เชื่อมรางไฟบวก บน–ล่าง', d:'เชื่อมสายไฟเส้นที่ 1 ไปที่ช่องบวก (+) บน และปลายสายไฟอีกข้างไปที่ช่องบวก (+) ล่าง', chips:['T+4','B+4'],
+  note:'⚠ ก่อนต่อวงจรล้อซ้าย ต้องถอนถ่านออกจากรังถ่านก่อน เพื่อป้องกันความเสียหายของอุปกรณ์อิเล็กทรอนิกส์'},
+ {n:17, items:[{k:'wire',a:'T-5',b:'B-5',color:'#111827'}],
+  t:'เชื่อมรางไฟลบ บน–ล่าง', d:'เชื่อมสายไฟเส้นที่ 2 ไปที่ช่องลบ (−) บน และปลายสายไฟอีกข้างไปที่ช่องลบ (−) ล่าง', chips:['T−5','B−5']},
+ {n:18, items:[{k:'wire',a:'a14',b:'T+14',color:'#dc2626'}],
+  t:'ต่อสายไฟเส้นที่ 3', d:'ต่อสายไฟเส้นที่ 3 ปลายไปที่ a14 อีกข้างไปที่ช่องไฟบวก (+)', chips:['a14','T+14']},
+ {n:19, items:[{k:'bc337',legs:['d14','d15','d16'],pins:['C','B','E']}],
+  t:'ต่อทรานซิสเตอร์ BC337', d:'ต่อทรานซิสเตอร์ BC337 (หันฝั่งตัดครึ่งเข้าหาตัว) ขาซ้ายเป็นขา C ไปยัง d14, ขากลางเป็นขา B ไปที่ d15, ขาขวาเป็นขา E ไปที่ d16', chips:['d14 (C)','d15 (B)','d16 (E)'],
+  note:'หันฝั่งตัดครึ่งเข้าหาตัว — วงจรล้อซ้ายใช้แถว a–d (ครึงบนของบอร์ด)'},
+ {n:20, items:[{k:'bd679',legs:['c16','c17','c18'],pins:['B','C','E']}],
+  t:'ต่อทรานซิสเตอร์ BD679', d:'ต่อทรานซิสเตอร์ BD679 (หันแผ่นเหล็กเข้าหาตัว) ขาซ้ายเป็นขา B ไปยัง c16, ขากลางเป็นขา C ไปที่ c17, ขาขวาเป็นขา E ไปที่ c18', chips:['c16 (B)','c17 (C)','c18 (E)']},
+ {n:21, items:[{k:'wire',a:'a18',b:'T-18',color:'#111827'}],
+  t:'ต่อสายไฟเส้นที่ 4', d:'ต่อสายไฟเส้นที่ 4 ปลายข้างหนึ่งไปที่ช่อง a18 เอาอีกขาไปที่ไฟลบ (−)', chips:['a18','T−18'],
+  note:'หมายเหตุ: ต้นฉบับพิมพ์ว่า "ไฟบวก (+)" แต่ขา E ของทรานซิสเตอร์ต้องลงกราวด์ เหมือนขั้นตอนที่ 6 ของวงจรล้อขวา จึงต่อเข้าไฟลบ (−)'},
+ {n:22, items:[{k:'wire',a:'d17',b:'d23',color:'#16a34a'}],
+  t:'ต่อสายไฟเส้นที่ 5', d:'ต่อสายไฟเส้นที่ 5 ปลายข้างหนึ่งไปที่ d17 เอาอีกขาไปที่ d23', chips:['d17','d23']},
+ {n:23, items:[{k:'res',legs:['a20','T+20'],label:'1 kΩ'}],
+  t:'ต่อตัวต้านทาน 1 kΩ', d:'ตัวต้านทาน 1 กิโลโอห์ม ปลายขาข้างหนึ่งไปที่ a20 อีกข้างไปที่ไฟบวก (+)', chips:['a20','T+20']},
+ {n:24, items:[{k:'led',legs:['b20','b17']}],
+  t:'ต่อหลอด LED', d:'ต่อหลอด LED ขายาวไปที่ช่อง b20 ส่วนขาสั้นไปที่ช่อง b17', chips:['b20 (ขายาว +)','b17 (ขาสั้น −)']},
+ {n:25, items:[{k:'cap',legs:['a23','T+23']}],
+  t:'ต่อตัวเก็บประจุ 0.1 µF', d:'ตัวเก็บประจุ 0.1 ไมโครฟารัด นำขาข้างหนึ่งไปที่ a23 อีกข้างไปที่ไฟบวก (+)', chips:['a23','T+23']},
+ {n:26, items:[{k:'diode',legs:['b23','T+24']}],
+  t:'ต่อไดโอด 1N4001', d:'ไดโอด 1N4001 (ขีดสีขาวเป็นขั้วลบ, สีดำเป็นขั้วบวก) ให้ขาขั้วบวก (สีดำ) ไปที่ช่อง b23 ขาขั้วลบ (สีขาว) ไปที่ช่องไฟบวก (+)', chips:['b23 (ขั้วบวก)','T+24 (ขั้วลบ)']},
+ {n:27, items:[{k:'motor',body:[985,242],wires:['c23','T+25']}],
+  t:'ต่อสายมอเตอร์ (ล้อซ้าย)', d:'ต่อสายมอเตอร์ สายไปที่ช่อง c23 หนึ่งอีกข้างไปที่ไฟบวก (+)', chips:['c23','T+25']},
+ {n:28, items:[{k:'res',legs:['c15','c10'],label:'1 kΩ'}],
+  t:'ต่อตัวต้านทาน 1 kΩ', d:'ตัวต้านทาน 1 กิโลโอห์ม เอาปลายขาข้างหนึ่งไปที่ c15 อีกข้างไปที่ c10', chips:['c15','c10']},
+ {n:29, items:[{k:'trim',body:[330,308],wires:{L:'b10',M:'T-11',R:null}}],
+  t:'ต่อตัวต้านทานปรับค่าได้', d:'ต่อสายตัวต้านทานปรับค่าได้ โดยต่อสายที่เชื่อมขาซ้ายไปที่ b10 ขากลางไปที่ไฟลบ (−)', chips:['ขาซ้าย → b10','ขากลาง → T−11']},
+ {n:30, items:[{k:'ir',body:[300,55],wires:{P:'T+8',N:'T-9',O:'d10'}}],
+  t:'ต่ออินฟราเรดเซนเซอร์ (ซ้าย)', d:'ต่ออินฟราเรดเซนเซอร์ (เซนเซอร์สีดำมีค่าเป็นบวก) ต่อสายไฟฝั่งเซนเซอร์สีดำไปที่ช่องไฟบวก (+), สายฝั่งเซนเซอร์สีฟ้าเข้าที่ช่องไฟลบ (−), ส่วนขากลาง (สายเอาต์พุต) ต่อเข้าที่ช่อง d10', chips:['สายดำ → T+8','สายฟ้า → T−9','สายกลาง → d10']},
+ {n:31, items:[], final:true,
+  t:'ตรวจสอบครั้งสุดท้าย + ใส่ถ่าน', d:'ตรวจสอบการต่อวงจรอีกครั้ง จากนั้นใส่แบตเตอรี่และตรวจสอบการทำงานของมอเตอร์ แล้วนำวงจรบนบอร์ดทดลองไปประกอบโครงสร้างหุ่นยนต์', chips:['ใส่ถ่าน','ทดสอบทั้ง 2 ล้อ']}
+];
+
+/* ================= ฉากพิเศษ ================= */
+function svgWrap(vb, inner){ return '<svg viewBox="'+vb+'" xmlns="http://www.w3.org/2000/svg">'+inner+'</svg>'; }
+
+function introScene(){
+  var parts = [
+    ['ตัวต้านทาน 100 Ω','×2'],['ตัวต้านทาน 1 kΩ','×4'],['ไดโอด 1N4001','×2'],['ตัวเก็บประจุ 0.1 µF','×2'],
+    ['ทรานซิสเตอร์ BC337','×2'],['หลอด LED','×2'],['ทรานซิสเตอร์ BD679','×2'],['ตัวปรับค่า 50 kΩ','×2'],
+    ['อินฟราเรดเซนเซอร์','×2'],['มอเตอร์','×2'],['รังถ่าน 3 ก้อน','×2'],['บอร์ดทดลอง','×1'],
+    ['บอร์ดอเนกประสงค์','×2'],['สายไฟ','—'],['หัวแร้ง','—'],['ที่วางหัวแร้ง','—'],
+    ['ตะกั่วบัดกรี','—'],['คีมตัด/ปลอกสาย','—']
+  ];
+  var s = '<rect x="0" y="0" width="1080" height="640" fill="#0b1220"/>';
+  s += '<text class="lbl" x="540" y="52" text-anchor="middle" font-size="27" fill="#7dd3fc" font-weight="bold">หุ่นยนต์บีม — IT Line Tracker Robot</text>';
+  s += '<text class="lbl" x="540" y="80" text-anchor="middle" font-size="14" fill="#94a3b8">หุ่นยนต์เดินตามเส้นดำ ควบคุมมอเตอร์ด้วยวงจรอินฟราเรดเซนเซอร์ซ้าย–ขวา ลักษณะเดียวกัน ทำงานเป็นอิสระต่อกัน</text>';
+  // concept diagram
+  s += '<g class="anim-fade"><rect x="60" y="110" width="430" height="220" rx="12" fill="#111c30" stroke="#1e3a5f"/>'
+    +  '<text class="lbl" x="275" y="136" text-anchor="middle" font-size="14" fill="#fbbf24" font-weight="bold">แนวคิดวงจรควบคุมมอเตอร์ 1 ข้าง</text>'
+    +  '<rect x="85" y="160" width="110" height="40" rx="8" fill="#14532d"/><text class="lbl" x="140" y="185" text-anchor="middle" font-size="12" fill="#fff">IR เซนเซอร์</text>'
+    +  '<rect x="235" y="160" width="100" height="40" rx="8" fill="#1e3a8a"/><text class="lbl" x="285" y="185" text-anchor="middle" font-size="12" fill="#fff">ปรับค่า 50k</text>'
+    +  '<rect x="375" y="160" width="90" height="40" rx="8" fill="#7c2d12"/><text class="lbl" x="420" y="185" text-anchor="middle" font-size="12" fill="#fff">BC337</text>'
+    +  '<rect x="235" y="240" width="100" height="40" rx="8" fill="#7c2d12"/><text class="lbl" x="285" y="265" text-anchor="middle" font-size="12" fill="#fff">BD679</text>'
+    +  '<rect x="375" y="240" width="90" height="40" rx="8" fill="#a16207"/><text class="lbl" x="420" y="265" text-anchor="middle" font-size="12" fill="#fff">มอเตอร์</text>'
+    +  '<path d="M195,180 L235,180" stroke="#7dd3fc" stroke-width="2.5" marker-end="url(#arw)"/>'
+    +  '<path d="M335,180 L375,180" stroke="#7dd3fc" stroke-width="2.5" marker-end="url(#arw)"/>'
+    +  '<path d="M420,200 L420,220 L285,220 L285,240" stroke="#7dd3fc" stroke-width="2.5" marker-end="url(#arw)"/>'
+    +  '<path d="M335,260 L375,260" stroke="#7dd3fc" stroke-width="2.5" marker-end="url(#arw)"/>'
+    +  '<text class="lbl" x="275" y="312" text-anchor="middle" font-size="11.5" fill="#94a3b8">เจอเส้นดำ/วัตถุขาว → เซนเซอร์ส่งสัญญาณ → ขับมอเตอร์ผ่านทรานซิสเตอร์ 2 ขั้น</text>'
+    +  '</g>';
+  // robot preview
+  s += '<g class="anim-fade"><rect x="560" y="110" width="460" height="220" rx="12" fill="#111c30" stroke="#1e3a5f"/>'
+    +  '<text class="lbl" x="790" y="136" text-anchor="middle" font-size="14" fill="#fbbf24" font-weight="bold">หุ่นยนต์ที่ประกอบเสร็จ</text>'
+    +  '<rect x="690" y="170" width="200" height="90" rx="10" fill="#1d4ed8" stroke="#1e3a8a"/>'
+    +  '<rect x="660" y="185" width="26" height="60" rx="6" fill="#334155"/><rect x="894" y="185" width="26" height="60" rx="6" fill="#334155"/>'
+    +  '<circle cx="730" cy="272" r="9" fill="#0ea5e9"/><circle cx="850" cy="272" r="9" fill="#0ea5e9"/>'
+    +  '<path class="beam" d="M730,281 L722,306 L738,306 Z" fill="#f87171"/><path class="beam" d="M850,281 L842,306 L858,306 Z" fill="#f87171"/>'
+    +  '<rect x="640" y="308" width="300" height="8" rx="3" fill="#0a0a0a"/>'
+    +  '<text class="lbl" x="790" y="318" text-anchor="middle" font-size="11.5" fill="#94a3b8">เซนเซอร์ 2 ตัวตรวจจับเส้นดำ แล้วเลี้ยวโดยเปลี่ยนความเร็วล้อซ้าย/ขวา</text></g>';
+  // parts grid
+  s += '<text class="lbl" x="60" y="366" font-size="15" fill="#fbbf24" font-weight="bold">รายการอุปกรณ์ทั้งหมด</text>';
+  for(var i=0;i<parts.length;i++){
+    var col = i%6, row = Math.floor(i/6);
+    var x = 60+col*166, y = 384+row*78;
+    s += '<g class="anim-part" style="animation-delay:'+(0.15*i)+'s"><rect x="'+x+'" y="'+y+'" width="156" height="64" rx="10" fill="#152238" stroke="#27405f"/>'
+      +  '<text class="lbl" x="'+(x+78)+'" y="'+(y+28)+'" text-anchor="middle" font-size="12" fill="#e2e8f0">'+parts[i][0]+'</text>'
+      +  '<text class="lbl" x="'+(x+78)+'" y="'+(y+48)+'" text-anchor="middle" font-size="12" fill="#7dd3fc" font-weight="bold">'+parts[i][1]+'</text></g>';
+  }
+  s += '<defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7dd3fc"/></marker></defs>';
+  return svgWrap('0 0 1080 640', s);
+}
+
+function perfboard(x,y,w,h){
+  var s = '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="6" fill="#eab308" stroke="#a16207" stroke-width="2"/>';
+  for(var i=0;i<6;i++) for(var j=0;j<8;j++)
+    s += '<circle cx="'+(x+18+i*((w-36)/5))+'" cy="'+(y+16+j*((h-32)/7))+'" r="3.4" fill="#a16207" opacity=".55"/>';
+  return s;
+}
+function prep1(){
+  var s = '<rect x="0" y="0" width="1080" height="640" fill="#0b1220"/>';
+  s += '<text class="lbl" x="540" y="48" text-anchor="middle" font-size="22" fill="#7dd3fc" font-weight="bold">ขั้นเตรียมอุปกรณ์ 1 : บัดกรีวงจรอินฟราเรดเซนเซอร์ (1.1–1.3)</text>';
+  s += '<g transform="translate(330,110)">'+perfboard(0,0,420,300);
+  s += '<g class="anim-part" style="animation-delay:.4s">'+axialBody({x:120,y:180},{x:300,y:180},90,30,resInner(BANDS_100))+'</g>';
+  s += '<circle class="solderGlow anim-fade" style="animation-delay:1.2s" cx="120" cy="180" r="7" fill="#e2e8f0"/>';
+  s += '<circle class="solderGlow anim-fade" style="animation-delay:1.4s" cx="300" cy="180" r="7" fill="#e2e8f0"/>';
+  s += '</g>';
+  s += '<g class="lbl" font-size="15" fill="#dbe6f3">'
+    +  '<text x="60" y="470">1.1 เตรียมแผ่นปริ้นอเนกประสงค์</text>'
+    +  '<text x="60" y="500">1.2 ใส่ตัวต้านทาน 100 โอห์ม บนแผ่นปริ้นฯ (แถบสี ม่วง-ดำ-น้ำตาล)</text>'
+    +  '<text x="60" y="530">1.3 หงายด้านหลัง งอขาตัวต้านทานดังรูป แล้วบัดกรีขาที่ตำแหน่ง 1 และ 2</text>'
+    +  '<text x="60" y="566" fill="#fbbf24">จุดสว่าง = จุดบัดกรีตะกั่ว</text></g>';
+  return svgWrap('0 0 1080 640', s);
+}
+function prep2(){
+  var s = '<rect x="0" y="0" width="1080" height="640" fill="#0b1220"/>';
+  s += '<text class="lbl" x="540" y="48" text-anchor="middle" font-size="22" fill="#7dd3fc" font-weight="bold">ขั้นเตรียมอุปกรณ์ 2 : ติดตั้งอินฟราเรดเซนเซอร์ (1.4–1.5)</text>';
+  s += '<g transform="translate(330,140)">'+perfboard(0,0,420,300);
+  s += axialBody({x:120,y:210},{x:300,y:210},90,30,resInner(BANDS_100));
+  s += '<g class="anim-part" style="animation-delay:.5s">'
+    +  '<rect x="140" y="70" width="140" height="60" rx="8" fill="#111827" stroke="#000"/>'
+    +  '<circle cx="175" cy="100" r="16" fill="#1e1b4b" stroke="#000"/><circle cx="175" cy="96" r="5" fill="#6d28d9"/>'
+    +  '<circle cx="245" cy="100" r="16" fill="#0ea5e9" stroke="#0369a1"/>'
+    +  '<line x1="170" y1="130" x2="165" y2="180" stroke="#9ca3af" stroke-width="3"/>'
+    +  '<line x1="210" y1="130" x2="210" y2="180" stroke="#9ca3af" stroke-width="3"/>'
+    +  '<line x1="250" y1="130" x2="255" y2="180" stroke="#9ca3af" stroke-width="3"/></g>';
+  s += labelChip(330,60,'ด้านตัวส่ง (สีน้ำเงิน) = ทางขวา','#0369a1');
+  s += '</g>';
+  s += '<g class="lbl" font-size="15" fill="#dbe6f3">'
+    +  '<text x="60" y="500">1.4 ใส่อินฟราเรดเซนเซอร์บนแผ่นปริ้นฯ โดยหันด้านตัวส่ง (สีน้ำเงิน) ให้อยู่ทางขวามือ</text>'
+    +  '<text x="60" y="530">1.5 กดอินฟราเรดเซนเซอร์ให้แนบกับแผ่นปริ้น</text>'
+    +  '<text x="60" y="566" fill="#fbbf24">ตัวส่ง = LED สีน้ำเงิน, ตัวรับ = สีดำ</text></g>';
+  return svgWrap('0 0 1080 640', s);
+}
+function prep3(){
+  var s = '<rect x="0" y="0" width="1080" height="640" fill="#0b1220"/>';
+  s += '<text class="lbl" x="540" y="48" text-anchor="middle" font-size="22" fill="#7dd3fc" font-weight="bold">ขั้นเตรียมอุปกรณ์ 3 : บัดกรีจุดต่อและสายสัญญาณ (1.6–1.16)</text>';
+  s += '<g transform="translate(330,110)">'+perfboard(0,0,420,320);
+  var pts = [[120,120,'1'],[240,120,'2'],[120,200,'4'],[240,200,'3'],[330,240,'5']];
+  for(var i=0;i<pts.length;i++){
+    s += '<circle class="solderGlow" style="animation-delay:'+(i*0.5)+'s" cx="'+pts[i][0]+'" cy="'+pts[i][1]+'" r="7" fill="#e2e8f0"/>'
+      +  '<text class="lbl" x="'+(pts[i][0]+14)+'" y="'+(pts[i][1]-8)+'" font-size="16" fill="#f87171" font-weight="bold">'+pts[i][2]+'</text>';
+  }
+  s += '<g class="anim-wire" pathLength="1"><path d="M120,200 C120,260 60,280 20,300" fill="none" stroke="#fde047" stroke-width="6" stroke-linecap="round"/></g>';
+  s += '<g class="anim-wire" pathLength="1" style="animation-delay:.5s"><path d="M210,200 C210,270 160,300 120,330" fill="none" stroke="#f8fafc" stroke-width="6" stroke-linecap="round"/></g>';
+  s += '<g class="anim-wire" pathLength="1" style="animation-delay:1s"><path d="M330,240 C360,280 400,300 440,320" fill="none" stroke="#22c55e" stroke-width="6" stroke-linecap="round"/></g>';
+  s += '</g>';
+  s += '<g class="lbl" font-size="15" fill="#dbe6f3">'
+    +  '<text x="60" y="480">1.6–1.8 หงายหลัง งอขา แล้วบัดกรีจุด 1 2 3 4 และจุดเชื่อมเซนเซอร์-ตัวต้านทาน (จุด 5)</text>'
+    +  '<text x="60" y="510">1.9–1.15 ตัดขาเกิน แล้วบัดกรีสายสัญญาณ 3 เส้น: เหลือง (−), ขาว (เอาต์พุต), เขียว (+)</text>'
+    +  '<text x="60" y="540">1.16 ทำขั้นตอนเดียวกันสำหรับอินฟราเรดเซนเซอร์ตัวที่ 2</text>'
+    +  '<text x="60" y="576" fill="#fbbf24">โมดูลเซนเซอร์ที่เสร็จแล้วจะมีสายสัญญาณ 3 เส้นสำหรับเสียบบนบอร์ดทดลอง</text></g>';
+  return svgWrap('0 0 1080 640', s);
+}
+function prep4(){
+  var s = '<rect x="0" y="0" width="1080" height="640" fill="#0b1220"/>';
+  s += '<text class="lbl" x="540" y="48" text-anchor="middle" font-size="22" fill="#7dd3fc" font-weight="bold">ขั้นเตรียมอุปกรณ์ 4 : บัดกรีสายมอเตอร์และเตรียมรังถ่าน</text>';
+  s += '<g class="anim-part"><rect x="180" y="150" width="220" height="120" rx="16" fill="#fde047" stroke="#a16207" stroke-width="3"/>'
+    +  '<rect x="400" y="175" width="50" height="70" rx="8" fill="#cbd5e1" stroke="#64748b"/>'
+    +  '<circle class="solderGlow" cx="415" cy="190" r="7" fill="#e2e8f0"/><circle class="solderGlow" style="animation-delay:.6s" cx="415" cy="230" r="7" fill="#e2e8f0"/>'
+    +  '<path class="anim-wire" pathLength="1" d="M415,190 C520,170 560,200 660,190" fill="none" stroke="#fde047" stroke-width="6" stroke-linecap="round"/>'
+    +  '<path class="anim-wire" pathLength="1" style="animation-delay:.5s" d="M415,230 C520,260 560,220 660,230" fill="none" stroke="#f8fafc" stroke-width="6" stroke-linecap="round"/>'
+    +  '<path class="anim-fade" style="animation-delay:1.2s" d="M660,190 C700,196 700,224 660,230 C700,236 700,204 740,210 C780,216 780,204 820,210" fill="none" stroke="#fde047" stroke-width="5"/>'
+    +  '<path class="anim-fade" style="animation-delay:1.2s" d="M660,230 C700,224 700,196 660,190 C700,184 700,216 740,210 C780,204 780,216 820,210" fill="none" stroke="#f8fafc" stroke-width="5"/>'
+    +  '</g>';
+  s += '<g class="anim-part" style="animation-delay:1s" transform="translate(180,380)">'
+    +  '<rect x="0" y="0" width="200" height="90" rx="10" fill="#1f2937" stroke="#000" stroke-width="2"/>';
+  for(var i=0;i<3;i++) s += '<rect x="'+(18+i*60)+'" y="14" width="46" height="62" rx="8" fill="#0ea5e9" stroke="#0369a1"/><rect x="'+(32+i*60)+'" y="6" width="18" height="9" rx="3" fill="#cbd5e1"/>';
+  s += '<path d="M200,25 C260,20 280,40 330,35" fill="none" stroke="#dc2626" stroke-width="6" stroke-linecap="round"/>'
+    +  '<path d="M200,65 C260,70 280,50 330,55" fill="none" stroke="#111827" stroke-width="6" stroke-linecap="round"/></g>';
+  s += '<g class="lbl" font-size="15" fill="#dbe6f3">'
+    +  '<text x="60" y="520">2.1 บัดกรีสายไฟ (เหลือง/ขาว) เข้ากับขั้วมอเตอร์ทั้งสองข้าง แล้วพันเกลียวสายให้เรียบร้อย</text>'
+    +  '<text x="60" y="550">2.2 เตรียมรังถ่าน 3 ก้อน: สายแดง = ไฟบวก (+), สายดำ = ไฟลบ (−)</text>'
+    +  '<text x="60" y="586" fill="#fbbf24">ทำซ้ำสำหรับมอเตอร์และโมดูลเซนเซอร์ชุดที่ 2</text></g>';
+  return svgWrap('0 0 1080 640', s);
+}
+
+function boardScene(stepIdx, overlay){
+  var s = boardBase();
+  for(var i=0;i<=stepIdx;i++){
+    var st = BOARD_STEPS[i];
+    var isNew = (i===stepIdx);
+    for(var j=0;j<st.items.length;j++) s += drawItem(st.items[j], isNew);
+  }
+  if(overlay) s += overlay;
+  return svgWrap('0 0 1080 640', s);
+}
+function highlightsFor(st){
+  var toks = [];
+  st.items.forEach(function(it){
+    if(it.k==='wire'){ toks.push(it.a, it.b); }
+    else if(it.legs){ toks = toks.concat(it.legs); }
+    else if(it.wires){ Object.keys(it.wires).forEach(function(kk){ if(it.wires[kk]) toks.push(it.wires[kk]); }); }
+  });
+  var s='';
+  toks.forEach(function(t){ var p=hole(t); s += '<circle class="pulse" cx="'+p.x+'" cy="'+p.y+'" r="9" fill="none" stroke="#f59e0b" stroke-width="3"/>'; });
+  return s;
+}
+function testOverlay(){
+  var s = '';
+  s += '<g class="cardMove"><rect x="262" y="528" width="80" height="46" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>'
+    +  '<text class="lbl" x="302" y="556" text-anchor="middle" font-size="12" fill="#334155">วัตถุสีขาว</text></g>';
+  s += '<g class="spin" style="animation-duration:.5s"><circle cx="1025" cy="374" r="26" fill="none" stroke="#34d399" stroke-width="4" stroke-dasharray="10 8"/></g>';
+  s += '<text class="lbl blink" x="1025" y="330" text-anchor="middle" font-size="15" fill="#34d399" font-weight="bold">มอเตอร์หมุน!</text>';
+  s += '<circle class="blink" cx="545" cy="418" r="16" fill="#f87171" opacity=".8"/>';
+  return s;
+}
+function chassisScene(){
+  var s = '<rect x="0" y="0" width="1080" height="640" fill="#0b1220"/>';
+  s += '<text class="lbl" x="540" y="46" text-anchor="middle" font-size="22" fill="#7dd3fc" font-weight="bold">ประกอบวงจรเข้ากับโครงสร้างหุ่นยนต์</text>';
+  s += '<rect x="330" y="120" width="420" height="360" rx="24" fill="#1e293b" stroke="#475569" stroke-width="3"/>';
+  s += '<g class="flyIn" style="animation-delay:.2s"><rect x="400" y="180" width="280" height="150" rx="10" fill="#f3efe2" stroke="#b8b2a0"/><rect x="410" y="248" width="260" height="12" rx="5" fill="#ddd6c2"/><text class="lbl" x="540" y="262" text-anchor="middle" font-size="12" fill="#6b7280">บอร์ดทดลอง</text></g>';
+  s += '<g class="flyIn" style="animation-delay:.8s"><rect x="360" y="360" width="120" height="70" rx="8" fill="#1f2937" stroke="#000"/><rect x="372" y="370" width="28" height="50" rx="5" fill="#0ea5e9"/><rect x="406" y="370" width="28" height="50" rx="5" fill="#0ea5e9"/><rect x="440" y="370" width="28" height="50" rx="5" fill="#0ea5e9"/><text class="lbl" x="420" y="452" text-anchor="middle" font-size="12" fill="#94a3b8">รังถ่าน</text></g>';
+  s += '<g class="flyIn" style="animation-delay:1.3s"><rect x="270" y="200" width="60" height="120" rx="10" fill="#0f172a" stroke="#334155"/><rect x="240" y="180" width="30" height="70" rx="8" fill="#334155"/><rect x="240" y="270" width="30" height="70" rx="8" fill="#334155"/><text class="lbl" x="300" y="345" text-anchor="middle" font-size="12" fill="#94a3b8">มอเตอร์+ล้อซ้าย</text></g>';
+  s += '<g class="flyIn" style="animation-delay:1.6s"><rect x="750" y="200" width="60" height="120" rx="10" fill="#0f172a" stroke="#334155"/><rect x="810" y="180" width="30" height="70" rx="8" fill="#334155"/><rect x="810" y="270" width="30" height="70" rx="8" fill="#334155"/><text class="lbl" x="780" y="345" text-anchor="middle" font-size="12" fill="#94a3b8">มอเตอร์+ล้อขวา</text></g>';
+  s += '<g class="flyIn" style="animation-delay:2.1s"><rect x="430" y="90" width="70" height="30" rx="6" fill="#166534"/><circle cx="450" cy="105" r="8" fill="#1e1b4b"/><circle cx="480" cy="105" r="8" fill="#0ea5e9"/><rect x="580" y="90" width="70" height="30" rx="6" fill="#166534"/><circle cx="600" cy="105" r="8" fill="#1e1b4b"/><circle cx="630" cy="105" r="8" fill="#0ea5e9"/><text class="lbl" x="540" y="80" text-anchor="middle" font-size="12" fill="#94a3b8">เซนเซอร์ซ้าย/ขวา หันลงพื้น</text></g>';
+  s += '<text class="lbl" x="540" y="540" text-anchor="middle" font-size="15" fill="#dbe6f3">ยึดบอร์ดทดลอง รังถ่าน มอเตอร์ ล้อ และเซนเซอร์เข้าโครง แล้วตรวจสอบความแน่นหนา</text>';
+  s += '<text class="lbl" x="540" y="570" text-anchor="middle" font-size="13" fill="#fbbf24">เซนเซอร์ทั้งสองตัวต้องหันลงพื้นและอยู่เหนือเส้นในระยะที่ปรับไว้</text>';
+  return svgWrap('0 0 1080 640', s);
+}
+function runScene(){
+  var s = '<rect x="0" y="0" width="1080" height="640" fill="#101826"/>';
+  s += '<g class="roadScroll">';
+  for(var i=-1;i<9;i++){ s += '<rect x="120" y="'+(i*80)+'" width="60" height="34" rx="6" fill="#1c2736"/><rect x="900" y="'+(i*80+40)+'" width="60" height="34" rx="6" fill="#1c2736"/>'; }
+  s += '</g>';
+  s += '<rect x="510" y="0" width="60" height="640" fill="#050505"/>';
+  s += '<g class="wiggle">';
+  s += '<rect x="380" y="200" width="320" height="220" rx="20" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="3"/>';
+  s += '<rect x="420" y="240" width="240" height="120" rx="8" fill="#f3efe2" stroke="#b8b2a0"/><text class="lbl" x="540" y="305" text-anchor="middle" font-size="13" fill="#6b7280">บอร์ดทดลอง</text>';
+  s += '<g class="spin"><circle cx="350" cy="250" r="34" fill="#0f172a" stroke="#334155" stroke-width="6"/><line x1="350" y1="222" x2="350" y2="278" stroke="#94a3b8" stroke-width="5"/><line x1="322" y1="250" x2="378" y2="250" stroke="#94a3b8" stroke-width="5"/></g>';
+  s += '<g class="spin"><circle cx="730" cy="250" r="34" fill="#0f172a" stroke="#334155" stroke-width="6"/><line x1="730" y1="222" x2="730" y2="278" stroke="#94a3b8" stroke-width="5"/><line x1="702" y1="250" x2="758" y2="250" stroke="#94a3b8" stroke-width="5"/></g>';
+  s += '<g class="spin" style="animation-duration:.6s"><circle cx="350" cy="380" r="34" fill="#0f172a" stroke="#334155" stroke-width="6"/><line x1="350" y1="352" x2="350" y2="408" stroke="#94a3b8" stroke-width="5"/><line x1="322" y1="380" x2="378" y2="380" stroke="#94a3b8" stroke-width="5"/></g>';
+  s += '<g class="spin" style="animation-duration:.6s"><circle cx="730" cy="380" r="34" fill="#0f172a" stroke="#334155" stroke-width="6"/><line x1="730" y1="352" x2="730" y2="408" stroke="#94a3b8" stroke-width="5"/><line x1="702" y1="380" x2="758" y2="380" stroke="#94a3b8" stroke-width="5"/></g>';
+  s += '<rect x="440" y="430" width="60" height="26" rx="6" fill="#166534"/><circle cx="456" cy="443" r="7" fill="#1e1b4b"/><circle cx="484" cy="443" r="7" fill="#0ea5e9"/>';
+  s += '<rect x="580" y="430" width="60" height="26" rx="6" fill="#166534"/><circle cx="596" cy="443" r="7" fill="#1e1b4b"/><circle cx="624" cy="443" r="7" fill="#0ea5e9"/>';
+  s += '<path class="beam" d="M470,456 L458,500 L482,500 Z" fill="#f87171"/><path class="beam" d="M610,456 L598,500 L622,500 Z" fill="#f87171"/>';
+  s += '</g>';
+  s += '<text class="lbl" x="540" y="560" text-anchor="middle" font-size="17" fill="#7dd3fc" font-weight="bold">หุ่นยนต์ทำงาน: เซนเซอร์ตรวจจับเส้นดำแล้วปรับความเร็วล้อซ้าย/ขวาให้วิ่งตามเส้น</text>';
+  s += '<text class="lbl" x="540" y="590" text-anchor="middle" font-size="13" fill="#94a3b8">ล้อข้างที่เจอเส้นดำจะหยุดหมุนชั่วคราว ทำให้หุ่นเลี้ยวกลับเข้าหาเส้นได้เอง</text>';
+  return svgWrap('0 0 1080 640', s);
+}
+
+/* ================= ประกอบสไลด์ทั้งหมด ================= */
+var SLIDES = [];
+SLIDES.push({phase:'เริ่มต้น', title:'ภาพรวมหุ่นยนต์และรายการอุปกรณ์', desc:'หุ่นยนต์บีม (IT Line Tracker Robot) เดินตามเส้นดำโดยใช้วงจรอินฟราเรดเซนเซอร์ควบคุมมอเตอร์ซ้าย–ขวา ลักษณะเหมือนกันสองชุด เตรียมอุปกรณ์ให้ครบ 18 รายการก่อนเริ่มประกอบ', dur:14, render:function(){ return introScene(); }, chips:['18 รายการอุปกรณ์']});
+SLIDES.push({phase:'เตรียมอุปกรณ์ (บัดกรี)', title:'บัดกรีวงจรอินฟราเรดเซนเซอร์ 1.1–1.3', desc:'เตรียมแผ่นปริ้นอเนกประสงค์ ใส่ตัวต้านทาน 100 โอห์ม หงายหลัง งอขา แล้วบัดกรีขาที่ตำแหน่ง 1 และ 2', dur:8, render:function(){ return prep1(); }, chips:['R 100 Ω','จุดบัดกรี 1,2']});
+SLIDES.push({phase:'เตรียมอุปกรณ์ (บัดกรี)', title:'ติดตั้งอินฟราเรดเซนเซอร์ 1.4–1.5', desc:'ใส่อินฟราเรดเซนเซอร์บนแผ่นปริ้นฯ โดยหันด้านตัวส่ง (สีน้ำเงิน) ให้อยู่ทางขวามือ แล้วกดให้แนบแผ่นปริ้น', dur:8, render:function(){ return prep2(); }, chips:['ตัวส่ง = สีน้ำเงิน']});
+SLIDES.push({phase:'เตรียมอุปกรณ์ (บัดกรี)', title:'บัดกรีจุดต่อและสายสัญญาณ 1.6–1.16', desc:'บัดกรีจุด 1–5 เชื่อมเซนเซอร์กับตัวต้านทาน ตัดขาเกิน แล้วบัดกรีสายสัญญาณ 3 เส้น (−, เอาต์พุต, +) ทำซ้ำสำหรับเซนเซอร์ตัวที่ 2', dur:9, render:function(){ return prep3(); }, chips:['จุดบัดกรี 1–5','สายสัญญาณ 3 เส้น']});
+SLIDES.push({phase:'เตรียมอุปกรณ์ (บัดกรี)', title:'บัดกรีสายมอเตอร์และรังถ่าน', desc:'บัดกรีสายไฟเข้าขั้วมอเตอร์ทั้งสองข้าง พันเกลียวสายให้เรียบร้อย และเตรียมรังถ่าน 3 ก้อน (แดง = +, ดำ = −)', dur:8, render:function(){ return prep4(); }, chips:['มอเตอร์ ×2','รังถ่าน ×2']});
+
+BOARD_STEPS.forEach(function(st, idx){
+  SLIDES.push({
+    phase: st.n<=15 ? 'วงจรล้อขวา (ขั้นตอน 1–15)' : 'วงจรล้อซ้าย (ขั้นตอน 16–31)',
+    title:'ขั้นตอนที่ '+st.n+' : '+st.t,
+    desc: st.d, note: st.note||'', chips: st.chips||[], dur: st.items.length? 7:9, boardIdx: idx,
+    render:function(){
+      var ov = highlightsFor(st);
+      if(st.test) ov += testOverlay();
+      if(st.final) ov += '<text class="lbl blink" x="600" y="600" text-anchor="middle" font-size="16" fill="#34d399" font-weight="bold">✓ ใส่ถ่าน → ทดสอบมอเตอร์ทั้งสองล้อ → พร้อมประกอบโครง</text>';
+      return boardScene(idx, ov);
+    }
+  });
+});
+SLIDES.push({phase:'ทดสอบและประกอบตัวรถ', title:'ทดสอบการทำงานบนบอร์ดทดลอง', desc:'ใช้มือบังอินฟราเรดเซนเซอร์หรือวางวัตถุสีขาวใกล้เซนเซอร์ มอเตอร์จะทำงาน ปรับความไวได้ทีตัวต้านทานปรับค่าได้ หากมอเตอร์ไม่หมุนให้ตรวจวงจรตั้งแต่ขั้นตอนที่ 1–14', dur:10, render:function(){ return boardScene(30, testOverlay()); }, chips:['บังเซนเซอร์ → มอเตอร์หมุน']});
+SLIDES.push({phase:'ทดสอบและประกอบตัวรถ', title:'ประกอบวงจรเข้าโครงสร้างหุ่นยนต์', desc:'นำวงจรบนบอร์ดทดลองไปประกอบโครงสร้าง: ยึดบอร์ดทดลอง รังถ่าน มอเตอร์พร้อมล้อ และเซนเซอร์ทั้งสองตัวให้หันลงพื้น', dur:10, render:function(){ return chassisScene(); }, chips:['ยึดอุปกรณ์เข้าโครง']});
+SLIDES.push({phase:'ทดสอบและประกอบตัวรถ', title:'หุ่นยนต์วิ่งตามเส้นดำ', desc:'ใส่ถ่านแล้ววางหุ่นบนเส้นดำ หุ่นยนต์จะวิ่งตามเส้นโดยอัตโนมัติ ล้อข้างที่เซนเซอร์เจอเส้นดำจะหยุดเป็นจังหวะทำให้เลี้ยวกลับเข้าเส้น', dur:11, render:function(){ return runScene(); }, chips:['พร้อมใช้งาน 🎉']});
+
+/* ================= ระบบควบคุม ================= */
+var cur = 0, playing = false, timer = null, speed = 1;
+var stage = document.getElementById('stage');
+var phases = [];
+SLIDES.forEach(function(s){ if(phases.indexOf(s.phase)<0) phases.push(s.phase); });
+
+function buildChips(){
+  var wrap = document.getElementById('phaseChips');
+  wrap.innerHTML = phases.map(function(p,i){ return '<button class="chip" data-p="'+i+'">'+p+'</button>'; }).join('');
+  wrap.querySelectorAll('.chip').forEach(function(b){
+    b.onclick = function(){ var p = phases[+b.dataset.p]; var idx = SLIDES.findIndex(function(s){return s.phase===p;}); goto(idx); };
+  });
+}
+function buildList(){
+  var wrap = document.getElementById('steplistWrap');
+  var html = '', lastPhase = null;
+  SLIDES.forEach(function(s,i){
+    if(s.phase!==lastPhase){ html += '<div class="groupHdr">'+s.phase+'</div>'; lastPhase = s.phase; }
+    var no = s.boardIdx!==undefined ? (s.boardIdx+1) : (i<5? '●' : '★');
+    html += '<button class="stepBtn" data-i="'+i+'"><span class="no">'+no+'</span><span>'+s.title+'</span></button>';
+  });
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('.stepBtn').forEach(function(b){ b.onclick = function(){ goto(+b.dataset.i); }; });
+}
+function render(){
+  var s = SLIDES[cur];
+  stage.innerHTML = s.render();
+  document.getElementById('stepPhase').textContent = 'เฟส: '+s.phase;
+  document.getElementById('stepTitle').textContent = s.title;
+  document.getElementById('stepDesc').textContent = s.desc;
+  var noteEl = document.getElementById('stepNote');
+  if(s.note){ noteEl.textContent = '⚠ '+s.note; noteEl.classList.add('show'); } else noteEl.classList.remove('show');
+  document.getElementById('chips').innerHTML = (s.chips||[]).map(function(c){ return '<span class="hchip">'+c+'</span>'; }).join('');
+  document.getElementById('stepPos').textContent = (cur+1)+' / '+SLIDES.length;
+  document.getElementById('progressBar').style.width = ((cur+1)/SLIDES.length*100)+'%';
+  document.querySelectorAll('#steplistWrap .stepBtn').forEach(function(b){
+    var i = +b.dataset.i;
+    b.classList.toggle('cur', i===cur);
+    b.classList.toggle('done', i<cur);
+    if(i===cur && b.scrollIntoView) b.scrollIntoView({block:'nearest'});
+  });
+  document.querySelectorAll('#phaseChips .chip').forEach(function(b){
+    b.classList.toggle('active', phases[+b.dataset.p]===s.phase);
+  });
+  restartTimer();
+}
+function goto(i){ cur = Math.max(0, Math.min(SLIDES.length-1, i)); render(); }
+function next(){ if(cur<SLIDES.length-1) goto(cur+1); else { stop(); } }
+function prev(){ goto(cur-1); }
+function restartTimer(){
+  if(timer){ clearTimeout(timer); timer=null; }
+  if(playing) timer = setTimeout(function(){ next(); }, SLIDES[cur].dur*1000/speed);
+}
+function play(){ playing = true; document.getElementById('btnPlay').textContent = '⏸'; restartTimer(); }
+function stop(){ playing = false; document.getElementById('btnPlay').textContent = '▶'; restartTimer(); }
+document.getElementById('btnPlay').onclick = function(){ playing? stop() : play(); };
+document.getElementById('btnNext').onclick = function(){ next(); };
+document.getElementById('btnPrev').onclick = function(){ prev(); };
+document.getElementById('speedBtn').onclick = function(){
+  speed = speed===1 ? 1.5 : speed===1.5 ? 2 : speed===2 ? 0.5 : 1;
+  this.textContent = speed+'×'; restartTimer();
+};
+document.getElementById('progressWrap').onclick = function(e){
+  var r = this.getBoundingClientRect();
+  goto(Math.floor((e.clientX-r.left)/r.width*SLIDES.length));
+};
+document.addEventListener('keydown', function(e){
+  if(e.key==='ArrowRight'){ next(); }
+  else if(e.key==='ArrowLeft'){ prev(); }
+  else if(e.key===' '){ e.preventDefault(); playing? stop():play(); }
+});
+buildChips(); buildList(); render();
+</script>
+</body>
+</html>

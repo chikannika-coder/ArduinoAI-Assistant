@@ -305,6 +305,12 @@ class WizardTab(ttk.Frame):
                 ws[-1].pack(fill="x")
             for w in [card, top] + ws:
                 w.bind("<Button-1>", lambda e, c=p["command"]: self._set_goal(c))
+            if p.get("lesson"):                      # 2.4: โปรเจกต์ที่มีบทเรียนภาพเคลื่อนไหวประกอบ
+                import lessons
+                lk = tk.Label(card, text="🎬 ดูบทเรียนภาพเคลื่อนไหว", font=self.f, bg="#FFFFFF", fg="#D9661A",
+                              cursor="hand2", anchor="w")
+                lk.pack(fill="x")
+                lk.bind("<Button-1>", lambda e, lid=p["lesson"]: lessons.open_lesson(lid))
             shown += 1
         for i in range(3):
             inner.columnconfigure(i, weight=1, uniform="c")
@@ -321,6 +327,10 @@ class WizardTab(ttk.Frame):
             self.ent_goal.insert(0, cmd)
         self.res = self.app.gen.generate(cmd, self.app.board()["id"], self.app.cfg["app_name"])
         self.test_status = {}
+        if not self.res.components and self.res.passive:
+            self.lbl_goal.configure(fg="#C0392B", text="%s ไม่ต้องเขียนโปรแกรม (เป็นชิ้นส่วนหรือวงจรอิเล็กทรอนิกส์) ดูวิธีต่อในแท็บ ⑤ คลังความรู้ หรือเลือกโปรเจกต์ในหมวดหุ่นยนต์ด้านล่าง"
+                                    % ", ".join(c["name_th"] for c in self.res.passive))
+            return
         if not self.res.components:
             self.lbl_goal.configure(fg="#C0392B", text="ยังไม่รู้ว่าต้องใช้อุปกรณ์อะไร ลองระบุชื่ออุปกรณ์ในคำสั่ง หรือกด \"ให้ AI ช่วยคิด\"")
             return
@@ -373,6 +383,11 @@ class WizardTab(ttk.Frame):
             self._thumbs.append(img)
             if img:
                 tk.Label(card, image=img, bg="#FFFFFF").pack()
+            elif it is not board:                      # 2.6: ยังไม่มีรูปถ่าย ใช้รูปวาดแทน
+                import icons
+                cv = tk.Canvas(card, width=150, height=110, bg="#FFFFFF", highlightthickness=0)
+                icons.draw(cv, it["id"], 75, 55, 95, tag="w", comp=it)
+                cv.pack()
             else:
                 tk.Label(card, text="(ยังไม่มีรูป)\nเพิ่มได้ที่แท็บคลังความรู้", bg="#F1EFE8", fg="#888780",
                          width=20, height=5, font=self.f).pack()
@@ -532,8 +547,7 @@ class WizardTab(ttk.Frame):
         row.pack(fill="x", pady=6)
         ttk.Button(row, text="▶ รันบนบอร์ดจริง", style="Accent.TButton", command=app.run_board).pack(side="left")
         ttk.Button(row, text="⬆ บันทึกลงบอร์ด (main.py)", command=app.upload_board).pack(side="left", padx=6)
-        ttk.Button(row, text="⚡ ดูการทำงานแบบจำลอง",
-                   command=lambda: (app.nb.select(app.tab_index["live"]), app.start_sim())).pack(side="left")
+        ttk.Button(row, text="🎞 ดูภาพการทำงาน (จำลอง)", command=app.show_scene_sim).pack(side="left")
         ttk.Button(row, text="✏ แก้โค้ดเพิ่ม", command=lambda: app.nb.select(app.tab_index["code"])).pack(side="left", padx=6)
         if any(c.get("library") for c in self.res.components):
             ttk.Button(row, text="📦 ติดตั้งไลบรารีลงบอร์ด", command=app.install_libs).pack(side="left")

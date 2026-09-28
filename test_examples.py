@@ -135,15 +135,118 @@ class OLED:
     fill = text = show = lambda self, *a: None
 
 
+class RTC:
+    def datetime(self, *a):
+        return (2026, 9, 28, 0, 8, 0, 0, 0)       # 8 โมงเช้า: ให้โค้ดที่ทำงานตามเวลาได้ลองทำงาน
+
+
+class FakeDHT:
+    def __init__(self, pin):
+        if not isinstance(pin, Pin):
+            raise TypeError("DHT needs Pin")
+        self._n = 0
+
+    def measure(self):
+        self._n += 1
+        if self._n % 7 == 0:                         # จำลองอ่านพลาดบางครั้ง (สายหลวม)
+            raise OSError("ETIMEDOUT")
+
+    def temperature(self):
+        return 20 + self._n % 15
+
+    def humidity(self):
+        return 50 + self._n % 40
+
+
+class FakeOneWire:
+    def __init__(self, pin):
+        if not isinstance(pin, Pin):
+            raise TypeError("OneWire needs Pin")
+
+
+class FakeDS:
+    def __init__(self, ow):
+        pass
+
+    def scan(self):
+        return [b"12345678"]
+
+    def convert_temp(self):
+        pass
+
+    def read_temp(self, rom):
+        return 27.5
+
+
+class FakePoll:
+    def register(self, *a):
+        pass
+
+    def poll(self, t=0):
+        return []                                  # ไม่มีข้อมูลเข้าทาง USB
+
+
+class FakeWLAN:
+    def __init__(self, i):
+        pass
+
+    def active(self, *a):
+        return True
+
+    def connect(self, *a):
+        pass
+
+    def isconnected(self):
+        return True
+
+    def ifconfig(self):
+        return ("192.168.1.50", "255.255.255.0", "192.168.1.1", "8.8.8.8")
+
+
+class FakeSocket:
+    def __init__(self, *a):
+        self.n = 0
+
+    def bind(self, addr):
+        pass
+
+    def settimeout(self, t):
+        pass
+
+    def recvfrom(self, n):
+        self.n += 1
+        if self.n % 5 == 0:                        # บางรอบมีคำสั่งเข้ามา
+            return b"ALL:T45,I30,M60,R20,P90\nHB", ("192.168.1.10", 5000)
+        raise OSError(110)
+
+    def sendto(self, data, addr):
+        pass
+
+
 def run(code, family, tmpdir):
     machine = types.ModuleType("machine")
     machine.Pin, machine.PWM, machine.I2C, machine.time_pulse_us = Pin, PWM, I2C, time_pulse_us
     machine.ADC = ADC32 if family == "esp32" else ADC
+    machine.RTC = RTC
     ssd = types.ModuleType("ssd1306")
     ssd.SSD1306_I2C = OLED
+    dht_m = types.ModuleType("dht")
+    dht_m.DHT11 = dht_m.DHT22 = FakeDHT
+    ow = types.ModuleType("onewire")
+    ow.OneWire = FakeOneWire
+    dsm = types.ModuleType("ds18x20")
+    dsm.DS18X20 = FakeDS
+    sel = types.ModuleType("select")
+    sel.POLLIN, sel.poll = 1, FakePoll
+    net = types.ModuleType("network")
+    net.STA_IF, net.AP_IF, net.WLAN = 0, 1, FakeWLAN
+    sk = types.ModuleType("socket")
+    sk.AF_INET, sk.SOCK_DGRAM, sk.SOCK_STREAM, sk.socket = 2, 2, 1, FakeSocket
     ft = FakeTime(400)
-    saved = {k: sys.modules.get(k) for k in ("machine", "time", "ssd1306")}
-    sys.modules.update(machine=machine, time=ft, ssd1306=ssd)
+    names = ("machine", "time", "ssd1306", "dht", "onewire", "ds18x20", "select", "network", "socket")
+    saved = {k: sys.modules.get(k) for k in names}
+    sys.modules.update(machine=machine, time=ft, ssd1306=ssd, dht=dht_m, onewire=ow, ds18x20=dsm,
+                       select=sel, network=net, socket=sk)
     cwd = os.getcwd()
     os.chdir(tmpdir)
     import contextlib
@@ -247,3 +350,14 @@ if __name__ == "__main__":
         else:
             print("กฎขา Arduino ไม่ผ่าน:", bid, cmd, r.errors, [(w["comp"], w["board_pin"]) for w in r.wiring])
     print("avr-pin-rules-ok:", ok, "/", len(CASES))
+
+    # ---- ตัวตรวจโค้ด (2.5): โค้ดต้นฉบับเครื่องผสมปุ๋ยใช้ขา 2-5 ซ้ำกับจอ LCD ต้องเจอ 4 จุด และตัวอย่าง Arduino IDE ต้องไม่ฟ้องผิด
+    import glob
+    import lint
+    fm = open(os.path.join(examples_lib.FOLDER, "16.Farm/FertilizerMixer/FertilizerMixer.ino"), encoding="utf-8").read()
+    ok_fm = len(lint.check(fm)[0]) == 4
+    false_err = [p for p in glob.glob(os.path.join(examples_lib.FOLDER, "*", "*", "*.ino"))
+                 if "FertilizerMixer" not in p and lint.check(open(p, encoding="utf-8", errors="replace").read())[0]]
+    for p in false_err:
+        print("ตัวตรวจโค้ดฟ้องผิด:", p, lint.check(open(p, encoding="utf-8", errors="replace").read())[0])
+    print("lint-ok:", "ผ่าน" if ok_fm and not false_err else "ไม่ผ่าน")
